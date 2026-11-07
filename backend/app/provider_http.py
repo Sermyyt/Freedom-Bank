@@ -40,6 +40,7 @@ def _retry_after(value):
 class HTTPProvider:
     is_demo = False
     ready = True
+    criteria_per_call = 1
 
     def __init__(self, settings, *, transport=None):
         self.model = settings.llm_model
@@ -55,7 +56,8 @@ class HTTPProvider:
         self._max_output_tokens = getattr(settings, "llm_max_output_tokens", 8192)
         self._transport = transport
         self.cache_settings = {"endpoint_hash": hashlib.sha256(self._endpoint.encode("utf-8")).hexdigest(),
-                               "max_output_tokens": self._max_output_tokens, "protocol": self.protocol}
+                               "max_output_tokens": self._max_output_tokens, "protocol": self.protocol,
+                               "criteria_per_call": self.criteria_per_call}
 
     def _redact(self, value):
         if isinstance(value, str):

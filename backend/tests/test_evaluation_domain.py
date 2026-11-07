@@ -320,3 +320,45 @@ def test_duration_is_elapsed_milliseconds(rules, conversation, monkeypatch):
     monkeypatch.setattr("app.evaluation.time.monotonic", lambda: next(times))
     _, usage, _, _ = evaluate(rules, conversation, FakeLLM(), POLICY)
     assert usage["duration_ms"] == 250
+
+
+@pytest.mark.parametrize("batch_size,expected_sizes", [(1, [1, 1, 1]), (2, [2, 1])])
+def test_provider_batches_isolate_rules_and_preserve_all_results(rules, conversation, batch_size, expected_sizes):
+    rules["criteria"] = [dict(deepcopy(rules["criteria"][0]), id=f"arbitrary-{i}") for i in range(3)]
+    provider = FakeLLM()
+    provider.criteria_per_call = batch_size
+    result, usage, responses, cache = evaluate(rules, conversation, provider, POLICY)
+    assert [len(ids) for ids in provider.requested_criteria] == expected_sizes
+    assert [item["criterion_id"] for item in result["criteria"]] == [c["id"] for c in rules["criteria"]]
+    baseline = evaluate(rules, conversation, FakeLLM(), POLICY)[0]
+    assert result == baseline
+    assert usage["calls"] == len(expected_sizes)
+    assert len(responses) == len(expected_sizes) and len(cache) == 3
+
+
+@pytest.mark.parametrize("retryable,attempts,expected_calls", [(True, 2, 4), (False, 1, 2)])
+def test_isolated_retry_does_not_repeat_completed_criteria(rules, conversation, retryable, attempts, expected_calls):
+    from app.providers import ProviderError
+    rules["criteria"] = [dict(deepcopy(rules["criteria"][0]), id=f"separate-{i}") for i in range(3)]
+    provider = FakeLLM()
+    provider.criteria_per_call = 1
+    original = provider.generate
+
+    def generate(*args, **kwargs):
+        result = original(*args, **kwargs)
+        if provider.calls == 2:
+            raise ProviderError("SYNTHETIC_FAILURE", retryable=retryable)
+        return result
+
+    provider.generate = generate
+    if retryable:
+        result, usage, responses, _ = evaluate(rules, conversation, provider, POLICY, max_attempts=attempts)
+        assert len(result["criteria"]) == 3
+        assert usage["calls"] == expected_calls and len(responses) == expected_calls
+    else:
+        with pytest.raises(DomainError) as error:
+            evaluate(rules, conversation, provider, POLICY, max_attempts=attempts)
+        assert error.value.usage["calls"] == expected_calls
+        assert len(error.value.raw_response) == expected_calls
+    assert provider.requested_criteria[0] == ["separate-0"]
+    assert sum(ids == ["separate-0"] for ids in provider.requested_criteria) == 1

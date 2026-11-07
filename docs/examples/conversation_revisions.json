@@ -3,17 +3,17 @@
     "items": [
       {
         "ref": {
-          "id": "33979a94-0550-4889-b857-6e31885fd616",
+          "id": "e09e2a86-dc27-4f84-aee1-97f3a2fd96b8",
           "group_id": "SYNTHETIC",
           "conversation_id": "demo-en",
-          "revision_id": "33db350c-99ca-43ce-a223-af8355cb8c63",
+          "revision_id": "e27ea97c-ad1e-44ca-b4e0-371b5ab670d6",
           "revision": 1
         },
         "channel": "agent chat",
         "language": "EN",
         "message_count": 4,
         "content_hash": "7cf7595a96c30ca4b7143087212c28805d28489d6d03b103dfccab26d8f54c68",
-        "created_at": "2026-11-07T14:11:34.204845Z"
+        "created_at": "2026-11-07T14:28:48.337594Z"
       }
     ],
     "total": 1,
@@ -21,6 +21,6 @@
     "offset": 0
   },
   "meta": {
-    "request_id": "21c20b82-59b6-456d-9b81-86195002b9a0"
+    "request_id": "2ddc8f7d-60b3-47e8-a21a-13f8a960f7bb"
   }
 }
