@@ -13,6 +13,8 @@ from scripts.eval_gold import GoldCase, GoldDocument
 from scripts.gen_api_examples import synthetic_dataset
 from scripts.api_read import items
 from scripts.run_batch import BatchError
+from scripts.run_batch import run_group
+from app.providers import FakeLLM
 
 
 def test_templates_keep_revision_rules_and_blank_answers_without_model_labels(tmp_path):
@@ -56,7 +58,7 @@ def preflight_api():
         'revisions': ['r1', 'r2'], 'evaluations': [], 'root_status': 200, 'root_type': 'text/html', 'calls': []}
     for i in (1, 2):
         state['evaluations'].append({'id': f'e{i}', 'conversation': {'revision_id': f'r{i}'},
-            'checklist_version_id': 'active', 'is_demo': False, 'status': 'completed',
+            'checklist_version_id': 'active', 'is_demo': False, 'original': {'status': 'completed'},
             'usage': {'provider': 'openai', 'model': 'synthetic-model', 'prompt_version': PROMPT_VERSION}})
     def handler(request):
         state['calls'].append(request)
@@ -88,7 +90,7 @@ def test_preflight_paginates_and_accepts_all_current_real_evaluations(preflight_
 
 
 @pytest.mark.parametrize('field,value', [('is_demo', True), ('checklist_version_id', 'old'),
-    ('status', 'failed'), ('conversation', {'revision_id': 'old'})])
+    ('original', {'status': 'failed'}), ('conversation', {'revision_id': 'old'})])
 def test_preflight_does_not_count_wrong_evaluation(preflight_api, field, value):
     preflight_api['evaluations'][0][field] = value
     checks = preflight.check(preflight_api['client'])
@@ -182,3 +184,17 @@ def test_template_cli_creates_fillable_document(tmp_path, monkeypatch, capsys):
 def test_preflight_missing_demo_flag_is_not_real_result(preflight_api):
     preflight_api['evaluations'][0].pop('is_demo')
     assert not next(row for row in preflight.check(preflight_api['client']) if row['name'] == 'DEV evaluations')['ok']
+
+
+def test_preflight_uses_actual_evaluation_response_shape(tmp_path):
+    provider = FakeLLM()
+    provider.name, provider.model, provider.is_demo = 'openai', 'offline-test', False
+    settings = Settings(database_path=tmp_path/'api.db', llm_provider='openai', llm_model='offline-test')
+    with TestClient(create_app(settings, provider=provider)) as client:
+        client.post('/api/imports/file', data={'group_id': 'DEV'}, files={
+            'file': ('sample.json', json.dumps(synthetic_dataset('DEV')), 'application/json')})
+        assert run_group(client, 'DEV', poll_interval=0.01)['succeeded'] == 2
+        checks = preflight.check(client)
+        result = next(row for row in checks if row['name'] == 'DEV evaluations')
+        assert result['ok'] is True
+        assert result['detail'].startswith('2/2 ')

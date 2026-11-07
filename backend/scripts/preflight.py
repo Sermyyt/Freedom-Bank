@@ -19,7 +19,7 @@ def row(name, ok, detail=''):
 def current_evaluation(evaluation, health):
     usage = evaluation.get('usage', {})
     return (not evaluation.get('is_demo', True)
-            and evaluation.get('status') in {'completed', 'manual_review'}
+            and evaluation.get('original', {}).get('status') in {'completed', 'manual_review'}
             and evaluation.get('checklist_version_id') == health.get('active_checklist_version_id')
             and all(usage.get(key) == health.get(key) and health.get(key)
                     for key in ('prompt_version', 'provider', 'model')))
@@ -64,7 +64,8 @@ def check(client):
     real = health.get('provider') in {'openai', 'anthropic'} and health.get('is_demo') is False
     checks = [row('provider', real, 'real provider' if real else '!!! DEMO / FAKE OR UNKNOWN PROVIDER !!!'),
               row('evaluation_ready', health.get('evaluation_ready')),
-              row('dataset_ready', health.get('dataset_ready'), 'source configured; not a network probe'),
+              row('dataset_ready', health.get('dataset_ready'), 'source configured; not a network probe'
+                  if health.get('dataset_ready') else 'DATASET_URL is not configured; use local file import'),
               row('database_ready', health.get('database_ready')),
               row('prompt_version', health.get('prompt_version'), str(health.get('prompt_version', 'missing')))]
     for name, operation in [('active checklist', lambda: [active_check(client, health)]),
