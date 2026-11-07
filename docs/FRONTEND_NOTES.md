@@ -1,0 +1,61 @@
+# Заметки фронтенда CQA
+
+Рабочие заметки Claude Code по `frontend/`: запуск, наблюдения об API, принятые решения, что проверено.
+Правила — `CLAUDE.md`, ТЗ — `docs/FRONTEND_SPEC.md`, источник истины об API — `docs/examples/*.json`, затем `docs/openapi.json` и `docs/API_CONTRACT.md`.
+
+## Запуск (Windows PowerShell, из корня репозитория)
+
+Папка `frontend/` должна существовать до старта сервера: FastAPI монтирует её на `/` только при запуске.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+Set-Location backend
+$env:LLM_PROVIDER = 'fake'
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Интерфейс: `http://127.0.0.1:8000/`. Проверка сервера: `http://127.0.0.1:8000/api/health`, Swagger: `http://127.0.0.1:8000/docs`.
+База — `data/cqa.db` (в `.gitignore`). Чтобы начать с чистого состояния, остановите сервер и удалите `data/cqa.db`.
+
+Тесты фронтенда (нужен Node.js 18+, без npm-зависимостей):
+
+```powershell
+node --test frontend/tests/
+```
+
+### Python 3.14 на этом ПК
+
+На машине установлен только Python 3.14. Для него нет готовой сборки `pydantic-core==2.33.1`, которую требует закреплённый `pydantic==2.11.3`, поэтому `pip install -r backend\requirements.txt` падает. Python 3.13 из `uv` блокируется политикой Windows (Smart App Control).
+Локально `.venv` собрана так (файлы бэкенда не менялись):
+
+```powershell
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --only-binary=:all: fastapi==0.115.12 "pydantic>=2.12,<2.13" uvicorn==0.34.2 pytest==8.3.5 httpx==0.28.1 python-multipart==0.0.20 python-dotenv==1.1.0
+```
+
+С этим окружением тесты бэкенда (`python -m pytest` из `backend/`) прошли: 282 passed, 2 skipped. Отличие от закреплённых версий — только pydantic 2.12.5. Если есть Python 3.11–3.13, используйте обычную команду из README.
+
+## Наблюдения об API (сверено с примерами и кодом)
+
+- Все ответы в конверте `{data, meta.request_id}`, ошибки — `{error: {code, message, details, retryable}, meta}`. `message` уже безопасный русский текст.
+- Строгие query-параметры: неизвестный или повторённый параметр → 422 `VALIDATION_ERROR`. Пустые фильтры не отправляем совсем (иначе `language=` станет фильтром по пустой строке).
+- 429 `BUSY` приходит с заголовком `Retry-After: 1`.
+- Значения из данных: `channel` — `agent chat`, `voice call`; `language` — `RU`, `KZ`, `EN`; `speaker` — `client`, `operator`, `bot`, `system`. Неизвестные значения сервер сохраняет как есть — интерфейс показывает их как есть.
+- `audio_offset_sec` сейчас всегда `null`, а `audio_offset_reliable` всегда `false` (так заполняет `backend/app/ingestion.py`). Значит, кнопок перехода по времени записи в текущей версии не будет, а у звонков с аудио всегда будет подпись «Точное время в записи не гарантировано». Это честное поведение по контракту.
+- `phase` и `client_facing` уже вычислены сервером: `client_facing = phase ∈ {pre_operator, client}`. Фронт не определяет фазы сам, только группирует подряд идущие `hold`/`internal_consult` в блоки.
+- В `sections` нет секции, где только флаги (в seed — «Грубые нарушения»): у неё нет веса. Флаги показываем отдельным блоком по `final.flags`.
+- `contribution`, `effective_weight`, `completion_percent`, `contribution_delta` приходят неокруглёнными (например, `0.891089108910892`). Фронт только форматирует до `scoring_policy.decimals` знаков.
+- `GET /api/evaluations` по умолчанию отсортирован `created_at DESC` — первая запись и есть последняя оценка.
+- `ConversationSummary.has_open_appeals` относится к последней оценке текущей ревизии; после импорта новой ревизии `latest_evaluation = null` до новой оценки.
+- `dataset_ready=false` по умолчанию (нет `DATASET_URL`): импорт по группе недоступен, работает импорт файлом.
+
+## Решения
+
+- Рабочая копия — git-клон `C:\Users\Hp\Freedom-Bank`. Папка `Freedom-Bank-main` на рабочем столе — ZIP-копия того же коммита без `.git`, в ней ничего не меняется.
+- `CLAUDE.md` и `docs/FRONTEND_SPEC.md` в удалённом репозитории отсутствовали; добавлены из присланных файлов без изменений, чтобы правила подхватывались в каждой сессии.
+- Фильтры списка разговоров хранятся в адресе (`#/conversations?group_id=…&limit=50`): ссылку можно переслать, кнопка «назад» работает. В `localStorage` — только размер страницы.
+
+## Проверено
+
+- F0: `/api/health` → 200, `status=ok`, `is_demo=true`, `evaluation_ready=true`, `dataset_ready=false`; `/docs` → 200; `/` отдаёт `frontend/index.html`. Все `docs/examples/*.json` прочитаны.
