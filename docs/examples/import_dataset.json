@@ -1,6 +1,6 @@
 {
   "data": {
-    "import_id": "912f5565-ac6f-4f05-8a56-aabfcf1820e4",
+    "import_id": "813e7ed8-3def-48f3-9321-7dfc0f31f647",
     "group_id": "SYNTHETIC_REMOTE",
     "received": 2,
     "created": 2,
@@ -10,9 +10,9 @@
     "errors": [],
     "warnings": [],
     "unknown_system_phrases": [],
-    "created_at": "2026-11-07T14:28:48.348167Z"
+    "created_at": "2026-11-07T14:43:18.886302Z"
   },
   "meta": {
-    "request_id": "0dfa7d7c-cdfe-4bdf-84bb-c4f8a723cf74"
+    "request_id": "d7f9d1a9-b0db-4f4a-8fe7-404032539a99"
   }
 }

@@ -8,14 +8,15 @@
     "is_demo": true,
     "evaluation_ready": true,
     "dataset_ready": false,
-    "active_checklist_version_id": "7d0b7ea9-6bf5-425a-a3fc-ac77cca3a433",
+    "active_checklist_version_id": "fcaae4dd-ee7b-4f42-9325-268876ab3fa4",
     "scoring_policy": {
       "rounding": "half_up",
       "decimals": 2,
       "gross_error_zeroes_total": false
-    }
+    },
+    "prompt_version": "cqa-v9"
   },
   "meta": {
-    "request_id": "d5eb240a-20f2-45a9-8956-6665963b3f12"
+    "request_id": "df231b68-ad6e-4bc8-ba53-fa9e7224fbf4"
   }
 }

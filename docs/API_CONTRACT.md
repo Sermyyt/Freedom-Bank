@@ -103,6 +103,7 @@ Health = {
   is_demo: boolean,
   evaluation_ready: boolean,
   dataset_ready: boolean,
+  prompt_version: string,        // версия промпта запущенного сервера; добавлено для preflight
   active_checklist_version_id: string | null,
   scoring_policy: ScoringPolicy
 }

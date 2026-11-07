@@ -49,6 +49,7 @@ class GoldAnswer(_Model):
 class GoldCriterion(_Model):
     criterion_id: Annotated[StrictStr, Field(min_length=1)]
     answer: GoldAnswer
+    guidance: dict[str, Any] | None = None
 
 
 class Provenance(_Model):

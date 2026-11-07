@@ -2,8 +2,8 @@
   "data": {
     "items": [
       {
-        "id": "f597f60a-d37c-45fd-b175-c4b7ed1f2d94",
-        "checklist_id": "8662fad8-676b-45ed-ba10-1edad716cdbe",
+        "id": "c2e15b23-3f5e-4aa8-a8f6-297ec3dcf07a",
+        "checklist_id": "8a8c71a8-9676-4d9c-bcbe-0089fe6c63cf",
         "version": 2,
         "definition": {
           "name": "Демонстрационный чек-лист редактора",
@@ -235,11 +235,11 @@
         },
         "content_hash": "9c2852e117e27e8bdf8f8aaf33cc287c6919be651f971c29b0bc95bb051af257",
         "is_active": true,
-        "created_at": "2026-11-07T14:28:48.378641Z"
+        "created_at": "2026-11-07T14:43:18.928235Z"
       },
       {
-        "id": "d28e87ce-dc7b-4065-8346-3c87678a9e98",
-        "checklist_id": "8662fad8-676b-45ed-ba10-1edad716cdbe",
+        "id": "5b56f145-e867-450e-881f-ecd0fdae2fb8",
+        "checklist_id": "8a8c71a8-9676-4d9c-bcbe-0089fe6c63cf",
         "version": 1,
         "definition": {
           "name": "Демонстрационный чек-лист редактора",
@@ -471,7 +471,7 @@
         },
         "content_hash": "621a56030c4aad786a9322c0b6536af239d2528433dade28e2ed17e9afc21e91",
         "is_active": false,
-        "created_at": "2026-11-07T14:28:48.372093Z"
+        "created_at": "2026-11-07T14:43:18.918006Z"
       }
     ],
     "total": 2,
@@ -479,6 +479,6 @@
     "offset": 0
   },
   "meta": {
-    "request_id": "afe66776-4756-40ff-a677-91e81fb723b8"
+    "request_id": "7b66c23d-b724-4ff5-b16d-969d0fec6a86"
   }
 }

@@ -4,6 +4,7 @@ from fastapi import APIRouter, File, Form, Query, Request, UploadFile
 from . import catalog, imports, reviews, schemas as s
 from .checklist_validation import normalize_definition
 from .errors import APIError, require
+from .evaluation import PROMPT_VERSION
 from .ingestion import IngestionError
 from .service import (active_id, conversation_detail, conversation_summary, evaluation_summary, filter_evaluation_state,
                       filtered, page, revision_summary, version)
@@ -32,7 +33,7 @@ def health(request: Request):
     return success(request, dict(status="ok" if ready else "degraded", api_version="1", database_ready=True,
                                 provider=request.app.state.settings.llm_provider, model=request.app.state.settings.llm_model, is_demo=request.app.state.settings.llm_provider == "fake",
                                 evaluation_ready=ready, dataset_ready=bool(request.app.state.settings.dataset_url), active_checklist_version_id=active,
-                                scoring_policy=request.app.state.settings.scoring_policy))
+                                scoring_policy=request.app.state.settings.scoring_policy, prompt_version=PROMPT_VERSION))
 
 
 @router.post("/api/imports/dataset", response_model=s.Success[s.ImportReport])

@@ -5377,6 +5377,10 @@
           },
           "scoring_policy": {
             "$ref": "#/components/schemas/ScoringPolicy"
+          },
+          "prompt_version": {
+            "type": "string",
+            "title": "Prompt Version"
           }
         },
         "additionalProperties": false,
@@ -5391,7 +5395,8 @@
           "evaluation_ready",
           "dataset_ready",
           "active_checklist_version_id",
-          "scoring_policy"
+          "scoring_policy",
+          "prompt_version"
         ],
         "title": "Health"
       },

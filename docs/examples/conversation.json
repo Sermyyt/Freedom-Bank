@@ -1,10 +1,10 @@
 {
   "data": {
     "ref": {
-      "id": "e09e2a86-dc27-4f84-aee1-97f3a2fd96b8",
+      "id": "295b01ed-e28a-47d8-8e57-d9d3f45ff765",
       "group_id": "SYNTHETIC",
       "conversation_id": "demo-en",
-      "revision_id": "e27ea97c-ad1e-44ca-b4e0-371b5ab670d6",
+      "revision_id": "cd697362-052c-4f47-914d-9eb60d68fe1e",
       "revision": 1
     },
     "channel": "agent chat",
@@ -67,9 +67,9 @@
     "audio_offset_reliable": false,
     "manual_review_reasons": [],
     "warnings": [],
-    "created_at": "2026-11-07T14:28:48.337594Z"
+    "created_at": "2026-11-07T14:43:18.871126Z"
   },
   "meta": {
-    "request_id": "9c984698-aaf5-4489-8c11-be3d4e1d9e12"
+    "request_id": "0eb5166c-0e59-4c99-99a9-82b5cceeeabc"
   }
 }

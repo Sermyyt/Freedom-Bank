@@ -70,6 +70,7 @@ class Health(APIModel):
     dataset_ready: StrictBool
     active_checklist_version_id: StrictStr | None
     scoring_policy: ScoringPolicy
+    prompt_version: StrictStr
 
 
 class DatasetImportRequest(APIModel):
