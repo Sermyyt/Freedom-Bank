@@ -21,7 +21,7 @@ import {
   totalsDiffer,
   violatedFlags,
 } from '../lib/evaluation.js';
-import { displayTimestamp, excerpt, formatDateTime, formatNumber, formatPercent } from '../lib/format.js';
+import { displayTimestamp, excerpt, formatDateTime, formatNumber, formatPercent, formatSummaryScore } from '../lib/format.js';
 import {
   CHANNEL_LABELS,
   EVALUATION_STATUS_LABELS,
@@ -68,6 +68,7 @@ export function mount(container, route) {
   let summaries = [];
   let summariesTotal = 0;
   let jobRunning = false;
+  let currentJob = null;
   let jobEvaluationId = null;
   let pendingScoreAnimationId = null;
   let cancelScoreAnimation = () => {};
@@ -486,7 +487,7 @@ export function mount(container, route) {
   }
 
   async function startEvaluation() {
-    if (jobRunning || !current) return;
+    if (controller.signal.aborted || jobRunning || !current) return;
     evaluateError.hidden = true;
     jobRunning = true;
     updateEvaluateControls();
@@ -494,6 +495,7 @@ export function mount(container, route) {
     try {
       job = await api.startEvaluation({ revision_ids: [current.ref.revision_id] });
     } catch (error) {
+      if (controller.signal.aborted) return;
       jobRunning = false;
       updateEvaluateControls();
       evaluateError.textContent = error.message;
@@ -501,21 +503,30 @@ export function mount(container, route) {
       showError(error);
       return;
     }
+    // POST может завершиться после destroy(): серверное задание продолжается,
+    // но покинутый экран уже не должен запускать опрос или менять маршрут.
+    if (controller.signal.aborted) return;
     await trackJob(job);
   }
 
   async function trackJob(job) {
-    pollController = new AbortController();
+    if (controller.signal.aborted || pollController) return;
+    const polling = new AbortController();
+    pollController = polling;
+    evaluateError.hidden = true;
     try {
       const finished = await pollJob({
         job,
         getJob: (id, signal) => api.getJob(id, { signal }),
-        signal: pollController.signal,
+        signal: polling.signal,
         onUpdate: (update) => {
+          if (controller.signal.aborted) return;
+          currentJob = update;
           jobProgress.update(update);
           if (update.is_demo === true) setViewDemo(true);
         },
       });
+      if (controller.signal.aborted) return;
       jobRunning = false;
       const summary = describeJob(finished);
       const evaluationId = summary.evaluationIds[0];
@@ -532,12 +543,17 @@ export function mount(container, route) {
         updateEvaluateControls();
       }
     } catch (error) {
-      if (isAbortError(error)) return;
-      jobRunning = false;
-      updateEvaluateControls();
-      evaluateError.textContent = error.message;
+      if (isAbortError(error) || controller.signal.aborted) return;
+      // Ошибка чтения не означает остановку задания. Повторяем только GET,
+      // сохраняя блокировку POST до получения терминального состояния.
+      clear(evaluateError).append(
+        h('span', { text: `Не удалось узнать ход задания: ${error.message} ` }),
+        h('button', { type: 'button', class: 'cqa-button cqa-button--small', text: 'Проверить снова', on: { click: () => trackJob(currentJob) } }),
+      );
       evaluateError.hidden = false;
       showError(error);
+    } finally {
+      if (pollController === polling) pollController = null;
     }
   }
 
@@ -872,7 +888,6 @@ export function mount(container, route) {
       block.append(h('p', { class: 'cqa-muted', text: 'Оценок пока нет.' }));
       return block;
     }
-    const decimals = healthDecimals();
     const rows = summaries.map((summary) => {
       const isShown = Boolean(evaluation && summary.id === evaluation.id);
       let action;
@@ -891,7 +906,7 @@ export function mount(container, route) {
       return h('tr', { class: isShown ? 'is-current' : null },
         h('td', { text: formatDateTime(summary.created_at) }),
         h('td', {}, versionLabel(summary.checklist_version_id, h('span', { text: '…' }))),
-        h('td', { class: 'cqa-num' }, h('strong', { text: formatNumber(summary.final_total, decimals) })),
+        h('td', { class: 'cqa-num' }, h('strong', { text: formatSummaryScore(summary.final_total, summary.scoring_policy) })),
         h('td', {}, badge(labelFor(EVALUATION_STATUS_LABELS, summary.status), EVALUATION_STATUS_TONES[summary.status] || 'neutral')),
         h('td', {}, action));
     });

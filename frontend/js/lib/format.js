@@ -5,6 +5,7 @@ export const DASH = '—';
 const NBSP = ' ';
 const numberFormats = new Map();
 const dateFormats = new Map();
+const summaryFallback = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 20 });
 
 function isNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
@@ -37,6 +38,15 @@ export function formatNumber(value, decimals) {
   if (!isNumber(value)) return DASH;
   const places = normalizeDecimals(decimals);
   return numberFormat(places, false).format(withoutNegativeZero(value, places));
+}
+
+// У старой сводки политика может отсутствовать: сохраняем разряды числа API,
+// не подставляя точность текущего сервера или стандартные два знака.
+export function formatSummaryScore(value, policy) {
+  if (!isNumber(value)) return DASH;
+  const decimals = policy && policy.decimals;
+  if (Number.isInteger(decimals) && decimals >= 0 && decimals <= 8) return formatNumber(value, decimals);
+  return summaryFallback.format(value === 0 ? 0 : value);
 }
 
 // Разница со знаком: «+0,89», «-0,15», «0,00»; null — «—», а не ноль.

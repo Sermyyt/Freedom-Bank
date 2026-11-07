@@ -8,6 +8,7 @@ import {
   formatDelta,
   formatNumber,
   formatPercent,
+  formatSummaryScore,
   pluralRu,
 } from '../js/lib/format.js';
 
@@ -33,6 +34,16 @@ test('неизвестная точность → 2 знака, отрицате
   assert.equal(formatNumber(1, undefined), '1,00');
   assert.equal(formatNumber(-0, 2), '0,00');
   assert.equal(formatNumber(-0.001, 2), '0,00');
+});
+
+test('сводка использует сохранённую политику, а без неё сохраняет разряды числа API', () => {
+  assert.equal(formatSummaryScore(12, { decimals: 0 }), '12');
+  assert.equal(formatSummaryScore(12.3, { decimals: 3 }), '12,300');
+  assert.equal(formatSummaryScore(12.345), '12,345');
+  assert.equal(formatSummaryScore(12.34567891, null), '12,34567891');
+  assert.equal(formatSummaryScore(12.345, {}), '12,345');
+  assert.equal(formatSummaryScore(null, { decimals: 3 }), DASH);
+  assert.equal(formatSummaryScore(-0, null), '0');
 });
 
 test('разница со знаком', () => {

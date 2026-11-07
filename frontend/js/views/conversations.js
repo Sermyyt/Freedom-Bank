@@ -19,7 +19,7 @@ import {
   normalizeListQuery,
   pageRange,
 } from '../lib/filters.js';
-import { DASH, formatDateTime, formatNumber } from '../lib/format.js';
+import { DASH, formatDateTime, formatSummaryScore } from '../lib/format.js';
 import {
   CHANNEL_LABELS,
   EVALUATION_STATUS_LABELS,
@@ -45,10 +45,6 @@ const KNOWN_CHANNELS = ['agent chat', 'voice call'];
 const COLUMNS = ['Внешний ID', 'Группа', 'Канал', 'Язык', 'Сообщений', 'Итог', 'Статус оценки', 'Грубое нарушение', 'Апелляции', 'Демо'];
 const NUMERIC_COLUMNS = new Set(['Сообщений', 'Итог']);
 
-function decimals() {
-  return state.health && state.health.scoring_policy ? state.health.scoring_policy.decimals : undefined;
-}
-
 function fillSelect(select, options, value) {
   const current = value || '';
   const list = [...options];
@@ -61,8 +57,6 @@ export function mount(container, route) {
   const controller = new AbortController();
   let query = normalizeListQuery(route.query, state.pageSize);
   let loadSeq = 0;
-  let lastPage = null;
-  let lastDecimals = decimals();
   let datasetBusy = false;
   const seenLanguages = new Set(KNOWN_LANGUAGES);
   const seenChannels = new Set(KNOWN_CHANNELS);
@@ -273,12 +267,13 @@ export function mount(container, route) {
     button.textContent = 'Импорт…';
     try {
       const result = await call();
+      if (controller.signal.aborted) return;
       renderReport(result);
       rememberGroup(result.group_id);
       showToast(`Импорт группы ${result.group_id} завершён: получено ${result.received}, новых ${result.created}.`, { tone: 'success' });
       navigate({ group_id: result.group_id, limit: query.limit }, { force: true });
     } catch (error) {
-      if (!isAbortError(error)) showImportError(error, fields, formError);
+      if (!controller.signal.aborted && !isAbortError(error)) showImportError(error, fields, formError);
     } finally {
       button.textContent = label;
       button.disabled = false;
@@ -463,7 +458,7 @@ export function mount(container, route) {
   // ---------- Оценка всей группы: действия ----------
   function groupJobRunning() {
     const current = state.groupJob;
-    return Boolean(current && !isTerminalJob(current.job) && !current.pollFailed);
+    return Boolean(current && !isTerminalJob(current.job));
   }
 
   function syncGroupEval() {
@@ -490,7 +485,7 @@ export function mount(container, route) {
 
   async function evaluateGroup() {
     const groupId = query.group_id;
-    if (!groupId || groupStarting || groupJobRunning()) return;
+    if (controller.signal.aborted || !groupId || groupStarting || groupJobRunning()) return;
     groupStarting = true;
     groupError.hidden = true;
     syncGroupEval();
@@ -499,6 +494,7 @@ export function mount(container, route) {
       // POST не повторяется автоматически: повтор создал бы второе задание.
       job = await api.startEvaluation(buildGroupEvaluationRequest(groupId));
     } catch (error) {
+      if (controller.signal.aborted) return;
       groupStarting = false;
       groupError.textContent = error.message;
       groupError.hidden = false;
@@ -507,11 +503,14 @@ export function mount(container, route) {
       return;
     }
     groupStarting = false;
+    // Сохраняем ID для возврата к списку, даже если POST завершился после ухода.
     setGroupJob({ groupId, job, pollFailed: false });
+    if (controller.signal.aborted) return;
     trackGroupJob();
   }
 
   async function trackGroupJob() {
+    if (controller.signal.aborted) return;
     const current = state.groupJob;
     if (!current) return;
     current.pollFailed = false;
@@ -527,11 +526,13 @@ export function mount(container, route) {
         getJob: (id, signal) => api.getJob(id, { signal }),
         signal: groupPoll.signal,
         onUpdate: (update) => {
+          if (controller.signal.aborted) return;
           current.job = update;
           groupProgress.update(update);
           if (update.is_demo === true) setViewDemo(true);
         },
       });
+      if (controller.signal.aborted) return;
       current.job = finished;
       groupPoll = null;
       syncGroupEval();
@@ -539,7 +540,7 @@ export function mount(container, route) {
       load();
     } catch (error) {
       groupPoll = null;
-      if (isAbortError(error)) return;
+      if (isAbortError(error) || controller.signal.aborted) return;
       // Задание на сервере продолжается: даём проверить его ход снова, а не запускать второе.
       current.pollFailed = true;
       clear(groupError).append(
@@ -562,11 +563,11 @@ export function mount(container, route) {
   // ---------- Таблица: загрузка и вывод ----------
   function totalCell(evaluation) {
     if (!evaluation) return h('span', { class: 'cqa-muted', text: DASH });
-    const finalText = formatNumber(evaluation.final_total, decimals());
+    const finalText = formatSummaryScore(evaluation.final_total, evaluation.scoring_policy);
     if (evaluation.original_total !== evaluation.final_total) {
       return [
         h('strong', { text: finalText }),
-        h('div', { class: 'cqa-muted cqa-small', text: `исходно ${formatNumber(evaluation.original_total, decimals())}` }),
+        h('div', { class: 'cqa-muted cqa-small', text: `исходно ${formatSummaryScore(evaluation.original_total, evaluation.scoring_policy)}` }),
       ];
     }
     return h('strong', { text: finalText });
@@ -647,7 +648,6 @@ export function mount(container, route) {
   }
 
   function renderPage(page) {
-    lastPage = page;
     if (!autoCollapseChecked) {
       autoCollapseChecked = true;
       setImportBoxOpen(page.total === 0 && !hasActiveFilters(query));
@@ -728,11 +728,6 @@ export function mount(container, route) {
   const unsubscribe = subscribe(() => {
     syncDatasetAvailability();
     syncGroupEval();
-    const current = decimals();
-    if (current !== lastDecimals) {
-      lastDecimals = current;
-      if (lastPage) renderPage(lastPage);
-    }
   });
 
   syncDatasetAvailability();

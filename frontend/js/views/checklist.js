@@ -146,6 +146,7 @@ export function mount(container) {
   // ---------- Загрузка ----------
   async function load({ prefer = 'active' } = {}) {
     const { signal } = controller;
+    if (signal.aborted) return;
     loadAlert.hidden = true;
     editor.classList.add('is-loading');
     loading.hidden = Boolean(draft);
@@ -173,6 +174,7 @@ export function mount(container) {
         api.getChecklist(version.checklist_id, { signal }),
         api.listChecklistVersions(version.checklist_id, { limit: 100 }, { signal }),
       ]);
+      if (signal.aborted) return;
       checklist = owner;
       versions = page.items;
       base = version;
@@ -775,7 +777,7 @@ export function mount(container) {
 
   // ---------- Сохранение ----------
   async function save() {
-    if (saving || !draft) return;
+    if (controller.signal.aborted || saving || !draft) return;
     const local = localErrors(draft, baseIds());
     if (Object.keys(local).length) {
       applyErrors({ ...errors, ...local }, warnings);
@@ -784,6 +786,12 @@ export function mount(container) {
       revealErrors();
       return;
     }
+    // Поля и структурные кнопки блокируются вместе: иначе последующий reload
+    // затёр бы правку, введённую после отправки версии. Запоминаем disabled,
+    // чтобы после ошибки не включить изначально недоступные действия.
+    const controls = [...editor.querySelectorAll('input, select, textarea, button')]
+      .map(control => ({ control, disabled: control.disabled }));
+    let focusErrors = false;
     saving = true;
     formError.hidden = true;
     savedBox.hidden = true;
@@ -791,27 +799,31 @@ export function mount(container) {
     validateSeq += 1;
     if (validateController) validateController.abort();
     updateSaveBar();
+    for (const { control } of controls) control.disabled = true;
     const activate = activateBox.checked;
     try {
       // Ожидаемая активная версия — из свежего health, в том числе null.
       const health = await api.getHealth({ signal: controller.signal });
+      if (controller.signal.aborted) return;
       const body = buildVersionRequest(toDefinition(draft), {
         latestVersionId: checklist.latest_version_id,
         activate,
         activeVersionId: health.active_checklist_version_id,
       });
       const created = await api.createChecklistVersion(checklist.id, body);
+      if (controller.signal.aborted) return;
       await refreshHealth();
-      saving = false;
+      if (controller.signal.aborted) return;
       await load({ prefer: activate ? 'active' : 'latest' });
+      if (controller.signal.aborted) return;
       showSaved(created, activate);
       showToast(activate ? `Версия v${created.version} сохранена и применена.` : `Версия v${created.version} сохранена без применения.`, { tone: 'success' });
     } catch (error) {
-      saving = false;
-      if (isAbortError(error)) return;
+      if (isAbortError(error) || controller.signal.aborted) return;
       if (error.code === 'VERSION_CONFLICT') {
         showToast('Чек-лист изменился, загружена последняя версия.', { tone: 'error', timeout: 10000 });
         await load({ prefer: 'latest' });
+        if (controller.signal.aborted) return;
         formError.textContent = 'Чек-лист изменился, загружена последняя версия. Повторите правку и сохраните снова.';
         formError.hidden = false;
       } else {
@@ -819,7 +831,7 @@ export function mount(container) {
         if (Object.keys(byField).length) {
           applyErrors(byField, warnings);
           validation = 'invalid';
-          revealErrors();
+          focusErrors = true;
         }
         formError.textContent = error.message;
         formError.hidden = false;
@@ -827,7 +839,9 @@ export function mount(container) {
       }
     } finally {
       saving = false;
+      for (const { control, disabled } of controls) control.disabled = disabled;
       updateSaveBar();
+      if (focusErrors && !controller.signal.aborted) revealErrors();
     }
   }
 
@@ -863,6 +877,8 @@ export function mount(container) {
     const error = h('div', { class: 'cqa-form-error', role: 'alert', hidden: true });
     const result = h('p', { class: 'cqa-saved-result', hidden: true });
     let comparison = null;
+    let currentJob = null;
+    let previousId = null;
     const compareButton = h('button', {
       type: 'button',
       class: 'cqa-button',
@@ -878,20 +894,35 @@ export function mount(container) {
     const reevaluateButton = h('button', { type: 'button', class: 'cqa-button cqa-button--primary', text: 'Переоценить разговор' });
 
     reevaluateButton.addEventListener('click', async () => {
-      if (pollController) return;
+      if (controller.signal.aborted || pollController) return;
       reevaluateButton.disabled = true;
       error.hidden = true;
       pollController = new AbortController();
       const { signal } = pollController;
       try {
         // Прошлая оценка той же ревизии — левая сторона сравнения (сравнивать можно только одну ревизию).
-        const previous = await api.listEvaluations({ conversation_id: conversation.id, revision_id: conversation.revisionId, limit: 1 }, { signal });
-        const previousId = previous.items.length ? previous.items[0].id : null;
-        const job = await api.startEvaluation({ revision_ids: [conversation.revisionId], checklist_version_id: created.id });
-        progress.update(job);
-        const finished = await pollJob({ job, getJob: (id, jobSignal) => api.getJob(id, { signal: jobSignal }), signal, onUpdate: progress.update });
+        if (!currentJob) {
+          const previous = await api.listEvaluations({ conversation_id: conversation.id, revision_id: conversation.revisionId, limit: 1 }, { signal });
+          if (signal.aborted) return;
+          previousId = previous.items.length ? previous.items[0].id : null;
+          currentJob = await api.startEvaluation({ revision_ids: [conversation.revisionId], checklist_version_id: created.id });
+        }
+        if (signal.aborted) return;
+        const finished = await pollJob({
+          job: currentJob,
+          getJob: (id, jobSignal) => api.getJob(id, { signal: jobSignal }),
+          signal,
+          onUpdate: update => {
+            if (signal.aborted) return;
+            currentJob = update;
+            progress.update(update);
+          },
+        });
+        if (signal.aborted) return;
         const summary = describeJob(finished);
         const evaluationId = summary.evaluationIds[0];
+        // Ответ о завершении получен: новый запуск допустим, если оценка не создана.
+        currentJob = null;
         if (!evaluationId) throw new Error((summary.itemErrors[0] && summary.itemErrors[0].message) || summary.jobError || 'Оценка не выполнена.');
         clear(result).append(
           'Новая оценка готова. ',
@@ -907,10 +938,11 @@ export function mount(container) {
         }
         showToast('Разговор переоценён по новой версии.', { tone: 'success' });
       } catch (failure) {
-        if (isAbortError(failure)) return;
+        if (isAbortError(failure) || signal.aborted) return;
         error.textContent = failure.message;
         error.hidden = false;
         reevaluateButton.disabled = false;
+        reevaluateButton.textContent = currentJob ? 'Проверить снова' : 'Переоценить разговор';
         if (failure.code) showError(failure);
       } finally {
         pollController = null;
