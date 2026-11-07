@@ -146,6 +146,46 @@ def test_frontend_roundtrip_and_all_workflow_routes(client, dataset):
     assert all(e["evaluation_id"] == first["id"] for e in events["items"])
 
 
+def test_summary_policies_survive_changed_server_settings(settings, dataset):
+    from app.main import create_app
+
+    original_settings = replace(settings, score_decimals=3, score_rounding="half_even",
+                                gross_error_zeroes_total=True)
+    with TestClient(create_app(original_settings)) as first_client:
+        data(upload(first_client, dataset))
+        first = evaluate(first_client, group_id="TEST")
+        assert first["scoring_policy"] == original_settings.scoring_policy
+
+    changed_settings = replace(settings, score_decimals=0)
+    with TestClient(create_app(changed_settings)) as restarted:
+        assert data(restarted.get("/api/health"))["scoring_policy"] == changed_settings.scoring_policy
+        summaries = data(restarted.get("/api/evaluations"))["items"]
+        assert summaries[0]["scoring_policy"] == first["scoring_policy"]
+        conversation = data(restarted.get("/api/conversations"))["items"][0]
+        assert conversation["latest_evaluation"]["scoring_policy"] == first["scoring_policy"]
+
+        second = evaluate(restarted, group_id="TEST", force=True)
+        assert second["scoring_policy"] == changed_settings.scoring_policy
+        summaries = data(restarted.get("/api/evaluations"))["items"]
+        assert {item["id"]: item["scoring_policy"] for item in summaries} == {
+            first["id"]: first["scoring_policy"], second["id"]: second["scoring_policy"]}
+        latest = data(restarted.get("/api/conversations"))["items"][0]["latest_evaluation"]
+        assert latest["id"] == second["id"]
+        assert latest["scoring_policy"] == second["scoring_policy"]
+        comparison = data(restarted.get("/api/evaluations/compare", params={
+            "left_id": first["id"], "right_id": second["id"]}))
+        assert comparison["left"]["scoring_policy"] == first["scoring_policy"]
+        assert comparison["right"]["scoring_policy"] == second["scoring_policy"]
+
+
+def test_legacy_summary_without_policy_keeps_it_unknown(client, dataset):
+    data(upload(client, dataset))
+    evaluate(client, group_id="TEST")
+    legacy = data(client.get("/api/evaluations"))["items"][0]
+    legacy.pop("scoring_policy", None)
+    assert schemas.EvaluationSummary.model_validate(legacy).scoring_policy is None
+
+
 def test_openapi_contains_all_24_contract_operations(client):
     document = client.get("/openapi.json").json()
     expected = {
@@ -394,7 +434,8 @@ def test_cached_results_reuse_weights_but_replacement_calls_only_new_criterion(c
     assert by_id[initial["definition"]["criteria"][0]["id"]]["change"] == "removed"
 
 
-def test_human_change_without_evidence_uses_reason_and_preserves_original(client, dataset):
+def test_human_change_without_evidence_uses_reason_and_preserves_original(positive_client, dataset):
+    client = positive_client
     data(upload(client, dataset))
     original = evaluate(client, group_id="TEST")
     opened = appeal(client, original)

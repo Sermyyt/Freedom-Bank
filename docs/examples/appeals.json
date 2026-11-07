@@ -2,14 +2,14 @@
   "data": {
     "items": [
       {
-        "id": "55c97218-b629-4ae1-91d2-1e5a6a2f9c20",
-        "evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+        "id": "96542cee-357a-4a3c-9754-069145e208ef",
+        "evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
         "criterion_id": "contact",
         "comment": "Синтетическая апелляция для демонстрации интерфейса.",
         "status": "open",
         "opened_at_final_revision": 0,
         "decision": null,
-        "created_at": "2026-11-07T13:33:34.775259Z",
+        "created_at": "2026-11-07T14:11:34.369834Z",
         "resolved_at": null
       }
     ],
@@ -18,6 +18,6 @@
     "offset": 0
   },
   "meta": {
-    "request_id": "995eb075-48d8-43cf-b4db-28d62467e720"
+    "request_id": "996add1b-a49f-4a5e-80fb-01fecb349563"
   }
 }

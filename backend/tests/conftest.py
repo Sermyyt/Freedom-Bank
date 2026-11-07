@@ -13,6 +13,35 @@ def settings(tmp_path):
 
 
 @pytest.fixture
+def positive_provider():
+    """Explicit full-score fixture for arithmetic and downward-appeal assertions."""
+    from app.providers import FakeLLM
+
+    provider = FakeLLM()
+    original_generate = provider.generate
+
+    def generate(criteria, transcript, *args, **kwargs):
+        response = original_generate(criteria, transcript, *args, **kwargs)
+        evidence = next((item for item in transcript if item["speaker"] == "operator"), transcript[0])
+        for criterion, result in zip(criteria, response["criteria"]):
+            value = False if criterion["answer_type"] == "flag" else max(criterion["options"], key=lambda item: item["normalized"])["value"]
+            result.update(answer={"status": "answered", "value": value}, evidence_message_ids=[evidence["id"]],
+                          na_reason=None, manual_review=False, manual_review_reasons=[])
+        return response
+
+    provider.generate = generate
+    return provider
+
+
+@pytest.fixture
+def positive_client(settings, positive_provider):
+    from app.main import create_app
+
+    with TestClient(create_app(settings, provider=positive_provider)) as test_client:
+        yield test_client
+
+
+@pytest.fixture
 def api(settings):
     from app.main import create_app
 

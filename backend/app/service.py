@@ -54,7 +54,8 @@ def evaluation_summary(tx, item):
             "checklist_version_id": item["checklist_version_id"], "status": item["final"]["status"],
             "is_demo": item["is_demo"], "original_total": item["original"]["total"],
             "final_total": item["final"]["total"], "gross_error": item["final"]["gross_error"],
-            "has_open_appeals": open_appeals(tx, evaluation_id=item["id"]), "created_at": item["created_at"]}
+            "has_open_appeals": open_appeals(tx, evaluation_id=item["id"]), "created_at": item["created_at"],
+            "scoring_policy": item.get("scoring_policy")}
 
 
 def conversation_detail(revision):

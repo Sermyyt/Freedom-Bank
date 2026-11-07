@@ -1,51 +1,61 @@
 {
   "data": {
     "conversation": {
-      "id": "c0d77182-58be-43d1-ab68-2f87537c13c0",
+      "id": "33979a94-0550-4889-b857-6e31885fd616",
       "group_id": "SYNTHETIC",
       "conversation_id": "demo-en",
-      "revision_id": "24dd3248-7497-4130-ad4d-53aea895075a",
+      "revision_id": "33db350c-99ca-43ce-a223-af8355cb8c63",
       "revision": 1
     },
     "left": {
-      "id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+      "id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
       "conversation": {
-        "id": "c0d77182-58be-43d1-ab68-2f87537c13c0",
+        "id": "33979a94-0550-4889-b857-6e31885fd616",
         "group_id": "SYNTHETIC",
         "conversation_id": "demo-en",
-        "revision_id": "24dd3248-7497-4130-ad4d-53aea895075a",
+        "revision_id": "33db350c-99ca-43ce-a223-af8355cb8c63",
         "revision": 1
       },
-      "checklist_version_id": "3bcff033-1f15-41f9-9311-479db5247720",
-      "status": "completed",
+      "checklist_version_id": "3b83fa5f-64f5-4768-b710-45762dc09f19",
+      "status": "manual_review",
       "is_demo": true,
-      "original_total": 100.0,
-      "final_total": 100.0,
+      "original_total": 45.0,
+      "final_total": 45.0,
       "gross_error": false,
       "has_open_appeals": false,
-      "created_at": "2026-11-07T13:33:34.654632Z"
+      "created_at": "2026-11-07T14:11:34.292821Z",
+      "scoring_policy": {
+        "rounding": "half_up",
+        "decimals": 2,
+        "gross_error_zeroes_total": false
+      }
     },
     "right": {
-      "id": "7a9c8d55-d301-4360-863f-5c155acb835b",
+      "id": "c7b01904-8735-4258-b51a-72ea81d75fc4",
       "conversation": {
-        "id": "c0d77182-58be-43d1-ab68-2f87537c13c0",
+        "id": "33979a94-0550-4889-b857-6e31885fd616",
         "group_id": "SYNTHETIC",
         "conversation_id": "demo-en",
-        "revision_id": "24dd3248-7497-4130-ad4d-53aea895075a",
+        "revision_id": "33db350c-99ca-43ce-a223-af8355cb8c63",
         "revision": 1
       },
-      "checklist_version_id": "eb251eec-9404-459d-a075-96f8e3344d50",
-      "status": "completed",
+      "checklist_version_id": "898fb316-11a1-4fe4-900b-c7c16d0eb83c",
+      "status": "manual_review",
       "is_demo": true,
-      "original_total": 100.0,
-      "final_total": 100.0,
+      "original_total": 45.54,
+      "final_total": 45.54,
       "gross_error": false,
       "has_open_appeals": false,
-      "created_at": "2026-11-07T13:33:34.744750Z"
+      "created_at": "2026-11-07T14:11:34.352675Z",
+      "scoring_policy": {
+        "rounding": "half_up",
+        "decimals": 2,
+        "gross_error_zeroes_total": false
+      }
     },
     "left_final_revision": 0,
     "right_final_revision": 0,
-    "total_delta": 0.0,
+    "total_delta": 0.54,
     "criteria": [
       {
         "criterion_id": "contact",
@@ -120,8 +130,10 @@
           "checked_range": null,
           "expected_action": null,
           "na_reason": null,
-          "manual_review": false,
-          "manual_review_reasons": [],
+          "manual_review": true,
+          "manual_review_reasons": [
+            "Демо: синтетический пример неопределённости для ручной проверки."
+          ],
           "warnings": [],
           "reused": false,
           "reused_from_evaluation_id": null,
@@ -153,11 +165,13 @@
           "checked_range": null,
           "expected_action": null,
           "na_reason": null,
-          "manual_review": false,
-          "manual_review_reasons": [],
+          "manual_review": true,
+          "manual_review_reasons": [
+            "Демо: синтетический пример неопределённости для ручной проверки."
+          ],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 11.0,
           "normalized_answer": 1.0,
           "effective_weight": 10.891089108910892,
@@ -221,7 +235,7 @@
           "criterion_id": "needs",
           "answer": {
             "status": "answered",
-            "value": true
+            "value": false
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -245,16 +259,16 @@
           "reused": false,
           "reused_from_evaluation_id": null,
           "original_weight": 15.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.0,
           "effective_weight": 15.0,
-          "weighted_points": 15.0,
-          "contribution": 15.0
+          "weighted_points": 0.0,
+          "contribution": 0.0
         },
         "right_result": {
           "criterion_id": "needs",
           "answer": {
             "status": "answered",
-            "value": true
+            "value": false
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -276,14 +290,14 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 15.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.0,
           "effective_weight": 14.851485148514852,
-          "weighted_points": 15.0,
-          "contribution": 14.851485148514852
+          "weighted_points": 0.0,
+          "contribution": 0.0
         },
-        "contribution_delta": -0.148514851485148
+        "contribution_delta": 0.0
       },
       {
         "criterion_id": "identity",
@@ -291,7 +305,7 @@
         "left_definition": {
           "id": "identity",
           "name": "Идентификация",
-          "description": "Да — проверка личности подтверждена до раскрытия данных или защищённого действия. Общий вопрос о тарифах не требует идентификации. Если требовалась проверка личности перед защищённым действием и она не подтверждена в чате, ставьте «Нет».",
+          "description": "Да — проверка личности подтверждена до раскрытия данных или защищённого действия. Сначала установите, раскрывает ли оператор сведения конкретного клиента или выполняет действие, требующее проверки личности. Общий вопрос о тарифах и общая навигационная подсказка, где найти страницу, вход или раздел интерфейса, без раскрытия клиентских данных и без защищённого действия не требуют идентификации: N/A. Упоминание аккаунта или входа само по себе не означает защищённого действия. Навигационная инструкция не равна сбросу доступа, раскрытию состояния счёта или выполнению операции за клиента. Если проверка личности действительно требовалась перед раскрытием данных или защищённым действием и не подтверждена в чате, ставьте «Нет».",
           "section": "Безопасность и решение",
           "answer_type": "binary",
           "weight": 20.0,
@@ -315,7 +329,7 @@
         "right_definition": {
           "id": "identity",
           "name": "Идентификация",
-          "description": "Да — проверка личности подтверждена до раскрытия данных или защищённого действия. Общий вопрос о тарифах не требует идентификации. Если требовалась проверка личности перед защищённым действием и она не подтверждена в чате, ставьте «Нет».",
+          "description": "Да — проверка личности подтверждена до раскрытия данных или защищённого действия. Сначала установите, раскрывает ли оператор сведения конкретного клиента или выполняет действие, требующее проверки личности. Общий вопрос о тарифах и общая навигационная подсказка, где найти страницу, вход или раздел интерфейса, без раскрытия клиентских данных и без защищённого действия не требуют идентификации: N/A. Упоминание аккаунта или входа само по себе не означает защищённого действия. Навигационная инструкция не равна сбросу доступа, раскрытию состояния счёта или выполнению операции за клиента. Если проверка личности действительно требовалась перед раскрытием данных или защищённым действием и не подтверждена в чате, ставьте «Нет».",
           "section": "Безопасность и решение",
           "answer_type": "binary",
           "weight": 20.0,
@@ -395,7 +409,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 20.0,
           "normalized_answer": 1.0,
           "effective_weight": 19.801980198019802,
@@ -495,7 +509,7 @@
           "criterion_id": "consultation",
           "answer": {
             "status": "answered",
-            "value": 20.0
+            "value": 10.0
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -519,16 +533,16 @@
           "reused": false,
           "reused_from_evaluation_id": null,
           "original_weight": 20.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.5,
           "effective_weight": 20.0,
-          "weighted_points": 20.0,
-          "contribution": 20.0
+          "weighted_points": 10.0,
+          "contribution": 10.0
         },
         "right_result": {
           "criterion_id": "consultation",
           "answer": {
             "status": "answered",
-            "value": 20.0
+            "value": 10.0
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -550,14 +564,14 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 20.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.5,
           "effective_weight": 19.801980198019802,
-          "weighted_points": 20.0,
-          "contribution": 19.801980198019802
+          "weighted_points": 10.0,
+          "contribution": 9.900990099009901
         },
-        "contribution_delta": -0.198019801980198
+        "contribution_delta": -0.099009900990099
       },
       {
         "criterion_id": "empathy",
@@ -614,7 +628,7 @@
           "criterion_id": "empathy",
           "answer": {
             "status": "answered",
-            "value": true
+            "value": false
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -638,16 +652,16 @@
           "reused": false,
           "reused_from_evaluation_id": null,
           "original_weight": 15.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.0,
           "effective_weight": 15.0,
-          "weighted_points": 15.0,
-          "contribution": 15.0
+          "weighted_points": 0.0,
+          "contribution": 0.0
         },
         "right_result": {
           "criterion_id": "empathy",
           "answer": {
             "status": "answered",
-            "value": true
+            "value": false
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -669,14 +683,14 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 15.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.0,
           "effective_weight": 14.851485148514852,
-          "weighted_points": 15.0,
-          "contribution": 14.851485148514852
+          "weighted_points": 0.0,
+          "contribution": 0.0
         },
-        "contribution_delta": -0.148514851485148
+        "contribution_delta": 0.0
       },
       {
         "criterion_id": "dialogue",
@@ -757,7 +771,7 @@
           "criterion_id": "dialogue",
           "answer": {
             "status": "answered",
-            "value": 10.0
+            "value": 0.0
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -781,16 +795,16 @@
           "reused": false,
           "reused_from_evaluation_id": null,
           "original_weight": 15.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.0,
           "effective_weight": 15.0,
-          "weighted_points": 15.0,
-          "contribution": 15.0
+          "weighted_points": 0.0,
+          "contribution": 0.0
         },
         "right_result": {
           "criterion_id": "dialogue",
           "answer": {
             "status": "answered",
-            "value": 10.0
+            "value": 0.0
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
           "evidence_message_ids": [
@@ -812,14 +826,14 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 15.0,
-          "normalized_answer": 1.0,
+          "normalized_answer": 0.0,
           "effective_weight": 14.851485148514852,
-          "weighted_points": 15.0,
-          "contribution": 14.851485148514852
+          "weighted_points": 0.0,
+          "contribution": 0.0
         },
-        "contribution_delta": -0.148514851485148
+        "contribution_delta": 0.0
       },
       {
         "criterion_id": "closing",
@@ -931,7 +945,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": 5.0,
           "normalized_answer": 1.0,
           "effective_weight": 4.9504950495049505,
@@ -998,13 +1012,20 @@
             "value": false
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
-          "evidence_message_ids": [],
-          "evidence": [],
-          "checked_range": {
-            "start_id": 1,
-            "end_id": 4
-          },
-          "expected_action": "Проверка описанного нарушения по диапазону (синтетическая демонстрация).",
+          "evidence_message_ids": [
+            2
+          ],
+          "evidence": [
+            {
+              "message_id": 2,
+              "text": "Hello, I am Demo. Please open the demo account section.",
+              "speaker": "operator",
+              "timestamp": "00:02",
+              "phase": "client"
+            }
+          ],
+          "checked_range": null,
+          "expected_action": null,
           "na_reason": null,
           "manual_review": false,
           "manual_review_reasons": [],
@@ -1024,19 +1045,26 @@
             "value": false
           },
           "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
-          "evidence_message_ids": [],
-          "evidence": [],
-          "checked_range": {
-            "start_id": 1,
-            "end_id": 4
-          },
-          "expected_action": "Проверка описанного нарушения по диапазону (синтетическая демонстрация).",
+          "evidence_message_ids": [
+            2
+          ],
+          "evidence": [
+            {
+              "message_id": 2,
+              "text": "Hello, I am Demo. Please open the demo account section.",
+              "speaker": "operator",
+              "timestamp": "00:02",
+              "phase": "client"
+            }
+          ],
+          "checked_range": null,
+          "expected_action": null,
           "na_reason": null,
           "manual_review": false,
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "6bea05c2-3d30-4977-804e-146f3b34e16f",
+          "reused_from_evaluation_id": "b5c2a621-1a43-4f25-b781-88c5d7a7e31d",
           "original_weight": null,
           "normalized_answer": null,
           "effective_weight": null,
@@ -1048,6 +1076,6 @@
     ]
   },
   "meta": {
-    "request_id": "4b834aeb-ba6e-4267-8459-2a846bf2a629"
+    "request_id": "c73076d5-007d-403c-bd34-e17189e05a94"
   }
 }

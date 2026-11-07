@@ -608,24 +608,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -763,24 +763,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -925,24 +925,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -1078,24 +1078,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -1214,24 +1214,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -1491,24 +1491,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -1653,24 +1653,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -1800,24 +1800,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -1939,24 +1939,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -2088,24 +2088,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -2226,24 +2226,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -2462,24 +2462,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -2601,24 +2601,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -2749,24 +2749,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -2888,24 +2888,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -3026,24 +3026,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -3213,24 +3213,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -3352,24 +3352,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -3501,24 +3501,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -3734,24 +3734,24 @@
             "description": "Conflict"
           },
           "413": {
+            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Request Entity Too Large"
+            }
           },
           "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Failure"
                 }
               }
-            },
-            "description": "Unprocessable Entity"
+            }
           },
           "429": {
             "content": {
@@ -4219,60 +4219,6 @@
           "created_at"
         ],
         "title": "Checklist"
-      },
-      "ChecklistDefinition-Input": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "criteria": {
-            "items": {
-              "$ref": "#/components/schemas/Criterion"
-            },
-            "type": "array",
-            "title": "Criteria"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "name",
-          "description",
-          "criteria"
-        ],
-        "title": "ChecklistDefinition"
-      },
-      "ChecklistDefinition-Output": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "criteria": {
-            "items": {
-              "$ref": "#/components/schemas/Criterion"
-            },
-            "type": "array",
-            "title": "Criteria"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "name",
-          "description",
-          "criteria"
-        ],
-        "title": "ChecklistDefinition"
       },
       "ChecklistVersion": {
         "properties": {
@@ -5262,6 +5208,16 @@
           "created_at": {
             "type": "string",
             "title": "Created At"
+          },
+          "scoring_policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoringPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -6908,6 +6864,60 @@
           "warnings"
         ],
         "title": "ValidationReport"
+      },
+      "ChecklistDefinition-Input": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/components/schemas/Criterion"
+            },
+            "type": "array",
+            "title": "Criteria"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "criteria"
+        ],
+        "title": "ChecklistDefinition"
+      },
+      "ChecklistDefinition-Output": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/components/schemas/Criterion"
+            },
+            "type": "array",
+            "title": "Criteria"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "criteria"
+        ],
+        "title": "ChecklistDefinition"
       }
     }
   }

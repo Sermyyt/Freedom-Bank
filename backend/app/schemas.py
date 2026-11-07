@@ -129,6 +129,7 @@ class EvaluationSummary(APIModel):
     gross_error: StrictBool | None
     has_open_appeals: StrictBool
     created_at: StrictStr
+    scoring_policy: ScoringPolicy | None = None
 
 
 class ConversationSummary(APIModel):
