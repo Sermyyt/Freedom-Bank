@@ -79,6 +79,12 @@ export function displayTimestamp(timestamp) {
   return match ? match[1] : timestamp;
 }
 
+// Короткий фрагмент длинного текста для подсказок и таблиц; полный текст показывается отдельно.
+export function excerpt(text, max = 160) {
+  const value = String(text ?? '');
+  return value.length > max ? `${value.slice(0, max - 1)}…` : value;
+}
+
 // pluralRu(5, ['сообщение', 'сообщения', 'сообщений']) → 'сообщений'
 export function pluralRu(count, [one, few, many]) {
   const n = Math.abs(Math.trunc(count)) % 100;

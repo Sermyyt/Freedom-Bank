@@ -69,6 +69,10 @@ export function createApi({ base = API_BASE, fetchImpl } = {}) {
     listEvaluations: (query, options) => request('GET', '/evaluations', { ...options, query }),
     getEvaluation: (evaluationId, options) => request('GET', `/evaluations/${id(evaluationId)}`, options),
     getChecklistVersion: (versionId, options) => request('GET', `/checklist-versions/${id(versionId)}`, options),
+    createAppeal: (body) => request('POST', '/appeals', { json: body }),
+    listAppeals: (query, options) => request('GET', '/appeals', { ...options, query }),
+    getAppeal: (appealId, options) => request('GET', `/appeals/${id(appealId)}`, options),
+    decideAppeal: (appealId, body) => request('POST', `/appeals/${id(appealId)}/decision`, { json: body }),
   };
 }
 

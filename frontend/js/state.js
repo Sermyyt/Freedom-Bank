@@ -30,6 +30,7 @@ export const state = {
   activeVersion: null,
   viewDemo: false,
   lastListHash: '#/conversations',
+  lastAppealsHash: '#/appeals',
   pageSize: normalizePageSize(readPref('pageSize', DEFAULT_PAGE_SIZE)),
   // null — человек ещё не сворачивал и не разворачивал блок импорта.
   importOpen: (() => {
@@ -122,4 +123,8 @@ export function rememberGroup(groupId) {
 
 export function setLastListHash(hash) {
   state.lastListHash = hash;
+}
+
+export function setLastAppealsHash(hash) {
+  state.lastAppealsHash = hash;
 }
