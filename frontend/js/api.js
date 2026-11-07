@@ -76,6 +76,7 @@ export function createApi({ base = API_BASE, fetchImpl } = {}) {
     // Проверка ничего не сохраняет; её можно отменить сигналом, когда человек продолжает печатать.
     validateChecklist: (definition, options) => request('POST', '/checklists/validate', { ...options, json: definition }),
     createChecklistVersion: (checklistId, body) => request('POST', `/checklists/${id(checklistId)}/versions`, { json: body }),
+    listHistory: (query, options) => request('GET', '/history', { ...options, query }),
     compareEvaluations: (leftId, rightId, options) =>
       request('GET', '/evaluations/compare', { ...options, query: { left_id: leftId, right_id: rightId } }),
     createAppeal: (body) => request('POST', '/appeals', { json: body }),

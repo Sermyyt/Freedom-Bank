@@ -9,7 +9,8 @@ import * as checklist from './views/checklist.js';
 import * as compare from './views/compare.js';
 import * as conversation from './views/conversation.js';
 import * as conversations from './views/conversations.js';
-import { notFound, placeholder } from './views/placeholder.js';
+import * as history from './views/history.js';
+import { notFound } from './views/placeholder.js';
 
 const root = document.getElementById('cqa-root');
 const header = createHeader();
@@ -27,7 +28,7 @@ startRouter(
     checklist,
     appeals,
     compare,
-    history: placeholder('История', 'F5'),
+    history,
   },
   { notFound, onChange: (route) => header.setActive(route.name) },
 );
