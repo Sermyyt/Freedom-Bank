@@ -2,6 +2,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { field } from '../components/field.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
@@ -198,11 +199,12 @@ export function mount(container, route) {
   const tableBody = h('tbody');
   const table = h(
     'table',
-    { class: 'cqa-table' },
+    { class: 'cqa-table cqa-conversations-table', role: 'table', 'aria-label': 'Разговоры' },
     h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', class: NUMERIC_COLUMNS.has(title) ? 'cqa-num' : null, text: title })))),
     tableBody,
   );
-  const tableWrap = h('div', { class: 'cqa-table-wrap' }, table);
+  const tableWrap = h('div', { class: 'cqa-table-wrap cqa-list-scroll' }, table);
+  const loading = loadingState();
   const listEmpty = h('div', { hidden: true });
   const pager = h('nav', { class: 'cqa-pager', 'aria-label': 'Страницы списка' });
 
@@ -220,6 +222,7 @@ export function mount(container, route) {
         groupBox,
         listStatus,
         listError,
+        loading,
         tableWrap,
         listEmpty,
         pager,
@@ -558,10 +561,10 @@ export function mount(container, route) {
     const evaluation = item.latest_evaluation;
     const href = buildHash('conversation', [item.ref.id]);
     const status = evaluation ? evaluation.status : 'not_evaluated';
-    return h(
+    const tr = h(
       'tr',
       {
-        class: 'cqa-row-link',
+        class: 'cqa-row-link', role: 'row',
         on: {
           click: (event) => {
             if (event.target.closest('a')) return;
@@ -585,6 +588,11 @@ export function mount(container, route) {
       h('td', {}, item.has_open_appeals ? badge('Есть открытая', 'warn') : h('span', { class: 'cqa-muted', text: 'нет' })),
       h('td', {}, evaluation && evaluation.is_demo ? badge('Демо', 'demo') : h('span', { class: 'cqa-muted', text: DASH })),
     );
+    [...tr.children].forEach((cell, index) => {
+      cell.setAttribute('role', 'cell');
+      cell.prepend(h('span', { class: 'cqa-mobile-label', 'aria-hidden': 'true', text: COLUMNS[index] }));
+    });
+    return tr;
   }
 
   function renderPager(page) {
@@ -664,6 +672,8 @@ export function mount(container, route) {
     setLastListHash(buildHash('conversations', [], listQueryToHash(query)));
     listError.hidden = true;
     tableWrap.classList.add('is-loading');
+    tableWrap.setAttribute('aria-busy', 'true');
+    loading.hidden = Boolean(tableBody.childElementCount);
     listStatus.textContent = 'Загрузка…';
     try {
       const page = await api.listConversations(query, { signal: controller.signal });
@@ -680,7 +690,11 @@ export function mount(container, route) {
       listError.hidden = false;
       showError(error);
     } finally {
-      if (seq === loadSeq) tableWrap.classList.remove('is-loading');
+      if (seq === loadSeq) {
+        tableWrap.classList.remove('is-loading');
+        tableWrap.setAttribute('aria-busy', 'false');
+        loading.hidden = true;
+      }
     }
   }
 

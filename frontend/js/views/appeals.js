@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { showError } from '../components/toast.js';
 import { append, clear, h } from '../dom.js';
 import {
@@ -54,6 +55,7 @@ export function mount(container, route) {
   const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite' });
   const listError = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const tableBody = h('tbody');
+  const loading = loadingState();
   const tableWrap = h(
     'div',
     { class: 'cqa-table-wrap' },
@@ -75,6 +77,7 @@ export function mount(container, route) {
       h('div', { class: 'cqa-card-head' }, h('h2', { id: 'cqa-appeals-title', text: 'Список апелляций' }), filterNav),
       listStatus,
       listError,
+      loading,
       tableWrap,
       listEmpty,
       pager),
@@ -220,6 +223,8 @@ export function mount(container, route) {
     setViewDemo(false);
     listError.hidden = true;
     tableWrap.classList.add('is-loading');
+    tableWrap.setAttribute('aria-busy', 'true');
+    loading.hidden = Boolean(tableBody.childElementCount);
     listStatus.textContent = 'Загрузка…';
     try {
       const page = await api.listAppeals(appealsApiQuery(query), { signal: controller.signal });
@@ -236,7 +241,11 @@ export function mount(container, route) {
       listError.hidden = false;
       showError(error);
     } finally {
-      if (seq === loadSeq) tableWrap.classList.remove('is-loading');
+      if (seq === loadSeq) {
+        tableWrap.classList.remove('is-loading');
+        tableWrap.setAttribute('aria-busy', 'false');
+        loading.hidden = true;
+      }
     }
   }
 

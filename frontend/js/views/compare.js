@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { showError } from '../components/toast.js';
 import { clear, h } from '../dom.js';
 import { comparisonRows, deltaTone } from '../lib/compare.js';
@@ -35,7 +36,7 @@ export function mount(container, route) {
 
   const backLinks = h('div', { class: 'cqa-back-links' }, h('a', { class: 'cqa-back', href: state.lastListHash || '#/conversations', text: 'К списку разговоров' }));
   const facts = h('dl', { class: 'cqa-facts' });
-  const body = h('div', { class: 'cqa-compare-body' }, h('p', { class: 'cqa-loading', text: 'Загрузка сравнения…' }));
+  const body = h('div', { class: 'cqa-compare-body' }, loadingState('Загрузка сравнения…'));
   container.append(h(
     'section',
     { class: 'cqa-page cqa-compare' },

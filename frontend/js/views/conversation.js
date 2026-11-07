@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { verdict } from '../components/verdict.js';
@@ -108,7 +109,7 @@ export function mount(container, route) {
   const evaluateHint = h('p', { class: 'cqa-field-hint', hidden: true });
   const evaluateError = h('div', { class: 'cqa-form-error', role: 'alert', hidden: true });
   const jobProgress = createJobProgress();
-  const scoreBody = h('div', { class: 'cqa-score-body' });
+  const scoreBody = h('div', { class: 'cqa-score-body' }, loadingState('Загрузка оценки…'));
   scorePane.append(
     h('div', { class: 'cqa-pane-head' }, h('h2', { id: 'cqa-score-title', text: 'Оценка' }), evaluateButton),
     h('div', { class: 'cqa-evaluate' }, evaluateHint, evaluateError, jobProgress.el),
@@ -116,7 +117,7 @@ export function mount(container, route) {
   );
   transcriptPane.append(
     h('div', { class: 'cqa-pane-head' }, h('h2', { id: 'cqa-transcript-title', text: 'Переписка' })),
-    h('p', { class: 'cqa-loading', text: 'Загрузка разговора…' }),
+    loadingState('Загрузка разговора…'),
   );
 
   container.append(
@@ -277,7 +278,8 @@ export function mount(container, route) {
       'ul',
       { class: 'cqa-legend', 'aria-label': 'Обозначения полосы слева' },
       h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--heard', 'aria-hidden': 'true' }), 'клиент слышит'),
-      h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--unheard', 'aria-hidden': 'true' }), 'клиент не слышит'),
+      h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--unheard', 'aria-hidden': 'true' }), 'удержание: не слышит'),
+      h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--internal', 'aria-hidden': 'true' }), 'консультация: не слышит'),
       h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--after', 'aria-hidden': 'true' }), 'после завершения'),
     );
   }
@@ -882,7 +884,7 @@ export function mount(container, route) {
         h('td', {}, badge(labelFor(EVALUATION_STATUS_LABELS, summary.status), EVALUATION_STATUS_TONES[summary.status] || 'neutral')),
         h('td', {}, action));
     });
-    block.append(h(
+    block.append(h('div', { class: 'cqa-table-wrap' }, h(
       'table',
       { class: 'cqa-table cqa-table--compact' },
       h('thead', {}, h('tr', {},
@@ -892,7 +894,7 @@ export function mount(container, route) {
         h('th', { scope: 'col', text: 'Статус' }),
         h('th', { scope: 'col', text: 'Действия' }))),
       h('tbody', {}, rows),
-    ));
+    )));
     if (summariesTotal > summaries.length) {
       block.append(h('p', { class: 'cqa-muted cqa-small', text: `Показаны последние ${summaries.length} из ${summariesTotal}.` }));
     }

@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { field } from '../components/field.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
@@ -60,6 +61,7 @@ export function mount(container) {
 
   // ---------- Каркас ----------
   const lead = h('p', { class: 'cqa-page-lead' });
+  const loading = loadingState('Загрузка чек-листа…');
   const loadAlert = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const nameField = field({ id: 'cqa-cl-name', label: 'Название чек-листа', control: h('input', { type: 'text', autocomplete: 'off' }) });
   const descriptionField = field({ id: 'cqa-cl-description', label: 'Описание', control: h('textarea', { rows: 3 }) });
@@ -127,6 +129,7 @@ export function mount(container) {
     { class: 'cqa-page cqa-editor' },
     h('div', { class: 'cqa-page-intro' }, h('h1', { text: 'Чек-лист' }), lead),
     loadAlert,
+    loading,
     editor,
   ));
 
@@ -144,6 +147,8 @@ export function mount(container) {
     const { signal } = controller;
     loadAlert.hidden = true;
     editor.classList.add('is-loading');
+    loading.hidden = Boolean(draft);
+    editor.setAttribute('aria-busy', 'true');
     try {
       const health = await api.getHealth({ signal });
       let versionId = health.active_checklist_version_id;
@@ -187,6 +192,8 @@ export function mount(container) {
       showError(error);
     } finally {
       editor.classList.remove('is-loading');
+      editor.setAttribute('aria-busy', 'false');
+      loading.hidden = true;
     }
   }
 
