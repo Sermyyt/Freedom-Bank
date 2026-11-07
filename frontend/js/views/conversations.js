@@ -8,7 +8,6 @@ import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { clear, debounce, h } from '../dom.js';
 import { setExpanded } from '../lib/disclosure.js';
-import { reveal } from '../lib/motion.js';
 import { fieldErrors, isAbortError } from '../lib/errors.js';
 import { buildGroupEvaluationRequest, groupJobSummary } from '../lib/group-evaluation.js';
 import { isTerminalJob, pollJob } from '../lib/poll.js';
@@ -115,25 +114,34 @@ export function mount(container, route) {
 
   const report = h('div', { class: 'cqa-import-report', hidden: true, 'aria-live': 'polite' });
   // Блок импорта сворачивается, чтобы список был на первом экране. Выбор человека запоминается;
-  // без него блок открыт, пока разговоров нет, и свёрнут, когда они есть.
+  // Без него панель открывается после загрузки пустого списка, без вспышки при старте.
   let autoCollapseChecked = state.importOpen !== null;
+  let importOpen = state.importOpen === true;
+  const importToggle = h('button', {
+    type: 'button', class: 'cqa-import-toggle cqa-button', text: 'Импорт разговоров',
+    'aria-controls': 'cqa-import-panel', 'aria-expanded': String(importOpen),
+    on: { click: () => {
+      autoCollapseChecked = true;
+      setImportOpen(!importOpen);
+      setImportBoxOpen(!importOpen);
+    } },
+  });
   const importBox = h(
-    'details',
-    { class: 'cqa-card cqa-collapsible', open: state.importOpen !== false },
-    h(
-      'summary',
-      // Клик (и Enter/пробел) по заголовку — действие человека: запоминаем новое состояние.
-      { class: 'cqa-collapsible-summary' },
-      h('h2', { text: 'Импорт' }),
-      h('span', { class: 'cqa-muted', text: 'группа с сервера организаторов или JSON-файл' }),
-    ),
-    h('div', { class: 'cqa-collapsible-body' }, h('div', { class: 'cqa-import-grid' }, datasetForm, fileForm), report),
+    'section',
+    { id: 'cqa-import-panel', class: 'cqa-card cqa-import-panel', hidden: !importOpen, 'aria-labelledby': 'cqa-import-title' },
+    h('h2', { id: 'cqa-import-title', text: 'Импорт разговоров' }),
+    h('div', { class: 'cqa-import-grid' }, datasetForm, fileForm),
+    report,
   );
 
-  importBox.addEventListener('cqa:disclosure', event => setImportOpen(event.detail.open));
-
   function setImportBoxOpen(open) {
-    importBox.open = open;
+    const hadFocus = importBox.contains(document.activeElement);
+    importOpen = open;
+    importToggle.setAttribute('aria-expanded', String(open));
+    setExpanded(importBox, open).then(() => {
+      if (!importOpen && importBox.hidden && hadFocus && importToggle.isConnected
+        && (importBox.contains(document.activeElement) || document.activeElement === document.body)) importToggle.focus();
+    });
   }
 
   // ---------- Фильтры ----------
@@ -161,19 +169,19 @@ export function mount(container, route) {
   fillSelect(appealsFilter.control, [['', 'Все'], ['true', 'Есть'], ['false', 'Нет']], '');
   fillSelect(pageSizeFilter.control, PAGE_SIZES.map((size) => [String(size), String(size)]), String(query.limit));
 
+  let advancedOpen = null;
+  const advancedSummary = h('summary', { text: 'Все фильтры' });
+  const advancedFilters = h('details', { class: 'cqa-filter-more' },
+    advancedSummary,
+    h('div', { class: 'cqa-filters-secondary' }, statusFilter.el, grossFilter.el, appealsFilter.el),
+  );
+  advancedFilters.addEventListener('cqa:disclosure', event => { advancedOpen = event.detail.open; });
+
   const filtersForm = h(
     'form',
     { class: 'cqa-filters', role: 'search', on: { submit: (event) => { event.preventDefault(); applyText(); } } },
-    groupFilter.el,
-    groupOptions,
-    languageFilter.el,
-    channelFilter.el,
-    statusFilter.el,
-    grossFilter.el,
-    appealsFilter.el,
-    searchFilter.el,
-    pageSizeFilter.el,
-    h('div', { class: 'cqa-filters-actions' }, resetButton),
+    h('div', { class: 'cqa-filters-primary' }, searchFilter.el, groupFilter.el, groupOptions, languageFilter.el, channelFilter.el),
+    h('div', { class: 'cqa-filters-tools' }, advancedFilters, resetButton),
   );
 
   // ---------- Оценка всей группы ----------
@@ -215,21 +223,21 @@ export function mount(container, route) {
   container.append(
     h(
       'section',
-      { class: 'cqa-page' },
-      h('div', { class: 'cqa-page-head' }, h('h1', { text: 'Разговоры' })),
+      { class: 'cqa-page cqa-conversations-page' },
+      h('div', { class: 'cqa-page-head' }, h('h1', { text: 'Разговоры' }), importToggle),
       importBox,
       h(
         'section',
-        { class: 'cqa-card', 'aria-labelledby': 'cqa-list-title' },
-        h('h2', { id: 'cqa-list-title', text: 'Список разговоров' }),
-        filtersForm,
+        { class: 'cqa-card cqa-conversations-list', 'aria-labelledby': 'cqa-list-title' },
+        h('h2', { id: 'cqa-list-title', class: 'cqa-sr-only', text: 'Список разговоров' }),
         groupBox,
+        filtersForm,
         listStatus,
         listError,
         loading,
         tableWrap,
         listEmpty,
-        pager,
+        h('div', { class: 'cqa-list-footer' }, pageSizeFilter.el, pager),
       ),
     ),
   );
@@ -367,8 +375,8 @@ export function mount(container, route) {
         h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => {
           const hadFocus = report.contains(document.activeElement);
           setExpanded(report, false).then(() => {
-            if (hadFocus && importBox.isConnected && (report.contains(document.activeElement) || document.activeElement === document.body)) {
-              importBox.querySelector('summary').focus({ preventScroll: true });
+            if (report.hidden && hadFocus && importToggle.isConnected && (report.contains(document.activeElement) || document.activeElement === document.body)) {
+              importToggle.focus();
             }
           });
         } } }),
@@ -441,6 +449,9 @@ export function mount(container, route) {
     statusFilter.control.value = query.evaluation_status || '';
     grossFilter.control.value = query.has_gross_error || '';
     appealsFilter.control.value = query.has_open_appeals || '';
+    const advancedCount = ['evaluation_status', 'has_gross_error', 'has_open_appeals'].filter(key => Boolean(query[key])).length;
+    advancedSummary.textContent = advancedCount ? `Все фильтры (${advancedCount})` : 'Все фильтры';
+    if (advancedCount > 0 && advancedOpen !== false) advancedFilters.open = true;
     pageSizeFilter.control.value = String(query.limit);
     resetButton.disabled = !hasActiveFilters(query);
     syncGroupEval();
@@ -470,7 +481,7 @@ export function mount(container, route) {
     } else if (state.health && state.health.evaluation_ready === false) {
       groupHint.textContent = 'Сервер сообщает, что оценка сейчас недоступна. Нажмите «Оценить всю группу», чтобы увидеть причину.';
     } else {
-      groupHint.textContent = 'Сервер оценит текущие ревизии всех разговоров группы по активному чек-листу, независимо от остальных фильтров.';
+      groupHint.textContent = 'Все текущие разговоры группы, по активному чек-листу. Фильтры ниже не влияют на оценку.';
     }
     groupButton.disabled = running || groupStarting || !groupId;
     groupButton.textContent = running || groupStarting ? 'Оценка группы…' : 'Оценить всю группу';
@@ -639,7 +650,7 @@ export function mount(container, route) {
     lastPage = page;
     if (!autoCollapseChecked) {
       autoCollapseChecked = true;
-      if (page.total > 0) setImportBoxOpen(false);
+      setImportBoxOpen(page.total === 0 && !hasActiveFilters(query));
     }
     for (const item of page.items) {
       seenLanguages.add(item.language);
@@ -671,14 +682,13 @@ export function mount(container, route) {
       } else {
         listEmpty.replaceChildren(emptyState({
           title: 'Разговоров пока нет.',
-          hint: 'Импортируйте набор: укажите ID группы или загрузите JSON-файл в блоке «Импорт» выше.',
+          hint: 'Импортируйте набор: укажите ID группы или загрузите JSON-файл в панели «Импорт разговоров» выше.',
         }));
       }
     } else {
       tableWrap.hidden = false;
       listEmpty.hidden = true;
       tableBody.replaceChildren(...page.items.map(row));
-      [...tableBody.children].slice(0, 6).forEach((item, index) => reveal(item, index * 24));
       listStatus.textContent = `Показаны ${range.from}–${range.to} из ${range.total}`;
     }
     renderPager(page);
