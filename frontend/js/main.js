@@ -40,5 +40,8 @@ startRouter(
     compare,
     history,
   },
-  { notFound, onChange: (route) => header.setActive(route.name) },
+  { notFound, onChange: (route) => {
+    root.dataset.screen = route.name;
+    header.setActive(route.name);
+  } },
 );

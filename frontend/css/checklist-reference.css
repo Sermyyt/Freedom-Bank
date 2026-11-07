@@ -1,0 +1,240 @@
+/* Checklist and comparison adapt the shared bank reference to editing work.
+   Existing controls, validation states, and comparison semantics stay intact. */
+
+.cqa-app[data-screen="checklist"] .cqa-page-intro { gap: 16px; }
+.cqa-app[data-screen="checklist"] .cqa-page-lead { max-width: 92ch; }
+.cqa-app[data-screen="checklist"] .cqa-ed-grid {
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-main { gap: 24px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-aside { top: calc(var(--cqa-top-offset) + 24px); }
+.cqa-app[data-screen="checklist"] .cqa-card-head { align-items: flex-start; gap: 16px 24px; }
+.cqa-app[data-screen="checklist"] .cqa-card-head > .cqa-actions { gap: 8px; }
+.cqa-app[data-screen="checklist"] .cqa-card-head .cqa-button--ghost {
+  padding-inline: 12px;
+  white-space: normal;
+}
+.cqa-app[data-screen="checklist"] .cqa-card-head h2 .cqa-muted { font-weight: 400; }
+.cqa-app[data-screen="checklist"] .cqa-field textarea { resize: vertical; }
+.cqa-app[data-screen="checklist"] .cqa-ed-list { border-top-color: var(--cqa-rule); }
+.cqa-app[data-screen="checklist"] .cqa-ed-item.is-open { background: transparent; }
+.cqa-app[data-screen="checklist"] .cqa-ed-head {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  padding: 20px 0;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-num {
+  align-self: start;
+  padding-top: 4px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-toggle {
+  padding: 4px 0;
+  gap: 8px;
+  border-radius: 4px;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-name { font-size: 16px; line-height: 24px; font-weight: 700; }
+.cqa-app[data-screen="checklist"] .cqa-ed-title { gap: 8px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-meta { gap: 4px 12px; line-height: 20px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-id { color: var(--cqa-ink-2); overflow-wrap: anywhere; }
+.cqa-app[data-screen="checklist"] .cqa-ed-tags { grid-column: 2; min-width: 0; }
+.cqa-app[data-screen="checklist"] .cqa-ed-tags:empty { display: none; }
+.cqa-app[data-screen="checklist"] .cqa-ed-tags .cqa-badge { white-space: normal; overflow-wrap: anywhere; }
+.cqa-app[data-screen="checklist"] .cqa-ed-actions {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+  gap: 8px;
+  max-width: 350px;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-actions .cqa-button { max-width: 100%; white-space: normal; }
+.cqa-app[data-screen="checklist"] .cqa-button--quiet-danger { color: var(--cqa-no); border-color: transparent; background: transparent; }
+.cqa-app[data-screen="checklist"] .cqa-button--quiet-danger:hover:not(:disabled) { color: var(--cqa-no); border-color: var(--cqa-error-border); background: var(--cqa-no-wash); }
+.cqa-app[data-screen="checklist"] .cqa-icon-button {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--cqa-rule-strong);
+  border-radius: 12px;
+  background: var(--cqa-sheet);
+  color: var(--cqa-ink);
+  font-size: 16px;
+  font-weight: 400;
+}
+.cqa-app[data-screen="checklist"] .cqa-icon-button:hover:not(:disabled) {
+  border-color: var(--cqa-accent);
+  background: var(--cqa-sheet-2);
+  color: var(--cqa-accent);
+  transform: none;
+}
+.cqa-app[data-screen="checklist"] .cqa-icon-button:active:not(:disabled) { transform: none; }
+.cqa-app[data-screen="checklist"] .cqa-ed-body {
+  gap: 24px;
+  padding: 0 0 24px 40px;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-fields {
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 20px 16px;
+}
+.cqa-app[data-screen="checklist"] .cqa-field input[readonly] { border-style: solid; }
+.cqa-app[data-screen="checklist"] .cqa-check { align-items: flex-start; font-weight: 400; }
+.cqa-app[data-screen="checklist"] .cqa-check input { flex: 0 0 16px; margin-top: 3px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-na,
+.cqa-app[data-screen="checklist"] .cqa-ed-options { gap: 16px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-options > legend {
+  padding-bottom: 12px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-option {
+  grid-template-columns: 112px minmax(140px, 1fr) minmax(200px, 2fr);
+  gap: 16px 12px;
+  padding: 20px 0;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-option--scale {
+  grid-template-columns: 96px minmax(140px, 1fr) minmax(200px, 2fr) 128px 42px;
+}
+.cqa-app[data-screen="checklist"] .cqa-ed-option-value { min-height: 58px; justify-content: center; padding-bottom: 0; }
+.cqa-app[data-screen="checklist"] .cqa-ed-option-answer { font-size: 16px; line-height: 24px; font-weight: 400; }
+.cqa-app[data-screen="checklist"] .cqa-ed-option-remove { margin-bottom: 8px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-options > .cqa-button { align-self: flex-start; max-width: 100%; white-space: normal; }
+.cqa-app[data-screen="checklist"] .cqa-ed-removed { padding: 16px; gap: 12px; }
+.cqa-app[data-screen="checklist"] .cqa-ed-warnings { padding: 16px 24px 16px 40px; border-radius: 12px; }
+
+/* Keep the desktop save action available without making a second toolbar. */
+.cqa-app[data-screen="checklist"] .cqa-savebar {
+  bottom: 16px;
+  gap: 16px 24px;
+  padding: 16px 24px;
+  border: 1px solid var(--cqa-rule);
+  border-radius: 20px;
+  box-shadow: var(--cqa-shadow-sm);
+}
+.cqa-app[data-screen="checklist"] .cqa-savebar-info { flex-basis: 180px; gap: 8px; }
+.cqa-app[data-screen="checklist"] .cqa-savebar-status { font-weight: 400; }
+.cqa-app[data-screen="checklist"] .cqa-savebar > .cqa-actions { gap: 12px; margin-left: auto; }
+.cqa-app[data-screen="checklist"] .cqa-savebar .cqa-button { max-width: 100%; white-space: normal; }
+.cqa-app[data-screen="checklist"] .cqa-saved { padding: 24px; border-radius: 20px; }
+.cqa-app[data-screen="checklist"] .cqa-saved-next { padding-top: 16px; gap: 16px; }
+.cqa-app[data-screen="checklist"] .cqa-version { padding: 16px 8px; gap: 8px 12px; }
+.cqa-app[data-screen="checklist"] .cqa-version-number { font-size: 20px; line-height: 28px; font-weight: 700; }
+.cqa-app[data-screen="checklist"] .cqa-version-meta { min-width: 0; gap: 4px 12px; line-height: 20px; }
+.cqa-app[data-screen="checklist"] .cqa-version-tags { min-width: 0; gap: 8px; }
+.cqa-app[data-screen="checklist"] .cqa-version-tags .cqa-badge { white-space: normal; }
+.cqa-app[data-screen="checklist"] .cqa-version.is-current { background: var(--cqa-sheet-2); }
+
+/* Comparison stays a left / difference / right reading order. */
+.cqa-app[data-screen="compare"] .cqa-conv-head { gap: 16px; }
+.cqa-app[data-screen="compare"] .cqa-facts { gap: 8px 24px; }
+.cqa-app[data-screen="compare"] .cqa-fact { min-width: 0; }
+.cqa-app[data-screen="compare"] .cqa-fact dd { overflow-wrap: anywhere; }
+.cqa-app[data-screen="compare"] .cqa-compare-body { gap: 24px; }
+.cqa-app[data-screen="compare"] .cqa-compare-summary {
+  grid-template-columns: minmax(0, 1fr) minmax(180px, .6fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.cqa-app[data-screen="compare"] .cqa-compare-side,
+.cqa-app[data-screen="compare"] .cqa-compare-delta {
+  min-width: 0;
+  gap: 16px;
+  padding: 24px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--cqa-sheet);
+  box-shadow: var(--cqa-shadow-sm);
+}
+.cqa-app[data-screen="compare"] .cqa-compare-side-label { font-size: 13px; line-height: 20px; font-weight: 400; }
+.cqa-app[data-screen="compare"] .cqa-compare-version { font-size: 20px; line-height: 28px; font-weight: 400; }
+.cqa-app[data-screen="compare"] .cqa-total-figure { flex-wrap: wrap; gap: 8px 12px; }
+.cqa-app[data-screen="compare"] .cqa-compare-total { font-size: 40px; line-height: 48px; font-weight: 700; }
+.cqa-app[data-screen="compare"] .cqa-compare-meta { gap: 8px 12px; line-height: 20px; }
+.cqa-app[data-screen="compare"] .cqa-compare-meta .cqa-badge { white-space: normal; }
+.cqa-app[data-screen="compare"] .cqa-compare-delta-value { font-size: 32px; line-height: 40px; font-weight: 700; }
+.cqa-app[data-screen="compare"] .cqa-compare-note { max-width: 100ch; line-height: 21px; }
+.cqa-app[data-screen="compare"] .cqa-table-wrap {
+  padding: 24px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--cqa-sheet);
+  box-shadow: var(--cqa-shadow-sm);
+}
+.cqa-app[data-screen="compare"] .cqa-compare-table { min-width: 760px; table-layout: fixed; }
+.cqa-app[data-screen="compare"] .cqa-table-caption {
+  padding: 0 0 20px;
+  color: var(--cqa-ink-2);
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+}
+.cqa-app[data-screen="compare"] .cqa-compare-table th,
+.cqa-app[data-screen="compare"] .cqa-compare-table td { padding: 16px 12px; }
+.cqa-app[data-screen="compare"] .cqa-compare-table thead th {
+  background: var(--cqa-sheet);
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
+  white-space: normal;
+}
+.cqa-app[data-screen="compare"] .cqa-compare-table thead th:first-child { width: 30%; }
+.cqa-app[data-screen="compare"] .cqa-compare-table thead th:nth-child(2) { width: 20%; }
+.cqa-app[data-screen="compare"] .cqa-compare-table thead th:nth-child(3),
+.cqa-app[data-screen="compare"] .cqa-compare-table thead th:nth-child(4) { width: 17%; }
+.cqa-app[data-screen="compare"] .cqa-compare-table thead th:last-child { width: 16%; }
+.cqa-app[data-screen="compare"] .cqa-compare-table tbody th { font-weight: 400; }
+.cqa-app[data-screen="compare"] .cqa-compare-name { font-weight: 400; overflow-wrap: anywhere; }
+.cqa-app[data-screen="compare"] .cqa-compare-id { display: block; margin-top: 8px; overflow-wrap: anywhere; }
+.cqa-app[data-screen="compare"] .cqa-compare-answer { font-weight: 400; overflow-wrap: anywhere; }
+.cqa-app[data-screen="compare"] .cqa-compare-answer.is-changed { font-weight: 700; }
+.cqa-app[data-screen="compare"] .cqa-compare-table .cqa-badge { white-space: normal; }
+
+@media (max-width: 1280px) {
+  /* A wrapped save toolbar must not cover fields near the bottom of the viewport. */
+  .cqa-app[data-screen="checklist"] .cqa-savebar { position: static; }
+}
+@media (max-width: 1100px) {
+  .cqa-app[data-screen="checklist"] .cqa-ed-grid { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app[data-screen="checklist"] .cqa-ed-aside { position: static; }
+}
+@media (max-width: 1000px) {
+  .cqa-app[data-screen="checklist"] .cqa-ed-head { grid-template-columns: 24px minmax(0, 1fr); }
+  .cqa-app[data-screen="checklist"] .cqa-ed-actions {
+    grid-column: 2;
+    grid-row: auto;
+    justify-content: flex-start;
+    max-width: none;
+  }
+  .cqa-app[data-screen="compare"] .cqa-compare-summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cqa-app[data-screen="compare"] .cqa-compare-side:last-child { grid-column: 2; grid-row: 1; }
+  .cqa-app[data-screen="compare"] .cqa-compare-delta { grid-column: 1 / -1; }
+}
+@media (max-width: 900px) {
+  .cqa-app[data-screen="checklist"] .cqa-ed-option { grid-template-columns: 112px minmax(0, 1fr); }
+  .cqa-app[data-screen="checklist"] .cqa-ed-option--scale { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cqa-app[data-screen="checklist"] .cqa-ed-option > :nth-child(3) { grid-column: 1 / -1; }
+  .cqa-app[data-screen="checklist"] .cqa-ed-option-remove { align-self: end; justify-self: end; }
+}
+@media (max-width: 640px) {
+  .cqa-app[data-screen="checklist"] .cqa-card-head > .cqa-actions { width: 100%; }
+  .cqa-app[data-screen="checklist"] .cqa-card-head .cqa-button { max-width: 100%; white-space: normal; }
+  .cqa-app[data-screen="checklist"] .cqa-card-head .cqa-button--ghost { padding-inline: 8px; font-size: 14px; }
+  .cqa-app[data-screen="checklist"] .cqa-ed-head { gap: 8px 12px; padding: 24px 0; }
+  .cqa-app[data-screen="checklist"] .cqa-ed-actions { grid-column: 1 / -1; }
+  .cqa-app[data-screen="checklist"] .cqa-ed-body { padding-left: 0; }
+  .cqa-app[data-screen="checklist"] .cqa-ed-fields { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app[data-screen="checklist"] .cqa-savebar { padding: 24px; }
+  .cqa-app[data-screen="checklist"] .cqa-savebar-info { flex-basis: 100%; }
+  .cqa-app[data-screen="checklist"] .cqa-savebar > .cqa-actions { width: 100%; margin-left: 0; }
+  .cqa-app[data-screen="checklist"] .cqa-savebar .cqa-button { width: 100%; }
+  .cqa-app[data-screen="checklist"] .cqa-saved .cqa-button { max-width: 100%; white-space: normal; }
+  .cqa-app[data-screen="compare"] .cqa-compare-summary { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .cqa-app[data-screen="compare"] .cqa-compare-side:last-child,
+  .cqa-app[data-screen="compare"] .cqa-compare-delta { grid-column: auto; grid-row: auto; }
+  .cqa-app[data-screen="compare"] .cqa-compare-side,
+  .cqa-app[data-screen="compare"] .cqa-compare-delta { padding: 24px; }
+  .cqa-app[data-screen="compare"] .cqa-table-wrap { padding: 24px 12px; }
+}

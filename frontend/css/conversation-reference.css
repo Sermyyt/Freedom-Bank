@@ -1,0 +1,194 @@
+/* Conversation workspace in the shared bank-reference theme.
+   Layout and form overrides only: phase colors, warnings, evidence markers and
+   evaluation values continue to use the existing semantic styles and data. */
+
+.cqa-app[data-screen="conversation"] .cqa-conv { gap: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-conv-head { gap: 16px; }
+.cqa-app[data-screen="conversation"] .cqa-conv-title {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.cqa-app[data-screen="conversation"] .cqa-back { font-size: 14px; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-facts { gap: 8px 24px; }
+.cqa-app[data-screen="conversation"] .cqa-fact { min-width: 0; flex-wrap: wrap; }
+.cqa-app[data-screen="conversation"] .cqa-fact dd { min-width: 0; overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-conv-notices { gap: 12px; }
+
+/* Keep the existing two independently scrollable panes on wide screens. */
+.cqa-app[data-screen="conversation"] .cqa-conv-grid { gap: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-pane {
+  top: calc(var(--cqa-top-offset) + 24px);
+  max-height: calc(100vh - var(--cqa-top-offset) - 48px);
+  border: 0;
+  border-radius: 20px;
+  background: var(--cqa-sheet);
+  box-shadow: none;
+}
+.cqa-app[data-screen="conversation"] .cqa-pane-head {
+  gap: 12px 16px;
+  padding: 24px;
+  border-bottom: 1px solid var(--cqa-rule);
+  background: var(--cqa-sheet);
+}
+.cqa-app[data-screen="conversation"] .cqa-pane-head h2 {
+  min-width: 0;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+}
+.cqa-app[data-screen="conversation"] .cqa-legend { flex-basis: 100%; gap: 8px 16px; line-height: 18px; }
+.cqa-app[data-screen="conversation"] .cqa-audio-box { gap: 8px; padding: 16px 24px; background: transparent; }
+.cqa-app[data-screen="conversation"] .cqa-audio { min-width: 0; }
+.cqa-app[data-screen="conversation"] .cqa-transcript { padding-block: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-transcript--nested { padding: 0; }
+.cqa-app[data-screen="conversation"] .cqa-msg {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 24px;
+  scroll-margin-block: 160px 24px;
+}
+.cqa-app[data-screen="conversation"] .cqa-msg--event { padding-block: 8px; }
+.cqa-app[data-screen="conversation"] .cqa-msg-text { font-size: 16px; line-height: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-msg-role { font-size: 14px; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-phase-caption { padding: 12px 24px 4px 100px; }
+.cqa-app[data-screen="conversation"] .cqa-seek {
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 20px;
+}
+.cqa-app[data-screen="conversation"] .cqa-pick-hint { padding: 12px; border-radius: 12px; line-height: 20px; }
+
+/* The score belongs to the white pane, without a second colored card. */
+.cqa-app[data-screen="conversation"] .cqa-evaluate { padding-inline: 24px; gap: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-evaluate:has(> :not([hidden])) { padding-top: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-job { padding: 16px; border-radius: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-score-body { gap: 24px; padding: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-eval-meta { gap: 8px 16px; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-total {
+  gap: 8px;
+  padding: 0 0 24px;
+  border: 0;
+  border-bottom: 1px solid var(--cqa-rule);
+  border-radius: 0;
+  background: transparent;
+}
+.cqa-app[data-screen="conversation"] .cqa-total-figure { flex-wrap: wrap; gap: 8px 12px; }
+.cqa-app[data-screen="conversation"] .cqa-total-value { font-weight: 700; letter-spacing: 0; }
+.cqa-app[data-screen="conversation"] .cqa-total-reason,
+.cqa-app[data-screen="conversation"] .cqa-total-change { overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-composition { margin-top: 8px; }
+
+/* This table has no overflow wrapper: let headings and section names wrap. */
+.cqa-app[data-screen="conversation"] .cqa-sections { table-layout: fixed; }
+.cqa-app[data-screen="conversation"] .cqa-sections th,
+.cqa-app[data-screen="conversation"] .cqa-sections td { padding: 12px 8px; overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-sections thead th { white-space: normal; background: transparent; font-weight: 400; line-height: 18px; }
+.cqa-app[data-screen="conversation"] .cqa-sections th:first-child { width: 40%; padding-left: 0; }
+.cqa-app[data-screen="conversation"] .cqa-sections th:nth-child(2) { width: 35%; }
+.cqa-app[data-screen="conversation"] .cqa-sections th:last-child,
+.cqa-app[data-screen="conversation"] .cqa-sections td:last-child { padding-right: 0; }
+.cqa-app[data-screen="conversation"] .cqa-table-caption { padding-bottom: 12px; font-size: 18px; line-height: 24px; }
+
+/* Criteria stay as a list with separators; verdict and gross-error colors remain. */
+.cqa-app[data-screen="conversation"] .cqa-criteria { gap: 16px; }
+.cqa-app[data-screen="conversation"] .cqa-criteria h3,
+.cqa-app[data-screen="conversation"] .cqa-past h3 { font-size: 24px; line-height: 32px; font-weight: 700; }
+.cqa-app[data-screen="conversation"] .cqa-criteria-section { padding: 16px 0; border-bottom-color: var(--cqa-rule); font-size: 16px; line-height: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-criterion { gap: 12px; padding-block: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-criterion.is-reviewing { background: transparent; }
+.cqa-app[data-screen="conversation"] .cqa-criterion-head { align-items: flex-start; flex-wrap: wrap; gap: 8px 16px; }
+.cqa-app[data-screen="conversation"] .cqa-criterion-name { flex: 1 1 18ch; min-width: 0; overflow-wrap: anywhere; font-size: 16px; line-height: 24px; font-weight: 700; }
+.cqa-app[data-screen="conversation"] .cqa-verdict { max-width: 100%; white-space: normal; overflow-wrap: anywhere; font-size: 16px; line-height: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-verdict-mark { flex-shrink: 0; }
+.cqa-app[data-screen="conversation"] .cqa-criterion-score { gap: 8px 16px; padding: 0; border-radius: 0; background: transparent; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-criterion-rationale,
+.cqa-app[data-screen="conversation"] .cqa-criterion-change,
+.cqa-app[data-screen="conversation"] .cqa-criterion-notes { overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-flags .cqa-criteria-list { border-top-color: var(--cqa-rule); }
+.cqa-app[data-screen="conversation"] .cqa-flags .cqa-criterion--bad { padding-left: 16px; }
+.cqa-app[data-screen="conversation"] .cqa-past { gap: 16px; }
+.cqa-app[data-screen="conversation"] .cqa-past .cqa-table-wrap { min-width: 0; max-width: 100%; }
+
+/* Evidence remains yellow; a selected range keeps its own semantic color. */
+.cqa-app[data-screen="conversation"] .cqa-chip {
+  max-width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.cqa-app[data-screen="conversation"] .cqa-chip--picked { padding: 0; }
+.cqa-app[data-screen="conversation"] .cqa-chip-show,
+.cqa-app[data-screen="conversation"] .cqa-chip-remove { min-height: 42px; }
+.cqa-app[data-screen="conversation"] .cqa-chip-show { min-width: 0; overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-chip-remove { flex-shrink: 0; min-width: 42px; justify-content: center; }
+.cqa-app[data-screen="conversation"] .cqa-chip--picked :focus-visible { outline-offset: -3px; }
+
+/* Review form and appeal history remain attached to their criterion. */
+.cqa-app[data-screen="conversation"] .cqa-appeal-block { gap: 16px; margin-top: 4px; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-open { gap: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-record summary { padding-block: 8px; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-record-body { gap: 12px; margin-block: 8px; }
+.cqa-app[data-screen="conversation"] .cqa-decision {
+  gap: 24px;
+  padding: 24px 0 0;
+  border: 0;
+  border-top: 1px solid var(--cqa-rule);
+  border-radius: 0;
+  background: transparent;
+}
+.cqa-app[data-screen="conversation"] .cqa-decision-head { gap: 8px 16px; }
+.cqa-app[data-screen="conversation"] .cqa-decision-head h4 { font-size: 20px; line-height: 28px; font-weight: 700; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-quote { padding-block: 8px; }
+.cqa-app[data-screen="conversation"] .cqa-fieldset { gap: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-fieldset legend { margin-bottom: 8px; font-size: 14px; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-segmented { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; border-radius: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-segment { min-width: 0; min-height: 42px; justify-content: center; padding: 10px 16px; text-align: center; font-size: 14px; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-segment span { overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-choice { padding: 16px 8px; }
+.cqa-app[data-screen="conversation"] .cqa-choice-main,
+.cqa-app[data-screen="conversation"] .cqa-choice-desc { min-width: 0; overflow-wrap: anywhere; }
+.cqa-app[data-screen="conversation"] .cqa-decision > .cqa-actions { gap: 12px; }
+
+/* The native dialog and its keyboard/focus handling are unchanged. */
+.cqa-app[data-screen="conversation"] .cqa-modal {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  border: 0;
+  border-radius: 20px;
+  overflow: auto;
+  background: var(--cqa-sheet);
+}
+.cqa-app[data-screen="conversation"] .cqa-modal-head { align-items: flex-start; gap: 16px; padding: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-modal-head h2 { min-width: 0; overflow-wrap: anywhere; font-size: 28px; line-height: 34px; }
+.cqa-app[data-screen="conversation"] .cqa-modal-close { flex-shrink: 0; width: 42px; height: 42px; padding: 0; border-radius: 12px; }
+.cqa-app[data-screen="conversation"] .cqa-modal-body { padding: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-form { gap: 24px; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-subject { gap: 12px; padding: 0 0 24px; border: 0; border-bottom: 1px solid var(--cqa-rule); background: transparent; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-criterion { overflow-wrap: anywhere; font-size: 18px; line-height: 24px; font-weight: 700; }
+.cqa-app[data-screen="conversation"] .cqa-appeal-rationale { overflow-wrap: anywhere; line-height: 20px; }
+.cqa-app[data-screen="conversation"] .cqa-modal-actions { gap: 12px; }
+
+@media (max-width: 1100px) {
+  .cqa-app[data-screen="conversation"] .cqa-conv-grid { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app[data-screen="conversation"] .cqa-pane { position: static; max-height: none; overflow: visible; }
+  .cqa-app[data-screen="conversation"] .cqa-transcript-pane { max-height: 70vh; overflow: auto; }
+}
+
+@media (max-width: 640px) {
+  .cqa-app[data-screen="conversation"] .cqa-msg { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; }
+  .cqa-app[data-screen="conversation"] .cqa-phase-caption { padding-left: 80px; }
+  .cqa-app[data-screen="conversation"] .cqa-criterion-name { flex-basis: 100%; }
+  .cqa-app[data-screen="conversation"] .cqa-verdict { text-align: left; }
+  .cqa-app[data-screen="conversation"] .cqa-appeal-record-body div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .cqa-app[data-screen="conversation"] .cqa-decision > .cqa-actions > .cqa-button,
+  .cqa-app[data-screen="conversation"] .cqa-modal-actions > .cqa-button { flex: 1 1 100%; min-width: 0; white-space: normal; }
+}
