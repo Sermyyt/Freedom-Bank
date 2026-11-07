@@ -1,37 +1,48 @@
-/* CQA — все правила только под .cqa-app: без глобальных сбросов, чтобы интерфейс
-   можно было встроить в чужую страницу (HTML-компонент Dynamics 365). */
+/* CQA — рабочее место проверяющего качества разговоров.
+   Все правила только под .cqa-app: без глобальных сбросов, чтобы интерфейс можно было
+   встроить в чужую страницу (HTML-компонент Dynamics 365). Шрифты только системные — работает офлайн.
+
+   Система: бумага и чернила; петроль — цвет действий; маркер — доказательства;
+   фиолетовая штриховка — реплики, которых клиент не слышит. Цифры — Bahnschrift (DIN), текст — Segoe UI. */
 
 .cqa-app {
-  --cqa-bg: #f4f5f7;
-  --cqa-surface: #ffffff;
-  --cqa-surface-2: #f0f2f5;
-  --cqa-border: #d5d9e0;
-  --cqa-border-strong: #b8bfca;
-  --cqa-text: #1c2230;
-  --cqa-muted: #5a6373;
-  --cqa-accent: #1f5fbf;
-  --cqa-accent-hover: #174c99;
-  --cqa-accent-soft: #e5eefb;
-  --cqa-good: #18733a;
-  --cqa-good-soft: #e2f3e7;
-  --cqa-warn: #865600;
-  --cqa-warn-soft: #fff1d1;
-  --cqa-bad: #b3261e;
-  --cqa-bad-soft: #fde7e5;
-  --cqa-demo: #6a3d00;
-  --cqa-demo-soft: #ffe2a8;
-  --cqa-hold: #5b3fb0;
-  --cqa-hold-soft: #f0ebfb;
-  --cqa-highlight: #fff4b8;
-  --cqa-radius: 8px;
-  --cqa-shadow: 0 1px 2px rgba(20, 30, 50, 0.06), 0 1px 3px rgba(20, 30, 50, 0.08);
+  --cqa-paper: #eef1f4;
+  --cqa-sheet: #ffffff;
+  --cqa-sheet-2: #f6f8fa;
+  --cqa-rule: #d4dae2;
+  --cqa-rule-strong: #aab4c1;
+  --cqa-ink: #1a2332;
+  --cqa-ink-2: #4f5b6d;
+  --cqa-petrol: #0f5b6b;
+  --cqa-petrol-dark: #0a4552;
+  --cqa-petrol-wash: #e2eef1;
+  --cqa-yes: #237a3f;
+  --cqa-yes-wash: #e4f2e7;
+  --cqa-no: #b3261e;
+  --cqa-no-wash: #fbe7e4;
+  --cqa-part: #8c5c00;
+  --cqa-part-wash: #fff0cf;
+  --cqa-hold: #6e5a9c;
+  --cqa-hold-wash: #f2eff8;
+  --cqa-marker: #ffe27a;
+  --cqa-demo: #ffd36b;
+  --cqa-demo-2: #ffe08f;
+  --cqa-demo-ink: #4a3300;
+  --cqa-tint-0: #0f5b6b;
+  --cqa-tint-1: #3d8696;
+  --cqa-tint-2: #78afbb;
+  --cqa-tint-3: #aed0d7;
+  --cqa-hatch-unheard: repeating-linear-gradient(135deg, var(--cqa-hold) 0 2px, transparent 2px 5px);
+  --cqa-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --cqa-font-num: Bahnschrift, "DIN Alternate", "DIN 2014", Barlow, "Segoe UI", system-ui, sans-serif;
+  --cqa-top-offset: 96px;
 
   box-sizing: border-box;
   min-height: 100vh;
   margin: 0;
-  background: var(--cqa-bg);
-  color: var(--cqa-text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--cqa-paper);
+  color: var(--cqa-ink);
+  font-family: var(--cqa-font-text);
   font-size: 14px;
   line-height: 1.5;
   text-align: left;
@@ -52,38 +63,47 @@
 .cqa-app h3,
 .cqa-app h4 {
   margin: 0;
-  line-height: 1.25;
+  font-family: var(--cqa-font-num);
   font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.005em;
 }
 
-.cqa-app h1 { font-size: 22px; }
-.cqa-app h2 { font-size: 17px; }
-.cqa-app h3 { font-size: 15px; }
+.cqa-app h1 { font-size: 24px; }
+.cqa-app h2 { font-size: 18px; }
+.cqa-app h3 { font-size: 16px; }
 .cqa-app h4 { font-size: 14px; }
 
 .cqa-app p { margin: 0; }
 
 .cqa-app a {
-  color: var(--cqa-accent);
-  text-decoration: none;
+  color: var(--cqa-petrol);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
-.cqa-app a:hover { text-decoration: underline; }
+.cqa-app a:hover { color: var(--cqa-petrol-dark); }
 
 .cqa-app code {
-  font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+  font-family: Consolas, "Cascadia Mono", ui-monospace, monospace;
   font-size: 12px;
 }
 
 .cqa-app :focus-visible {
-  outline: 2px solid var(--cqa-accent);
+  outline: 2px solid var(--cqa-petrol);
   outline-offset: 2px;
 }
 
-.cqa-app .cqa-muted { color: var(--cqa-muted); }
+.cqa-app .cqa-muted { color: var(--cqa-ink-2); }
 .cqa-app .cqa-small { font-size: 12px; }
 .cqa-app .cqa-strong { font-weight: 600; }
-.cqa-app .cqa-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.cqa-app .cqa-num {
+  font-family: var(--cqa-font-num);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
 
 /* ---------- Шапка ---------- */
 
@@ -96,70 +116,112 @@
 .cqa-app .cqa-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 24px;
-  padding: 10px 24px;
-  background: var(--cqa-surface);
-  border-bottom: 1px solid var(--cqa-border);
+  align-items: stretch;
+  gap: 0 28px;
+  padding: 0 24px;
+  background: var(--cqa-sheet);
+  border-bottom: 1px solid var(--cqa-rule);
 }
 
 .cqa-app .cqa-brand {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
+  padding: 14px 0 12px;
 }
 
-.cqa-app .cqa-brand strong { font-size: 17px; letter-spacing: 0.04em; }
-.cqa-app .cqa-brand span { color: var(--cqa-muted); }
+.cqa-app .cqa-brand strong {
+  font-family: var(--cqa-font-num);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cqa-petrol);
+}
+
+.cqa-app .cqa-brand span { color: var(--cqa-ink-2); }
 
 .cqa-app .cqa-tabs {
   display: flex;
   flex-wrap: wrap;
+  align-items: stretch;
   gap: 4px;
 }
 
 .cqa-app .cqa-tab {
-  padding: 6px 12px;
-  border-radius: 6px;
-  color: var(--cqa-text);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 3px solid transparent;
+  color: var(--cqa-ink);
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
   font-weight: 500;
-}
-
-.cqa-app .cqa-tab:hover {
-  background: var(--cqa-surface-2);
   text-decoration: none;
 }
 
+.cqa-app .cqa-tab:hover {
+  border-bottom-color: var(--cqa-rule-strong);
+  color: var(--cqa-ink);
+}
+
 .cqa-app .cqa-tab.is-active {
-  background: var(--cqa-accent-soft);
-  color: var(--cqa-accent);
+  border-bottom-color: var(--cqa-petrol);
+  color: var(--cqa-petrol);
 }
 
 .cqa-app .cqa-header-status {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-left: auto;
+  padding: 10px 0;
 }
 
 .cqa-app .cqa-header-version {
-  color: var(--cqa-muted);
+  font-family: var(--cqa-font-num);
   font-weight: 500;
+  color: var(--cqa-ink-2);
 }
 
+.cqa-app .cqa-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cqa-app .cqa-health::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cqa-rule-strong);
+}
+
+.cqa-app .cqa-health--good { color: var(--cqa-yes); }
+.cqa-app .cqa-health--good::before { background: var(--cqa-yes); }
+.cqa-app .cqa-health--warn { color: var(--cqa-part); }
+.cqa-app .cqa-health--warn::before { background: var(--cqa-part); }
+.cqa-app .cqa-health--bad { color: var(--cqa-no); }
+.cqa-app .cqa-health--bad::before { background: var(--cqa-no); }
+.cqa-app .cqa-health--neutral { color: var(--cqa-ink-2); }
+
+/* Демо — лента предупреждения: заметная, но не кричащая. */
 .cqa-app .cqa-demo-banner {
-  padding: 8px 24px;
-  background: var(--cqa-demo-soft);
-  color: var(--cqa-demo);
-  border-bottom: 1px solid #f0c66d;
+  padding: 7px 24px;
+  background: repeating-linear-gradient(-45deg, var(--cqa-demo) 0 14px, var(--cqa-demo-2) 14px 28px);
+  color: var(--cqa-demo-ink);
+  border-bottom: 1px solid #e9b949;
 }
 
-/* ---------- Каркас страницы ---------- */
+/* ---------- Каркас ---------- */
 
 .cqa-app .cqa-main {
-  max-width: 1480px;
+  max-width: 1520px;
   margin: 0 auto;
-  padding: 20px 24px 48px;
+  padding: 20px 24px 56px;
 }
 
 .cqa-app .cqa-page {
@@ -180,10 +242,14 @@
   flex-direction: column;
   gap: 14px;
   padding: 16px 18px;
-  background: var(--cqa-surface);
-  border: 1px solid var(--cqa-border);
-  border-radius: var(--cqa-radius);
-  box-shadow: var(--cqa-shadow);
+  background: var(--cqa-sheet);
+  border: 1px solid var(--cqa-rule);
+  border-radius: 6px;
+}
+
+.cqa-app .cqa-loading {
+  padding: 16px 0;
+  color: var(--cqa-ink-2);
 }
 
 /* ---------- Кнопки и поля ---------- */
@@ -194,49 +260,46 @@
   justify-content: center;
   gap: 6px;
   min-height: 32px;
-  padding: 5px 12px;
-  border: 1px solid var(--cqa-border-strong);
-  border-radius: 6px;
-  background: var(--cqa-surface);
-  color: var(--cqa-text);
+  padding: 5px 14px;
+  border: 1px solid var(--cqa-rule-strong);
+  border-radius: 4px;
+  background: var(--cqa-sheet);
+  color: var(--cqa-ink);
   font: inherit;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.3;
-  cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .cqa-app .cqa-button:hover:not(:disabled) {
-  background: var(--cqa-surface-2);
-  text-decoration: none;
+  border-color: var(--cqa-ink-2);
+  background: var(--cqa-sheet-2);
+  color: var(--cqa-ink);
 }
 
 .cqa-app .cqa-button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .cqa-app .cqa-button--primary {
-  border-color: var(--cqa-accent);
-  background: var(--cqa-accent);
+  border-color: var(--cqa-petrol);
+  background: var(--cqa-petrol);
   color: #ffffff;
 }
 
 .cqa-app .cqa-button--primary:hover:not(:disabled) {
-  background: var(--cqa-accent-hover);
+  border-color: var(--cqa-petrol-dark);
+  background: var(--cqa-petrol-dark);
+  color: #ffffff;
 }
 
 .cqa-app .cqa-button--ghost {
   border-color: transparent;
   background: transparent;
-  color: var(--cqa-accent);
-}
-
-.cqa-app .cqa-button--small {
-  min-height: 24px;
-  padding: 1px 8px;
-  font-size: 12px;
+  color: var(--cqa-petrol);
 }
 
 .cqa-app .cqa-actions {
@@ -254,9 +317,9 @@
 }
 
 .cqa-app .cqa-field label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--cqa-muted);
+  color: var(--cqa-ink);
 }
 
 .cqa-app .cqa-field input,
@@ -265,77 +328,102 @@
   width: 100%;
   min-height: 32px;
   padding: 5px 8px;
-  border: 1px solid var(--cqa-border-strong);
-  border-radius: 6px;
-  background: var(--cqa-surface);
-  color: var(--cqa-text);
+  border: 1px solid var(--cqa-rule-strong);
+  border-radius: 4px;
+  background: var(--cqa-sheet);
+  color: var(--cqa-ink);
   font: inherit;
 }
 
-.cqa-app .cqa-field input[type="file"] {
-  padding: 4px;
-}
+.cqa-app .cqa-field input[type="file"] { padding: 4px; }
 
 .cqa-app .cqa-field input:disabled,
 .cqa-app .cqa-field select:disabled {
-  background: var(--cqa-surface-2);
-  color: var(--cqa-muted);
+  background: var(--cqa-sheet-2);
+  color: var(--cqa-ink-2);
 }
 
 .cqa-app .cqa-field .is-invalid {
-  border-color: var(--cqa-bad);
-  box-shadow: 0 0 0 1px var(--cqa-bad);
+  border-color: var(--cqa-no);
+  box-shadow: 0 0 0 1px var(--cqa-no);
 }
 
 .cqa-app .cqa-field-hint {
-  color: var(--cqa-muted);
+  color: var(--cqa-ink-2);
   font-size: 12px;
 }
 
 .cqa-app .cqa-field-error,
 .cqa-app .cqa-form-error {
-  color: var(--cqa-bad);
-  font-size: 12px;
-  font-weight: 500;
+  color: var(--cqa-no);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-/* ---------- Плашки и сообщения ---------- */
+/* ---------- Метки и сообщения ---------- */
 
-.cqa-app .cqa-badge {
+.cqa-app .cqa-badge,
+.cqa-app .cqa-tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 1px 8px;
+  padding: 0 6px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 3px;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.6;
   white-space: nowrap;
 }
 
-.cqa-app .cqa-badge--neutral { background: var(--cqa-surface-2); color: var(--cqa-muted); border-color: var(--cqa-border); }
-.cqa-app .cqa-badge--good { background: var(--cqa-good-soft); color: var(--cqa-good); }
-.cqa-app .cqa-badge--warn { background: var(--cqa-warn-soft); color: var(--cqa-warn); }
-.cqa-app .cqa-badge--bad { background: var(--cqa-bad-soft); color: var(--cqa-bad); }
-.cqa-app .cqa-badge--demo { background: var(--cqa-demo-soft); color: var(--cqa-demo); }
-.cqa-app .cqa-badge--info { background: var(--cqa-accent-soft); color: var(--cqa-accent); }
-.cqa-app .cqa-badge--hold { background: var(--cqa-hold-soft); color: var(--cqa-hold); }
+.cqa-app .cqa-badge--neutral,
+.cqa-app .cqa-tag--neutral { border-color: var(--cqa-rule); background: var(--cqa-sheet-2); color: var(--cqa-ink-2); }
+.cqa-app .cqa-badge--good,
+.cqa-app .cqa-tag--good { background: var(--cqa-yes-wash); color: var(--cqa-yes); }
+.cqa-app .cqa-badge--warn,
+.cqa-app .cqa-badge--partial,
+.cqa-app .cqa-tag--partial { background: var(--cqa-part-wash); color: var(--cqa-part); }
+.cqa-app .cqa-badge--bad,
+.cqa-app .cqa-tag--bad { background: var(--cqa-no-wash); color: var(--cqa-no); }
+.cqa-app .cqa-badge--info,
+.cqa-app .cqa-tag--info { background: var(--cqa-petrol-wash); color: var(--cqa-petrol); }
+.cqa-app .cqa-badge--demo { border-color: #e9b949; background: var(--cqa-demo-2); color: var(--cqa-demo-ink); }
+.cqa-app .cqa-tag--phase { border-color: var(--cqa-rule); background: var(--cqa-sheet); color: var(--cqa-ink-2); font-weight: 500; }
+
+.cqa-app .cqa-tag--inline { margin-left: 6px; }
 
 .cqa-app .cqa-alert {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 10px 12px;
-  border: 1px solid var(--cqa-border);
-  border-radius: 6px;
-  background: var(--cqa-surface-2);
+  border: 1px solid var(--cqa-rule);
+  border-left-width: 4px;
+  border-radius: 4px;
+  background: var(--cqa-sheet-2);
 }
 
-.cqa-app .cqa-alert--bad { background: var(--cqa-bad-soft); border-color: #f2b8b3; color: var(--cqa-bad); }
-.cqa-app .cqa-alert--warn { background: var(--cqa-warn-soft); border-color: #f0d08a; color: var(--cqa-warn); }
-.cqa-app .cqa-alert--info { background: var(--cqa-accent-soft); border-color: #b9cdef; color: var(--cqa-accent); }
-
 .cqa-app .cqa-alert ul {
-  margin: 4px 0 0;
-  padding-left: 20px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.cqa-app .cqa-alert-title {
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-alert--bad { border-color: #efb4ae; border-left-color: var(--cqa-no); background: var(--cqa-no-wash); color: var(--cqa-no); }
+.cqa-app .cqa-alert--warn { border-color: #efd28f; border-left-color: var(--cqa-part); background: var(--cqa-part-wash); color: var(--cqa-part); }
+.cqa-app .cqa-alert--info { border-color: #b7d3da; border-left-color: var(--cqa-petrol); background: var(--cqa-petrol-wash); color: var(--cqa-ink); }
+
+/* Грубое нарушение — отдельная красная плашка, не смешивается с баллом. */
+.cqa-app .cqa-alert--gross {
+  border-color: var(--cqa-no);
+  border-left-width: 4px;
+  background: var(--cqa-no);
+  color: #ffffff;
 }
 
 .cqa-app .cqa-toasts {
@@ -354,23 +442,23 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--cqa-border);
+  border: 1px solid var(--cqa-rule);
   border-left-width: 4px;
-  border-radius: 6px;
-  background: var(--cqa-surface);
-  box-shadow: 0 4px 12px rgba(20, 30, 50, 0.15);
+  border-radius: 4px;
+  background: var(--cqa-sheet);
+  box-shadow: 0 6px 18px rgba(26, 35, 50, 0.16);
 }
 
-.cqa-app .cqa-toast--error { border-left-color: var(--cqa-bad); }
-.cqa-app .cqa-toast--success { border-left-color: var(--cqa-good); }
-.cqa-app .cqa-toast--info { border-left-color: var(--cqa-accent); }
+.cqa-app .cqa-toast--error { border-left-color: var(--cqa-no); }
+.cqa-app .cqa-toast--success { border-left-color: var(--cqa-yes); }
+.cqa-app .cqa-toast--info { border-left-color: var(--cqa-petrol); }
 
 .cqa-app .cqa-toast-text { flex: 1; }
 
 .cqa-app .cqa-toast-close {
   border: 0;
   background: transparent;
-  color: var(--cqa-muted);
+  color: var(--cqa-ink-2);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -381,20 +469,26 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  padding: 24px;
-  border: 1px dashed var(--cqa-border-strong);
-  border-radius: var(--cqa-radius);
-  background: var(--cqa-surface);
+  padding: 22px;
+  border: 1px dashed var(--cqa-rule-strong);
+  border-radius: 6px;
+  background: var(--cqa-sheet);
 }
 
-.cqa-app .cqa-empty-title { font-weight: 600; }
-.cqa-app .cqa-empty-hint { color: var(--cqa-muted); }
+.cqa-app .cqa-empty-title {
+  font-family: var(--cqa-font-num);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-empty-hint {
+  max-width: 64ch;
+  color: var(--cqa-ink-2);
+}
 
 /* ---------- Сворачиваемый блок ---------- */
 
-.cqa-app details.cqa-card {
-  display: block;
-}
+.cqa-app details.cqa-card { display: block; }
 
 .cqa-app .cqa-collapsible-summary {
   display: flex;
@@ -409,7 +503,7 @@
 
 .cqa-app .cqa-collapsible-summary::before {
   content: "▸";
-  color: var(--cqa-muted);
+  color: var(--cqa-ink-2);
   transition: transform 0.15s;
 }
 
@@ -434,20 +528,21 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px;
-  border: 1px solid var(--cqa-border);
-  border-radius: var(--cqa-radius);
-  background: #fafbfc;
+  padding: 14px 16px;
+  border: 1px solid var(--cqa-rule);
+  border-radius: 4px;
+  background: var(--cqa-sheet-2);
 }
 
 .cqa-app .cqa-import-report {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px;
-  border: 1px solid #b9cdef;
-  border-radius: var(--cqa-radius);
-  background: #f7faff;
+  padding: 14px 16px;
+  border: 1px solid var(--cqa-rule);
+  border-left: 4px solid var(--cqa-petrol);
+  border-radius: 4px;
+  background: var(--cqa-sheet);
 }
 
 .cqa-app .cqa-report-head {
@@ -462,44 +557,58 @@
 .cqa-app .cqa-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0;
   margin: 0;
+  border: 1px solid var(--cqa-rule);
+  border-radius: 4px;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .cqa-app .cqa-stat {
-  min-width: 120px;
-  padding: 8px 12px;
-  border: 1px solid var(--cqa-border);
-  border-radius: 6px;
-  background: var(--cqa-surface);
+  min-width: 112px;
+  padding: 8px 14px;
+  border-right: 1px solid var(--cqa-rule);
 }
 
-.cqa-app .cqa-stat dt { color: var(--cqa-muted); font-size: 12px; }
-.cqa-app .cqa-stat dd { margin: 0; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cqa-app .cqa-stat:last-child { border-right: 0; }
+
+.cqa-app .cqa-stat dt {
+  color: var(--cqa-ink-2);
+  font-size: 12px;
+}
+
+.cqa-app .cqa-stat dd {
+  margin: 0;
+  font-family: var(--cqa-font-num);
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 
 .cqa-app .cqa-issues summary {
   cursor: pointer;
   font-weight: 600;
 }
 
-.cqa-app .cqa-issues--bad summary { color: var(--cqa-bad); }
-.cqa-app .cqa-issues--warn summary { color: var(--cqa-warn); }
+.cqa-app .cqa-issues--bad summary { color: var(--cqa-no); }
+.cqa-app .cqa-issues--warn summary { color: var(--cqa-part); }
 
 .cqa-app .cqa-issues ul {
+  max-height: 260px;
   margin: 6px 0 0;
   padding-left: 20px;
-  max-height: 260px;
   overflow: auto;
 }
 
 .cqa-app .cqa-issue-where { font-weight: 600; }
-.cqa-app .cqa-issue-code { color: var(--cqa-muted); }
+.cqa-app .cqa-issue-code { color: var(--cqa-ink-2); }
 
-/* ---------- Фильтры и таблица ---------- */
+/* ---------- Фильтры, таблицы, страницы ---------- */
 
 .cqa-app .cqa-filters {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
   gap: 10px 12px;
   align-items: end;
 }
@@ -511,49 +620,44 @@
 
 .cqa-app .cqa-list-status {
   min-height: 20px;
-  color: var(--cqa-muted);
+  color: var(--cqa-ink-2);
 }
 
 .cqa-app .cqa-table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--cqa-border);
-  border-radius: 6px;
+  border-top: 2px solid var(--cqa-ink);
   transition: opacity 0.15s;
 }
 
-.cqa-app .cqa-table-wrap.is-loading { opacity: 0.55; }
+.cqa-app .cqa-table-wrap.is-loading,
+.cqa-app .cqa-conv-grid.is-loading { opacity: 0.55; }
 
 .cqa-app .cqa-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
 .cqa-app .cqa-table th,
 .cqa-app .cqa-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--cqa-border);
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--cqa-rule);
   text-align: left;
-  vertical-align: top;
+  vertical-align: baseline;
 }
 
-.cqa-app .cqa-table th {
-  position: sticky;
-  top: 0;
-  background: var(--cqa-surface-2);
-  color: var(--cqa-muted);
-  font-size: 12px;
+.cqa-app .cqa-table thead th {
+  font-family: var(--cqa-font-num);
+  font-size: 13px;
   font-weight: 600;
+  color: var(--cqa-ink-2);
   white-space: nowrap;
 }
 
-.cqa-app .cqa-table th.cqa-num,
-.cqa-app .cqa-table td.cqa-num { text-align: right; }
-
-.cqa-app .cqa-table tbody tr:last-child td { border-bottom: 0; }
+.cqa-app .cqa-table .cqa-num { text-align: right; }
 
 .cqa-app .cqa-row-link { cursor: pointer; }
-.cqa-app .cqa-row-link:hover { background: #f7f9fc; }
+.cqa-app .cqa-row-link:hover { background: var(--cqa-petrol-wash); }
 
 .cqa-app .cqa-pager {
   display: flex;
@@ -563,3 +667,685 @@
 }
 
 .cqa-app .cqa-pager:empty { display: none; }
+
+.cqa-app .cqa-table--compact { font-size: 13px; }
+.cqa-app .cqa-table--compact th,
+.cqa-app .cqa-table--compact td { padding: 6px 8px; }
+.cqa-app .cqa-table--compact tbody tr.is-current { background: var(--cqa-petrol-wash); }
+
+.cqa-app .cqa-table-caption {
+  padding-bottom: 6px;
+  caption-side: top;
+  font-family: var(--cqa-font-num);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* ---------- Карточка разговора ---------- */
+
+.cqa-app .cqa-conv-head {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.cqa-app .cqa-back {
+  justify-self: start;
+  font-size: 13px;
+}
+
+.cqa-app .cqa-conv-title {
+  font-size: 28px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin: 0;
+}
+
+.cqa-app .cqa-fact {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.cqa-app .cqa-fact dt { color: var(--cqa-ink-2); font-size: 13px; }
+.cqa-app .cqa-fact dd { margin: 0; font-family: var(--cqa-font-num); font-size: 15px; font-weight: 500; }
+
+.cqa-app .cqa-conv-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cqa-app .cqa-conv-notices:empty { display: none; }
+
+.cqa-app .cqa-conv-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  transition: opacity 0.15s;
+}
+
+.cqa-app .cqa-pane {
+  position: sticky;
+  top: calc(var(--cqa-top-offset) + 12px);
+  max-height: calc(100vh - var(--cqa-top-offset) - 24px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--cqa-sheet);
+  border: 1px solid var(--cqa-rule);
+  border-radius: 6px;
+}
+
+.cqa-app .cqa-pane-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  background: var(--cqa-sheet);
+  border-bottom: 1px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--cqa-ink-2);
+  font-size: 12px;
+}
+
+.cqa-app .cqa-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cqa-app .cqa-legend-swatch {
+  width: 6px;
+  height: 16px;
+  border-radius: 1px;
+}
+
+.cqa-app .cqa-legend-swatch--heard { background: var(--cqa-petrol); }
+.cqa-app .cqa-legend-swatch--unheard { background: var(--cqa-hatch-unheard); box-shadow: inset 0 0 0 1px var(--cqa-hold); }
+.cqa-app .cqa-legend-swatch--after { background: repeating-linear-gradient(180deg, var(--cqa-rule-strong) 0 3px, transparent 3px 6px); }
+
+.cqa-app .cqa-audio-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cqa-rule);
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-audio { width: 100%; height: 36px; }
+
+/* Переписка: номер и время на полях, слева — шкала слышимости. */
+.cqa-app .cqa-transcript {
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+}
+
+.cqa-app .cqa-transcript--nested { padding: 0; }
+
+.cqa-app .cqa-msg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 12px;
+  padding: 7px 16px 7px 20px;
+  scroll-margin: 72px 0 24px;
+}
+
+.cqa-app .cqa-msg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 5px;
+  background: var(--cqa-petrol);
+}
+
+.cqa-app .cqa-msg--phase-pre_operator::before { background: var(--cqa-tint-2); }
+.cqa-app .cqa-msg.is-unheard::before { background: var(--cqa-hatch-unheard); }
+/* После завершения клиента уже нет на линии: своя пунктирная полоса, не штриховка удержания. */
+.cqa-app .cqa-msg.cqa-msg--phase-after_end::before { background: repeating-linear-gradient(180deg, var(--cqa-rule-strong) 0 3px, transparent 3px 6px); }
+.cqa-app .cqa-msg.cqa-msg--phase-other::before { background: var(--cqa-rule-strong); }
+
+.cqa-app .cqa-msg-gutter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  padding-top: 1px;
+  font-family: var(--cqa-font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.cqa-app .cqa-msg-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cqa-ink);
+}
+
+.cqa-app .cqa-msg-time {
+  font-size: 12px;
+  color: var(--cqa-ink-2);
+}
+
+.cqa-app .cqa-msg-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cqa-app .cqa-msg-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.cqa-app .cqa-msg-role {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cqa-app .cqa-msg--client .cqa-msg-role { color: var(--cqa-ink); }
+.cqa-app .cqa-msg--operator .cqa-msg-role { color: var(--cqa-petrol); }
+.cqa-app .cqa-msg--bot .cqa-msg-role,
+.cqa-app .cqa-msg--other .cqa-msg-role { color: var(--cqa-ink-2); }
+
+.cqa-app .cqa-msg-text {
+  max-width: 72ch;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-msg-text.is-empty { color: var(--cqa-ink-2); font-style: italic; }
+
+.cqa-app .cqa-msg--client .cqa-msg-text { color: var(--cqa-ink); }
+
+.cqa-app .cqa-msg-text-inner {
+  padding: 1px 0;
+  background-image: linear-gradient(90deg, var(--cqa-marker) 0 50%, transparent 50% 100%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Системные события — компактная строка. */
+.cqa-app .cqa-msg--event { padding-top: 3px; padding-bottom: 3px; }
+.cqa-app .cqa-msg--event .cqa-msg-body {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+
+.cqa-app .cqa-msg-event {
+  font-family: var(--cqa-font-num);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cqa-ink-2);
+}
+
+.cqa-app .cqa-msg-original {
+  color: var(--cqa-ink-2);
+  font-size: 12px;
+}
+
+/* Реплики, которых клиент не слышит, — приглушены и собраны в блок. */
+.cqa-app .cqa-msg.is-unheard .cqa-msg-text,
+.cqa-app .cqa-msg.is-unheard .cqa-msg-role { color: var(--cqa-ink-2); }
+
+.cqa-app .cqa-phase-block {
+  margin: 6px 0;
+  background: var(--cqa-hold-wash);
+  border-top: 1px solid #d8cfea;
+  border-bottom: 1px solid #d8cfea;
+}
+
+.cqa-app .cqa-phase-caption {
+  position: relative;
+  padding: 6px 16px 2px 108px;
+  color: var(--cqa-hold);
+  font-family: var(--cqa-font-num);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-phase-caption::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 5px;
+  background: var(--cqa-hatch-unheard);
+}
+
+/* Доказательство: реплика отмечается маркером; диапазон — скобкой на полях. */
+.cqa-app .cqa-msg.is-target {
+  background: #fff9dc;
+  outline: none;
+}
+
+.cqa-app .cqa-msg.is-target .cqa-msg-text-inner {
+  animation: cqa-marker 0.55s ease-out forwards;
+}
+
+.cqa-app .cqa-msg.is-target.cqa-msg--event,
+.cqa-app .cqa-msg.is-target:focus-visible { box-shadow: inset 0 0 0 2px var(--cqa-marker); }
+
+.cqa-app .cqa-msg.in-range { background: var(--cqa-petrol-wash); }
+
+.cqa-app .cqa-msg.in-range .cqa-msg-gutter { box-shadow: 3px 0 0 var(--cqa-petrol); padding-right: 6px; }
+
+@keyframes cqa-marker {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+
+.cqa-app .cqa-seek {
+  padding: 0 6px;
+  border: 1px solid var(--cqa-rule-strong);
+  border-radius: 3px;
+  background: var(--cqa-sheet);
+  color: var(--cqa-petrol);
+  font-family: var(--cqa-font-num);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ---------- Оценка ---------- */
+
+.cqa-app .cqa-evaluate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.cqa-app .cqa-evaluate:has(> :not([hidden])) { padding-top: 12px; }
+
+.cqa-app .cqa-job {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--cqa-rule);
+  border-radius: 4px;
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-job-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.cqa-app .cqa-job-label {
+  font-family: var(--cqa-font-num);
+  font-weight: 600;
+}
+
+.cqa-app .cqa-job[data-tone="good"] .cqa-job-label { color: var(--cqa-yes); }
+.cqa-app .cqa-job[data-tone="partial"] .cqa-job-label { color: var(--cqa-part); }
+.cqa-app .cqa-job[data-tone="bad"] .cqa-job-label { color: var(--cqa-no); }
+
+.cqa-app .cqa-job-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  color: var(--cqa-ink-2);
+  font-size: 12px;
+}
+
+.cqa-app .cqa-progress {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--cqa-rule);
+}
+
+.cqa-app .cqa-progress-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--cqa-petrol);
+  transition: width 0.3s ease-out;
+}
+
+.cqa-app .cqa-job-errors {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--cqa-no);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-score-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 14px 16px 20px;
+}
+
+.cqa-app .cqa-eval-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-total {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cqa-app .cqa-total-label {
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-total-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--cqa-font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.cqa-app .cqa-total-value {
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.cqa-app .cqa-total-of {
+  color: var(--cqa-ink-2);
+  font-size: 18px;
+}
+
+.cqa-app .cqa-total-reason { color: var(--cqa-ink-2); }
+
+.cqa-app .cqa-total-change {
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+}
+
+/* Из чего сложился итог: вклад секций на шкале 0–100, остаток — недобранные баллы. */
+.cqa-app .cqa-composition {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: repeating-linear-gradient(135deg, var(--cqa-rule) 0 1px, var(--cqa-sheet-2) 1px 6px);
+  transform-origin: left center;
+  animation: cqa-grow 0.6s ease-out both;
+}
+
+@keyframes cqa-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.cqa-app .cqa-composition-part { display: block; height: 100%; }
+.cqa-app .cqa-tint-0 { background: var(--cqa-tint-0); }
+.cqa-app .cqa-tint-1 { background: var(--cqa-tint-1); }
+.cqa-app .cqa-tint-2 { background: var(--cqa-tint-2); }
+.cqa-app .cqa-tint-3 { background: var(--cqa-tint-3); }
+
+.cqa-app .cqa-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 2px;
+  vertical-align: baseline;
+}
+
+.cqa-app .cqa-swatch--empty { border: 1px solid var(--cqa-rule-strong); }
+
+.cqa-app .cqa-sections tbody th {
+  font-weight: 500;
+}
+
+/* Критерии — разлинованная форма, а не стопка карточек. */
+.cqa-app .cqa-criteria {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cqa-app .cqa-criteria-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.cqa-app .cqa-criteria-section {
+  padding: 6px 0;
+  border-bottom: 2px solid var(--cqa-ink);
+  color: var(--cqa-ink);
+  font-size: 14px;
+}
+
+.cqa-app .cqa-criteria-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cqa-app .cqa-criterion {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-criterion-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cqa-app .cqa-criterion-name {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.cqa-app .cqa-verdict {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cqa-app .cqa-verdict-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.cqa-app .cqa-verdict--good { color: var(--cqa-yes); }
+.cqa-app .cqa-verdict--good .cqa-verdict-mark { background: var(--cqa-yes); color: #ffffff; }
+.cqa-app .cqa-verdict--bad { color: var(--cqa-no); }
+.cqa-app .cqa-verdict--bad .cqa-verdict-mark { background: var(--cqa-no); color: #ffffff; }
+.cqa-app .cqa-verdict--partial { color: var(--cqa-part); }
+.cqa-app .cqa-verdict--partial .cqa-verdict-mark { background: var(--cqa-part-wash); color: var(--cqa-part); box-shadow: inset 0 0 0 1px var(--cqa-part); }
+.cqa-app .cqa-verdict--na { color: var(--cqa-ink-2); }
+.cqa-app .cqa-verdict--na .cqa-verdict-mark { box-shadow: inset 0 0 0 1px var(--cqa-rule-strong); }
+.cqa-app .cqa-verdict--invalid { color: var(--cqa-part); }
+.cqa-app .cqa-verdict--invalid .cqa-verdict-mark { box-shadow: inset 0 0 0 1px var(--cqa-part); }
+
+.cqa-app .cqa-criterion-score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-criterion-score strong {
+  font-family: var(--cqa-font-num);
+  font-weight: 600;
+  color: var(--cqa-ink);
+}
+
+.cqa-app .cqa-criterion-change {
+  padding: 3px 8px;
+  border-left: 3px solid var(--cqa-part);
+  background: var(--cqa-part-wash);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-criterion-rationale {
+  max-width: 76ch;
+  color: var(--cqa-ink);
+}
+
+.cqa-app .cqa-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.cqa-app .cqa-note-label {
+  color: var(--cqa-ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 1px 9px;
+  border: 1px solid #e8c440;
+  border-radius: 3px;
+  background: #fff6c8;
+  color: var(--cqa-ink);
+  font-family: var(--cqa-font-num);
+  font-size: 13.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-chip:hover { background: var(--cqa-marker); }
+
+.cqa-app .cqa-chip--range {
+  border-color: #9fc3cc;
+  background: var(--cqa-petrol-wash);
+}
+
+.cqa-app .cqa-chip--range:hover { background: #cfe4e9; }
+
+.cqa-app .cqa-chip-phase {
+  padding-left: 6px;
+  border-left: 1px solid #e0c35a;
+  color: var(--cqa-hold);
+  font-family: var(--cqa-font-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-expected { color: var(--cqa-ink); }
+
+.cqa-app .cqa-criterion-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.cqa-app .cqa-note--warn .cqa-note-label { color: var(--cqa-part); }
+
+.cqa-app .cqa-flags .cqa-criteria-list { border-top: 2px solid var(--cqa-ink); }
+.cqa-app .cqa-flags .cqa-criterion--bad { padding-left: 10px; border-left: 4px solid var(--cqa-no); }
+
+.cqa-app .cqa-past {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cqa-app .cqa-row-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+/* ---------- Узкие экраны и уменьшенное движение ---------- */
+
+@media (max-width: 1100px) {
+  .cqa-app .cqa-conv-grid { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app .cqa-pane { position: static; max-height: none; overflow: visible; }
+  .cqa-app .cqa-transcript-pane { max-height: 70vh; overflow: auto; }
+}
+
+@media (max-width: 640px) {
+  .cqa-app .cqa-header { padding: 0 12px; }
+  .cqa-app .cqa-main { padding: 14px 12px 40px; }
+  .cqa-app .cqa-msg { grid-template-columns: 52px minmax(0, 1fr); gap: 8px; }
+  .cqa-app .cqa-phase-caption { padding-left: 80px; }
+  .cqa-app .cqa-total-value { font-size: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cqa-app *,
+  .cqa-app *::before,
+  .cqa-app *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

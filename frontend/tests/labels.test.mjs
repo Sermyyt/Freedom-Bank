@@ -33,7 +33,7 @@ test('флаги сообщений', () => {
 test('место проблемы импорта: запись с единицы, реплика как есть', () => {
   assert.equal(
     describeIssueLocation({ record_index: 4, conversation_id: 'syn-1', message_id: 8 }),
-    'Запись №5 · syn-1 · реплика №8',
+    'Запись №5, syn-1, реплика №8',
   );
   assert.equal(describeIssueLocation({ record_index: 0, conversation_id: null, message_id: null }), 'Запись №1');
   assert.equal(describeIssueLocation({ record_index: null, conversation_id: null, message_id: null }), '');

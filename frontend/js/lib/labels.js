@@ -86,11 +86,11 @@ export const JOB_STATUS_LABELS = {
   failed: 'Ошибка',
 };
 
-// «Запись №3 · demo-ru · реплика №5»: record_index с нуля, message_id с единицы.
+// «Запись №3, demo-ru, реплика №5»: record_index с нуля, message_id с единицы.
 export function describeIssueLocation(issue) {
   const parts = [];
   if (issue && Number.isInteger(issue.record_index)) parts.push(`Запись №${issue.record_index + 1}`);
   if (issue && typeof issue.conversation_id === 'string' && issue.conversation_id) parts.push(issue.conversation_id);
   if (issue && Number.isInteger(issue.message_id)) parts.push(`реплика №${issue.message_id}`);
-  return parts.join(' · ');
+  return parts.join(', ');
 }

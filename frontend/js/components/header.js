@@ -32,7 +32,7 @@ export function createHeader() {
     h('a', { class: 'cqa-tab', href: `#/${tab.route}`, dataset: { route: tab.route }, text: tab.label }),
   );
   const version = h('span', { class: 'cqa-header-version' });
-  const health = h('span', { class: 'cqa-badge' });
+  const health = h('span', { class: 'cqa-health' });
   const demo = h(
     'div',
     { class: 'cqa-demo-banner', role: 'status', hidden: true },
@@ -55,7 +55,7 @@ export function createHeader() {
 
   function render(current) {
     const view = healthView(current);
-    health.className = `cqa-badge cqa-badge--${view.tone}`;
+    health.className = `cqa-health cqa-health--${view.tone}`;
     health.textContent = view.text;
     health.title = view.title;
 
@@ -85,7 +85,14 @@ export function createHeader() {
     render(state);
   }
 
+  // Высота закреплённой шапки (с плашкой демо) — для «липких» колонок карточки разговора.
+  function trackHeight(root) {
+    const apply = () => root.style.setProperty('--cqa-top-offset', `${el.offsetHeight}px`);
+    apply();
+    if (typeof ResizeObserver === 'function') new ResizeObserver(apply).observe(el);
+  }
+
   subscribe(render);
   render(state);
-  return { el, setActive };
+  return { el, setActive, trackHeight };
 }
