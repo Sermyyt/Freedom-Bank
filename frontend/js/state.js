@@ -34,6 +34,8 @@ export const state = {
   // Последний открытый разговор: после новой версии чек-листа его предлагают переоценить и сравнить.
   // Только ID и внешний ID — без транскрипта и аудио.
   lastConversation: null,
+  // Задание «Оценить всю группу» живёт в памяти вкладки: вернувшись к списку, человек видит его ход.
+  groupJob: null,
   pageSize: normalizePageSize(readPref('pageSize', DEFAULT_PAGE_SIZE)),
   // null — человек ещё не сворачивал и не разворачивал блок импорта.
   importOpen: (() => {
@@ -134,4 +136,8 @@ export function setLastAppealsHash(hash) {
 
 export function setLastConversation(conversation) {
   state.lastConversation = conversation;
+}
+
+export function setGroupJob(groupJob) {
+  state.groupJob = groupJob;
 }

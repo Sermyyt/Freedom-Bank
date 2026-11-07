@@ -3,9 +3,12 @@ import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { field } from '../components/field.js';
+import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { clear, debounce, h } from '../dom.js';
 import { fieldErrors, isAbortError } from '../lib/errors.js';
+import { buildGroupEvaluationRequest, groupJobSummary } from '../lib/group-evaluation.js';
+import { isTerminalJob, pollJob } from '../lib/poll.js';
 import {
   EVALUATION_STATUSES,
   PAGE_SIZES,
@@ -25,6 +28,7 @@ import {
 import { buildHash } from '../lib/route.js';
 import {
   rememberGroup,
+  setGroupJob,
   setImportOpen,
   setLastListHash,
   setPageSize,
@@ -167,6 +171,27 @@ export function mount(container, route) {
     h('div', { class: 'cqa-filters-actions' }, resetButton),
   );
 
+  // ---------- Оценка всей группы ----------
+  // Ошибки элементов задания подписываются внешним ID разговора, если строка уже встречалась в таблице.
+  const revisionLabels = new Map();
+  const groupProgress = createJobProgress({ itemLabel: (revisionId) => revisionLabels.get(revisionId) || null });
+  const groupTitle = h('p', { class: 'cqa-group-eval-title' });
+  const groupHint = h('p', { class: 'cqa-field-hint' });
+  const groupError = h('div', { class: 'cqa-form-error', role: 'alert', hidden: true });
+  const groupButton = h('button', { type: 'button', class: 'cqa-button cqa-button--primary', text: 'Оценить всю группу', on: { click: evaluateGroup } });
+  const groupDismiss = h('button', { type: 'button', class: 'cqa-button cqa-button--ghost cqa-button--small', text: 'Скрыть итог', hidden: true, on: { click: dismissGroupJob } });
+  const groupBox = h(
+    'section',
+    { class: 'cqa-group-eval', 'aria-label': 'Оценка всей группы' },
+    h('div', { class: 'cqa-group-eval-head' },
+      h('div', { class: 'cqa-group-eval-text' }, groupTitle, groupHint),
+      h('div', { class: 'cqa-actions' }, groupDismiss, groupButton)),
+    groupError,
+    groupProgress.el,
+  );
+  let groupStarting = false;
+  let groupPoll = null;
+
   // ---------- Таблица ----------
   const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite' });
   const listError = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
@@ -192,6 +217,7 @@ export function mount(container, route) {
         { class: 'cqa-card', 'aria-labelledby': 'cqa-list-title' },
         h('h2', { id: 'cqa-list-title', text: 'Список разговоров' }),
         filtersForm,
+        groupBox,
         listStatus,
         listError,
         tableWrap,
@@ -403,9 +429,109 @@ export function mount(container, route) {
     appealsFilter.control.value = query.has_open_appeals || '';
     pageSizeFilter.control.value = String(query.limit);
     resetButton.disabled = !hasActiveFilters(query);
+    syncGroupEval();
     groupOptions.replaceChildren(
       ...[...new Set([...state.recentGroups, ...seenGroups])].map((group) => h('option', { value: group })),
     );
+  }
+
+  // ---------- Оценка всей группы: действия ----------
+  function groupJobRunning() {
+    const current = state.groupJob;
+    return Boolean(current && !isTerminalJob(current.job) && !current.pollFailed);
+  }
+
+  function syncGroupEval() {
+    const current = state.groupJob;
+    const running = groupJobRunning();
+    const groupId = query.group_id || '';
+    clear(groupTitle);
+    if (running) groupTitle.append('Идёт оценка группы ', h('strong', { text: current.groupId }));
+    else if (groupId) groupTitle.append('Группа ', h('strong', { text: groupId }));
+    else groupTitle.append('Оценка всей группы');
+    if (running) {
+      groupHint.textContent = 'Можно открывать разговоры: ход задания сохранится, таблица обновится по окончании.';
+    } else if (!groupId) {
+      groupHint.textContent = 'Выберите группу в фильтре «Группа» или импортируйте группу: кнопка оценит все её разговоры.';
+    } else if (state.health && state.health.evaluation_ready === false) {
+      groupHint.textContent = 'Сервер сообщает, что оценка сейчас недоступна. Нажмите «Оценить всю группу», чтобы увидеть причину.';
+    } else {
+      groupHint.textContent = 'Сервер оценит текущие ревизии всех разговоров группы по активному чек-листу, независимо от остальных фильтров.';
+    }
+    groupButton.disabled = running || groupStarting || !groupId;
+    groupButton.textContent = running || groupStarting ? 'Оценка группы…' : 'Оценить всю группу';
+    groupDismiss.hidden = !(current && isTerminalJob(current.job));
+  }
+
+  async function evaluateGroup() {
+    const groupId = query.group_id;
+    if (!groupId || groupStarting || groupJobRunning()) return;
+    groupStarting = true;
+    groupError.hidden = true;
+    syncGroupEval();
+    let job;
+    try {
+      // POST не повторяется автоматически: повтор создал бы второе задание.
+      job = await api.startEvaluation(buildGroupEvaluationRequest(groupId));
+    } catch (error) {
+      groupStarting = false;
+      groupError.textContent = error.message;
+      groupError.hidden = false;
+      showError(error);
+      syncGroupEval();
+      return;
+    }
+    groupStarting = false;
+    setGroupJob({ groupId, job, pollFailed: false });
+    trackGroupJob();
+  }
+
+  async function trackGroupJob() {
+    const current = state.groupJob;
+    if (!current) return;
+    current.pollFailed = false;
+    groupError.hidden = true;
+    groupProgress.update(current.job);
+    if (current.job && current.job.is_demo === true) setViewDemo(true);
+    syncGroupEval();
+    if (isTerminalJob(current.job) || groupPoll) return;
+    groupPoll = new AbortController();
+    try {
+      const finished = await pollJob({
+        job: current.job,
+        getJob: (id, signal) => api.getJob(id, { signal }),
+        signal: groupPoll.signal,
+        onUpdate: (update) => {
+          current.job = update;
+          groupProgress.update(update);
+          if (update.is_demo === true) setViewDemo(true);
+        },
+      });
+      current.job = finished;
+      groupPoll = null;
+      syncGroupEval();
+      showToast(groupJobSummary(current.groupId, finished), { tone: finished.status === 'completed' ? 'success' : 'error', timeout: 10000 });
+      load();
+    } catch (error) {
+      groupPoll = null;
+      if (isAbortError(error)) return;
+      // Задание на сервере продолжается: даём проверить его ход снова, а не запускать второе.
+      current.pollFailed = true;
+      clear(groupError).append(
+        h('span', { text: `Не удалось узнать ход задания: ${error.message} ` }),
+        h('button', { type: 'button', class: 'cqa-button cqa-button--small', text: 'Проверить снова', on: { click: trackGroupJob } }),
+      );
+      groupError.hidden = false;
+      showError(error);
+      syncGroupEval();
+    }
+  }
+
+  function dismissGroupJob() {
+    setGroupJob(null);
+    groupProgress.hide();
+    groupError.hidden = true;
+    syncGroupEval();
   }
 
   // ---------- Таблица: загрузка и вывод ----------
@@ -495,9 +621,11 @@ export function mount(container, route) {
       seenLanguages.add(item.language);
       seenChannels.add(item.channel);
       seenGroups.add(item.ref.group_id);
+      revisionLabels.set(item.ref.revision_id, item.ref.conversation_id);
     }
     syncInputs();
-    setViewDemo(page.items.some((item) => item.latest_evaluation && item.latest_evaluation.is_demo === true));
+    setViewDemo(page.items.some((item) => item.latest_evaluation && item.latest_evaluation.is_demo === true)
+      || Boolean(state.groupJob && state.groupJob.job && state.groupJob.job.is_demo === true));
 
     const range = pageRange(page);
     if (!range) {
@@ -558,6 +686,7 @@ export function mount(container, route) {
 
   const unsubscribe = subscribe(() => {
     syncDatasetAvailability();
+    syncGroupEval();
     const current = decimals();
     if (current !== lastDecimals) {
       lastDecimals = current;
@@ -568,6 +697,8 @@ export function mount(container, route) {
   syncDatasetAvailability();
   syncInputs();
   load();
+  // Вернулись к списку во время оценки группы — продолжаем показывать её ход (или итог).
+  if (state.groupJob) trackGroupJob();
 
   return {
     update(nextRoute) {
@@ -578,6 +709,8 @@ export function mount(container, route) {
     },
     destroy() {
       controller.abort();
+      // Задание на сервере продолжается; опрос возобновится при возврате к списку.
+      if (groupPoll) groupPoll.abort();
       applyTextDebounced.cancel();
       unsubscribe();
     },

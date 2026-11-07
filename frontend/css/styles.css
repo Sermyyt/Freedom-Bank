@@ -618,6 +618,48 @@
   align-items: flex-end;
 }
 
+/* «Оценить всю группу» — главный сценарий 23-го часа: отдельная полоса между фильтрами и таблицей. */
+.cqa-app .cqa-group-eval {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--cqa-rule);
+  border-left: 4px solid var(--cqa-petrol);
+  border-radius: 4px;
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-group-eval-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.cqa-app .cqa-group-eval-text {
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cqa-app .cqa-group-eval-title {
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-group-eval .cqa-job { background: var(--cqa-sheet); }
+
+.cqa-app .cqa-group-eval .cqa-job-errors {
+  max-height: 180px;
+  overflow: auto;
+}
+
 .cqa-app .cqa-list-status {
   min-height: 20px;
   color: var(--cqa-ink-2);

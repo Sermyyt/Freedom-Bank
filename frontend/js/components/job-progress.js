@@ -2,7 +2,8 @@
 import { h } from '../dom.js';
 import { describeJob } from '../lib/poll.js';
 
-export function createJobProgress() {
+// itemLabel(revisionId) — подпись элемента для ошибок (например, внешний ID разговора); null — без подписи.
+export function createJobProgress({ itemLabel } = {}) {
   const label = h('span', { class: 'cqa-job-label' });
   const counts = h('span', { class: 'cqa-job-counts' });
   const fill = h('span', { class: 'cqa-progress-fill' });
@@ -33,7 +34,11 @@ export function createJobProgress() {
     );
     fill.style.width = `${view.percent}%`;
     bar.setAttribute('aria-valuenow', String(Math.round(view.percent)));
-    const messages = [...view.itemErrors.map((item) => item.message), view.jobError].filter(Boolean);
+    const itemMessages = view.itemErrors.map((item) => {
+      const who = itemLabel ? itemLabel(item.revisionId) : null;
+      return who ? `${who}: ${item.message}` : item.message;
+    });
+    const messages = [...itemMessages, view.jobError].filter(Boolean);
     errors.replaceChildren(...messages.map((message) => h('li', { text: message })));
     errors.hidden = messages.length === 0;
   }
