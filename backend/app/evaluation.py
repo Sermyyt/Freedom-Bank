@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, Stri
 from app.providers import ProviderError
 from app.scoring import same_value, score, sum_cost
 
-PROMPT_VERSION = "cqa-v1"
+PROMPT_VERSION = "cqa-v2"
 Number = Annotated[StrictInt | StrictFloat, Field(allow_inf_nan=False)]
 
 
@@ -84,6 +84,13 @@ def build_prompt(criteria, transcript, rationale_language="ru", errors=None):
         "Верни ровно один ответ для каждого переданного criterion_id. Не вычисляй баллы и веса. "
         "Доказательства — только существующие ID сообщений. Не придумывай цитаты. "
         "Для отсутствующего действия укажи checked_range и expected_action; для N/A — na_reason. "
+        "checked_range и expected_action всегда образуют пару: либо оба null, либо существующий диапазон "
+        "и непустое описание того, что проверялось или ожидалось. Если действие подтверждено evidence_message_ids, "
+        "дополнительный диапазон не требуется: поставь checked_range=null и expected_action=null. "
+        "Если отвечаешь answered без evidence_message_ids, обязательно заполни оба поля этой пары; "
+        "это относится и к ответу об отсутствии нарушения. Не выдавай отсутствие необходимости в действии "
+        "за его выполнение: при выполненном условии неприменимости используй status=not_applicable, "
+        "value=null и непустой na_reason, только если критерий разрешает N/A. "
         "Обоснование должно ссылаться на сообщения как #12. "
         f"Язык обоснований: {rationale_language}."
     )
