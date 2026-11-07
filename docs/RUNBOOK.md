@@ -31,11 +31,11 @@ $env:LLM_MAX_CONCURRENCY = '8'
 Во второй консоли выполните начальные переменные выше и проверку:
 
 ```powershell
-& $pythonPath -B backend/scripts/preflight.py
+& $pythonPath -B backend/scripts/preflight.py --expected-dev-count 65 --expected-prompt-version cqa-v9
 if ($LASTEXITCODE -ne 0) { Write-Warning 'Есть FAIL: разберите их перед защитой.' }
 ```
 
-Preflight только читает данные. `FAIL provider` с `DEMO` означает синтетическую оценку; `evaluation_ready` — готовность настроек, а не пробный платный запрос. `dataset_ready` проверяет наличие настройки источника, не доступность ссылки. При `FAIL dataset_ready` задайте `DATASET_URL` локально в `.env` и перезапустите сервер после завершения заданий либо используйте импорт файла из раздела 3. Уже импортированный DEV от этой настройки не зависит. `DEV evaluations` считает только текущие ревизии, активную версию чек-листа, текущие prompt/provider/model и реальные завершённые оценки. `manual_review` считается завершённой оценкой, но требует внимания человека.
+Preflight только читает данные. Флаги выше отдельно требуют базу защиты: 65 разговоров DEV и замороженный `cqa-v9`; без этих необязательных флагов проверяется согласованность с текущим сервером, а не конкретная база защиты. `FAIL provider` с `DEMO` означает синтетическую оценку; `evaluation_ready` — готовность настроек, а не пробный платный запрос. `dataset_ready` проверяет наличие настройки источника, не доступность ссылки. При `FAIL dataset_ready` задайте `DATASET_URL` локально в `.env` и перезапустите сервер после завершения заданий либо используйте импорт файла из раздела 3. Уже импортированный DEV от этой настройки не зависит. `DEV evaluations` считает только текущие ревизии, активную версию чек-листа, текущие prompt/provider/model и реальные завершённые оценки. `manual_review` считается завершённой оценкой, но требует внимания человека.
 
 Откройте в браузере `http://127.0.0.1:8000/`, нажмите **Ctrl+Shift+R**, выберите DEV и один разговор. Убедитесь, что список, карточка, доказательства и пометка настоящего провайдера отображаются. Preflight проверяет HTTP и HTML `/`, не отрисовку JavaScript. Перед сменой активного чек-листа зафиксируйте его ID:
 
@@ -55,12 +55,12 @@ $databasePath = (Resolve-Path data/cqa.db).Path
 $backupDir = Join-Path $env:LOCALAPPDATA 'CQA/backups'
 New-Item -ItemType Directory -Force $backupDir | Out-Null
 $backupPath = Join-Path $backupDir ('cqa-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '.db')
-& $pythonPath -B -c 'import pathlib,sqlite3,sys; p=pathlib.Path(sys.argv[1]).resolve(); q=pathlib.Path(sys.argv[2]).resolve(); assert p.is_file() and not q.exists() and p!=q; s=sqlite3.connect(p.as_uri()+"?mode=ro",uri=True); d=sqlite3.connect(q); s.backup(d); assert d.execute("PRAGMA integrity_check").fetchone()[0]=="ok"; d.close(); s.close(); print("Backup OK")' $databasePath $backupPath
+& $pythonPath -B backend/scripts/database_backup.py backup --database $databasePath --output $backupPath
 if ($LASTEXITCODE -ne 0) { throw 'Резервная копия не подтверждена' }
 Write-Host "Копия: $backupPath"
 ```
 
-Копия вне OneDrive и Git, содержит реальные разговоры и результаты. Сохраните её путь. Отдельно сохраните локальные `data/raw/` и заполненные `data/gold/` в защищённое место, если нужна возможность восстановить также исходные файлы и человеческую разметку. Ключи в эту процедуру не входят.
+Утилита использует SQLite backup API и проверяет `integrity_check`; существующий файл назначения не перезаписывает. Команда совместима с Windows PowerShell 5.1 и путями с пробелами. Доверяйте копии только после `Backup OK` и кода выхода 0. Копия вне OneDrive и Git, содержит реальные разговоры и результаты. Сохраните её путь. Отдельно сохраните локальные `data/raw/` и заполненные `data/gold/` в защищённое место, если нужна возможность восстановить также исходные файлы и человеческую разметку. Ключи в эту процедуру не входят.
 
 ## 2. 23-й час: импорт и оценка контрольной группы
 
@@ -72,7 +72,7 @@ New-Item -ItemType Directory -Force data/runtime, data/raw | Out-Null
 
 ```powershell
 $groupId = 'CONTROL'
-& $pythonPath -B backend/scripts/preflight.py
+& $pythonPath -B backend/scripts/preflight.py --expected-dev-count 65 --expected-prompt-version cqa-v9
 $importBody = @{ group_id = $groupId } | ConvertTo-Json -Compress
 $importReport = (Invoke-RestMethod -Method Post -Uri "$api/api/imports/dataset" -ContentType 'application/json' -Body $importBody).data
 $importReport | Select-Object received, created, revised, unchanged, skipped
@@ -105,7 +105,13 @@ do {
 $job | ConvertTo-Json -Depth 30 | Set-Content -Encoding UTF8 data/runtime/control-job.json
 ```
 
-Тайм-аут команды наблюдения не отменяет серверное задание. Сначала прочитайте его состояние, не создавайте дублирующий запуск. `manual_review_count` — количество разговоров, отмеченных моделью/валидатором, не число всех возможных смысловых ошибок. Для простого запуска без интерактивного прогресса есть `backend/scripts/run_batch.py --group CONTROL --timeout 2400`; сценарий выше удобнее при необходимости сохранить job ID до ожидания.
+Тайм-аут команды наблюдения не отменяет серверное задание. Сначала прочитайте его состояние, не создавайте дублирующий запуск. `manual_review_count` — количество разговоров, отмеченных моделью/валидатором, не число всех возможных смысловых ошибок. Для простого запуска есть `backend/scripts/run_batch.py --group CONTROL`: по умолчанию ожидание 2400 с, ID задания печатается в stderr до первого опроса, итоговый JSON — в stdout. Для продолжения ожидания уже созданного задания используйте команду ниже: она выполняет только GET, не создаёт новую оценку. При возобновлении `duration_ms` означает время этой команды, а не полное время серверного задания.
+
+```powershell
+& $pythonPath -B backend/scripts/run_batch.py --job-id $jobId --timeout 2400
+```
+
+Это же продолжение подходит для job ID из `rehearse_control.py` (его ожидание по умолчанию также 2400 с). Повторный запуск самой репетиции импортирует новую группу, поэтому не используйте его для продолжения ожидания прежней.
 
 ### Повтор только упавших разговоров
 
@@ -175,16 +181,20 @@ $env:DATABASE_PATH = Join-Path $PWD 'data/demo.db'
 
 ## 4. Восстановление базы из копии
 
-Остановите сервер, убедитесь, что других процессов с этой базой нет. Восстановление заменяет текущие данные состоянием снимка; сначала выполните резервное копирование текущей базы по разделу 1 в другой файл. Укажите конкретный проверенный файл копии, не «последний попавшийся»:
+Остановите сервер, убедитесь, что других процессов с этой базой нет. Восстановление заменяет текущие данные состоянием снимка. Утилита сначала проверяет выбранную копию, затем создаёт отдельный защитный снимок текущей базы; без успешного снимка текущие данные не заменяются. Укажите конкретный проверенный файл копии и тот же `$databasePath`, с которым работал сервер (если `DATABASE_PATH` отличается от стандартного, измените строку ниже):
 
 ```powershell
 $restoreFrom = 'C:\Users\user\AppData\Local\CQA\backups\cqa-YYYYMMDD-HHMMSS-mmm.db'
-$databasePath = [IO.Path]::GetFullPath((Join-Path $PWD 'data/cqa.db'))
-& $pythonPath -B -c 'import pathlib,sqlite3,sys; p=pathlib.Path(sys.argv[1]).resolve(); q=pathlib.Path(sys.argv[2]).resolve(); assert p.is_file() and p!=q; s=sqlite3.connect(p.as_uri()+"?mode=ro",uri=True); assert s.execute("PRAGMA integrity_check").fetchone()[0]=="ok"; d=sqlite3.connect(q); s.backup(d); assert d.execute("PRAGMA integrity_check").fetchone()[0]=="ok"; d.close(); s.close(); print("Restore OK")' $restoreFrom $databasePath
+$databasePath = (Resolve-Path data/cqa.db).Path
+$backupDir = Join-Path $env:LOCALAPPDATA 'CQA/backups'
+New-Item -ItemType Directory -Force $backupDir | Out-Null
+$safetyBackup = Join-Path $backupDir ('before-restore-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '.db')
+& $pythonPath -B backend/scripts/database_backup.py restore --backup $restoreFrom --database $databasePath --safety-backup $safetyBackup --server-stopped
 if ($LASTEXITCODE -ne 0) { throw 'Восстановление не подтверждено; сервер не запускать' }
+Write-Host "Защитная копия прежней базы: $safetyBackup"
 ```
 
-После восстановления запустите сервер, выполните preflight и проверьте несколько карточек. Задания, попавшие в снимок незавершёнными, после старта помечаются прерванными: повторяйте только их упавшие элементы. Не удаляйте WAL/SHM вручную у работающего сервера.
+`--server-stopped` — подтверждение оператора, утилита сама не завершает процессы. Обе копии сохраняются; существующий путь защитной копии отклоняется. После успешного восстановления запустите сервер, выполните preflight с ожиданиями 65 / cqa-v9 и проверьте несколько карточек. Задания, попавшие в снимок незавершёнными, после старта помечаются прерванными: повторяйте только их упавшие элементы. Не удаляйте WAL/SHM вручную у работающего сервера.
 
 ## 5. Живая замена критерия и откат активной версии
 
@@ -197,7 +207,7 @@ $originalVersion = (Get-Content data/runtime/original-version.txt -Raw).Trim()
 $currentVersion = (Invoke-RestMethod "$api/api/health").data.active_checklist_version_id
 $restoreActivation = @{ expected_active_version_id = $currentVersion } | ConvertTo-Json -Compress
 Invoke-RestMethod -Method Post -Uri "$api/api/checklist-versions/$originalVersion/activate" -ContentType 'application/json' -Body $restoreActivation | Out-Null
-& $pythonPath -B backend/scripts/preflight.py
+& $pythonPath -B backend/scripts/preflight.py --expected-dev-count 65 --expected-prompt-version cqa-v9
 ```
 
 Последняя созданная версия после отката остаётся экспериментальной, поэтому для следующего создания берите `latest_version_id` из чек-листа, а не ID активной версии. Оценка экспериментальной версии остаётся в истории разговора; на защите выбирайте оценку исходной версии явно.

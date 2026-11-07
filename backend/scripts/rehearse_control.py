@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 from copy import deepcopy
 import json
+import math
 from pathlib import Path
 import sys
 from uuid import uuid4
@@ -15,7 +16,7 @@ from uuid import uuid4
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.run_batch import BatchError, request_data, run_group  # noqa: E402
+from scripts.run_batch import DEFAULT_TIMEOUT, BatchError, request_data, run_group  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -55,7 +56,7 @@ def altered_dataset(payload: dict | list, group: str) -> list:
     return records
 
 
-def rehearse(client, payload: dict | list, *, group: str | None = None, timeout: float = 600,
+def rehearse(client, payload: dict | list, *, group: str | None = None, timeout: float = DEFAULT_TIMEOUT,
              poll_interval: float = 1) -> dict:
     group = group or "REHEARSAL_" + uuid4().hex[:12]
     records = altered_dataset(payload, group)
@@ -76,10 +77,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--file", type=Path, default=ROOT / "data/raw/DEV.json")
     parser.add_argument("--api-url", default="http://127.0.0.1:8000")
-    parser.add_argument("--timeout", type=float, default=600)
+    parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="Maximum polling time in seconds (default: 2400)")
     args = parser.parse_args(argv)
-    if args.timeout <= 0:
-        parser.error("timeout must be positive")
+    if not math.isfinite(args.timeout) or args.timeout <= 0:
+        parser.error("timeout must be finite and positive")
     try:
         payload = json.loads(args.file.read_text(encoding="utf-8-sig"))
         with httpx.Client(base_url=args.api_url, timeout=60) as client:
@@ -87,7 +88,9 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result["evaluation"]["failed"] == 0 else 1
     except (OSError, ValueError, BatchError, httpx.InvalidURL):
-        print("Rehearsal failed: check local JSON, API availability and provider readiness. Source content omitted.", file=sys.stderr)
+        print("Rehearsal failed: check local JSON, API availability and provider readiness. "
+              "If a job ID was printed, resume with run_batch.py --job-id; do not import another rehearsal. "
+              "Source content omitted.", file=sys.stderr)
         return 1
 
 

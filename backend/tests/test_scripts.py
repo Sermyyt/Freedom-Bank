@@ -1,6 +1,7 @@
 """CLI workflow checks with synthetic data and an isolated FakeLLM API."""
 from copy import deepcopy
 import json
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 import httpx
@@ -135,3 +136,61 @@ def test_rehearsal_accepts_bare_array_and_preserves_unrecognized_records():
     assert len(edited) == len(source) + 1
     assert edited[-3:-1] == [None, {"unknown": "preserved"}]
     assert source[0]["conversation_id"] == "demo-ru"
+
+
+@pytest.mark.parametrize("selection", [["--group", "SYNTHETIC"], ["--job-id", "synthetic-job"]])
+def test_batch_default_waits_past_ten_minutes_and_resume_never_posts(selection, monkeypatch, capsys):
+    calls, poll_count = [], []
+    clock = {"now": 0}
+    monkeypatch.setattr(run_batch, "time", SimpleNamespace(monotonic=lambda: clock["now"], sleep=lambda _: None))
+
+    def transport(request):
+        calls.append(request.method)
+        if request.method == "POST":
+            body = {"id": "synthetic-job"}
+        elif request.url.path.startswith("/api/jobs/"):
+            poll_count.append(1)
+            clock["now"] = 637
+            body = {"id": "synthetic-job", "status": "running" if len(poll_count) == 1 else "completed",
+                    "provider": "fake", "is_demo": True, "total": 1, "succeeded": 1, "failed": 0,
+                    "manual_review_count": 0, "items": [{"evaluation_id": "synthetic-evaluation"}]}
+        else:
+            body = {"usage": {"calls": 1, "input_tokens": 10, "output_tokens": 2, "cost": None, "currency": None}}
+        return httpx.Response(200, json={"data": body})
+
+    client = httpx.Client(base_url="http://example.invalid", transport=httpx.MockTransport(transport))
+    monkeypatch.setattr(run_batch.httpx, "Client", lambda **kwargs: client)
+    assert run_batch.main(selection) == 0
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["job_id"] == "synthetic-job"
+    assert "Job ID: synthetic-job" in captured.err
+    assert calls.count("POST") == (0 if selection[0] == "--job-id" else 1)
+    assert len(poll_count) == 2
+
+
+def test_batch_prints_created_job_before_polling_and_retains_resume_hint_on_timeout(monkeypatch, capsys):
+    clock = {"now": 0}
+    monkeypatch.setattr(run_batch, "time", SimpleNamespace(monotonic=lambda: clock["now"], sleep=lambda _: None))
+
+    def transport(request):
+        if request.method == "POST":
+            return httpx.Response(202, json={"data": {"id": "already-created"}})
+        assert "Job ID: already-created" in capsys.readouterr().err
+        clock["now"] = 2
+        return httpx.Response(200, json={"data": {"status": "running"}})
+
+    client = httpx.Client(base_url="http://example.invalid", transport=httpx.MockTransport(transport))
+    monkeypatch.setattr(run_batch.httpx, "Client", lambda **kwargs: client)
+    assert run_batch.main(["--group", "SYNTHETIC", "--timeout", "1"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "--job-id to resume" in captured.err
+
+
+@pytest.mark.parametrize("arguments", [["--group", ""], ["--job-id", "../jobs"],
+    ["--job-id", "existing", "--force"], ["--group", "G", "--timeout", "nan"],
+    ["--group", "G", "--timeout", "inf"]])
+def test_batch_rejects_unsafe_or_ambiguous_cli_arguments(arguments):
+    with pytest.raises(SystemExit) as error:
+        run_batch.main(arguments)
+    assert error.value.code == 2

@@ -25,7 +25,7 @@ def current_evaluation(evaluation, health):
                     for key in ('prompt_version', 'provider', 'model')))
 
 
-def coverage(client, health):
+def coverage(client, health, expected_dev_count=None):
     revisions = {entry['ref']['revision_id'] for entry in items(client, '/api/conversations', group_id='DEV')}
     covered = set()
     active = health.get('active_checklist_version_id')
@@ -37,7 +37,9 @@ def coverage(client, health):
             evaluation = request_data(client, 'GET', f"/api/evaluations/{summary['id']}")
             if current_evaluation(evaluation, health):
                 covered.add(revision)
-    return [row('DEV conversations', bool(revisions), str(len(revisions))),
+    count_ok = bool(revisions) and (expected_dev_count is None or len(revisions) == expected_dev_count)
+    count_detail = str(len(revisions)) + (f' (expected {expected_dev_count})' if expected_dev_count is not None else '')
+    return [row('DEV conversations', count_ok, count_detail),
             row('DEV evaluations', bool(revisions) and covered == revisions,
                 f'{len(covered)}/{len(revisions)} current prompt, checklist, revision and provider/model')]
 
@@ -57,19 +59,22 @@ def interface_check(client):
                f'HTTP {response.status_code}; HTML entry point only, not a browser rendering test')
 
 
-def check(client):
+def check(client, *, expected_dev_count=None, expected_prompt_version=None):
     health = request_data(client, 'GET', '/api/health')
     if not isinstance(health, dict):
         raise BatchError('Invalid health response.')
     real = health.get('provider') in {'openai', 'anthropic'} and health.get('is_demo') is False
+    prompt = health.get('prompt_version')
+    prompt_ok = bool(prompt) and (expected_prompt_version is None or prompt == expected_prompt_version)
+    prompt_detail = str(prompt or 'missing') + (f' (expected {expected_prompt_version})' if expected_prompt_version else '')
     checks = [row('provider', real, 'real provider' if real else '!!! DEMO / FAKE OR UNKNOWN PROVIDER !!!'),
               row('evaluation_ready', health.get('evaluation_ready')),
               row('dataset_ready', health.get('dataset_ready'), 'source configured; not a network probe'
                   if health.get('dataset_ready') else 'DATASET_URL is not configured; use local file import'),
               row('database_ready', health.get('database_ready')),
-              row('prompt_version', health.get('prompt_version'), str(health.get('prompt_version', 'missing')))]
+              row('prompt_version', prompt_ok, prompt_detail)]
     for name, operation in [('active checklist', lambda: [active_check(client, health)]),
-                            ('DEV coverage', lambda: coverage(client, health)),
+                            ('DEV coverage', lambda: coverage(client, health, expected_dev_count)),
                             ('interface', lambda: [interface_check(client)])]:
         try:
             checks.extend(operation())
@@ -81,10 +86,17 @@ def check(client):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--api-url', default='http://127.0.0.1:8000')
+    parser.add_argument('--expected-dev-count', type=int, help='Require this many DEV conversations (optional)')
+    parser.add_argument('--expected-prompt-version', help='Require this prompt version (optional)')
     args = parser.parse_args(argv)
+    if args.expected_dev_count is not None and args.expected_dev_count <= 0:
+        parser.error('expected-dev-count must be positive')
+    if args.expected_prompt_version is not None and not args.expected_prompt_version.strip():
+        parser.error('expected-prompt-version must be nonempty')
     try:
         with httpx.Client(base_url=args.api_url, timeout=30) as client:
-            checks = check(client)
+            checks = check(client, expected_dev_count=args.expected_dev_count,
+                           expected_prompt_version=args.expected_prompt_version)
     except (BatchError, httpx.HTTPError, ValueError, TypeError):
         checks = [row('API', False, 'unavailable or invalid response; details omitted')]
     for item in checks:

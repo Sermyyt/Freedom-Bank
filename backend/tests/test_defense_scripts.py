@@ -1,4 +1,5 @@
 """Defense tools read synthetic API data; never call external providers."""
+from contextlib import nullcontext
 import json
 
 import httpx
@@ -87,6 +88,35 @@ def test_preflight_paginates_and_accepts_all_current_real_evaluations(preflight_
     assert all(row['ok'] for row in checks)
     assert next(row for row in checks if row['name'] == 'DEV evaluations')['detail'] == '2/2 current prompt, checklist, revision and provider/model'
     assert all(request.method == 'GET' for request in preflight_api['calls'])
+
+
+def test_preflight_optional_baseline_accepts_matching_count_and_prompt(preflight_api):
+    checks = preflight.check(preflight_api['client'], expected_dev_count=2, expected_prompt_version=PROMPT_VERSION)
+    assert all(row['ok'] for row in checks)
+    assert next(row for row in checks if row['name'] == 'DEV conversations')['detail'] == '2 (expected 2)'
+
+
+def test_preflight_expected_baseline_rejects_incomplete_group_and_old_prompt(preflight_api, monkeypatch, capsys):
+    preflight_api['health']['prompt_version'] = 'historical-prompt'
+    for evaluation in preflight_api['evaluations']:
+        evaluation['usage']['prompt_version'] = 'historical-prompt'
+    # Generic coverage is valid, but it does not meet the explicitly requested defense baseline.
+    assert all(row['ok'] for row in preflight.check(preflight_api['client']))
+    monkeypatch.setattr(preflight.httpx, 'Client', lambda **kwargs: nullcontext(preflight_api['client']))
+    assert preflight.main(['--expected-dev-count', '65', '--expected-prompt-version', 'cqa-v9']) == 1
+    output = capsys.readouterr().out
+    assert 'FAIL DEV conversations: 2 (expected 65)' in output
+    assert 'FAIL prompt_version: historical-prompt (expected cqa-v9)' in output
+    assert 'OK DEV evaluations: 2/2' in output
+    assert all(request.method == 'GET' for request in preflight_api['calls'])
+
+
+@pytest.mark.parametrize('arguments', [['--expected-dev-count', '0'], ['--expected-dev-count', '-1'],
+                                      ['--expected-prompt-version', ' ']])
+def test_preflight_rejects_empty_or_nonpositive_expected_baseline(arguments):
+    with pytest.raises(SystemExit) as error:
+        preflight.main(arguments)
+    assert error.value.code == 2
 
 
 @pytest.mark.parametrize('field,value', [('is_demo', True), ('checklist_version_id', 'old'),

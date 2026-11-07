@@ -7,10 +7,13 @@ from __future__ import annotations
 import argparse
 from decimal import Decimal
 import json
+import math
 import sys
 import time
 
 import httpx
+
+DEFAULT_TIMEOUT = 2400
 
 
 class BatchError(RuntimeError):
@@ -30,7 +33,7 @@ def request_data(client, method: str, path: str, **kwargs) -> dict:
         raise BatchError("API connection or JSON response failed.") from None
 
 
-def wait_job(client, job_id: str, timeout: float = 600, poll_interval: float = 1) -> dict:
+def wait_job(client, job_id: str, timeout: float = DEFAULT_TIMEOUT, poll_interval: float = 1) -> dict:
     deadline = time.monotonic() + timeout
     while True:
         job = request_data(client, "GET", f"/api/jobs/{job_id}")
@@ -60,11 +63,12 @@ def aggregate_usage(evaluations: list[dict]) -> dict:
     }
 
 
-def run_group(client, group: str, *, force: bool = False, timeout: float = 600,
-              poll_interval: float = 1) -> dict:
-    started = time.monotonic()
-    queued = request_data(client, "POST", "/api/evaluations", json={"group_id": group, "force": force})
-    job = wait_job(client, queued["id"], timeout, poll_interval)
+def read_job(client, job_id: str, *, timeout: float = DEFAULT_TIMEOUT,
+             poll_interval: float = 1, started: float | None = None) -> dict:
+    """Wait for an existing job and collect usage without submitting evaluation work."""
+    started = time.monotonic() if started is None else started
+    print(f"Job ID: {job_id} (resume with --job-id {job_id}; no new evaluation)", file=sys.stderr, flush=True)
+    job = wait_job(client, job_id, timeout, poll_interval)
     evaluations = [request_data(client, "GET", f"/api/evaluations/{item['evaluation_id']}")
                    for item in job["items"] if item.get("evaluation_id")]
     usage = aggregate_usage(evaluations)
@@ -81,22 +85,39 @@ def run_group(client, group: str, *, force: bool = False, timeout: float = 600,
     }
 
 
+def run_group(client, group: str, *, force: bool = False, timeout: float = DEFAULT_TIMEOUT,
+              poll_interval: float = 1) -> dict:
+    started = time.monotonic()
+    queued = request_data(client, "POST", "/api/evaluations", json={"group_id": group, "force": force})
+    return read_job(client, queued["id"], timeout=timeout, poll_interval=poll_interval, started=started)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--group", required=True)
+    selection = parser.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--group")
+    selection.add_argument("--job-id", help="Wait for an existing job; never submits a new evaluation")
     parser.add_argument("--api-url", default="http://127.0.0.1:8000")
     parser.add_argument("--force", action="store_true")
-    parser.add_argument("--timeout", type=float, default=600, help="Maximum polling time in seconds")
+    parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="Maximum polling time in seconds (default: 2400)")
     args = parser.parse_args(argv)
-    if not args.group.strip() or args.timeout <= 0:
-        parser.error("group must be nonempty and timeout must be positive")
+    selected = args.group if args.group is not None else args.job_id
+    if not selected.strip() or not math.isfinite(args.timeout) or args.timeout <= 0:
+        parser.error("group/job-id must be nonempty and timeout must be finite and positive")
+    if args.job_id and args.force:
+        parser.error("--force cannot be used with --job-id")
+    if args.job_id and any(char not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for char in args.job_id):
+        parser.error("job-id must contain only letters, digits, hyphens or underscores")
     try:
         with httpx.Client(base_url=args.api_url, timeout=60) as client:
-            result = run_group(client, args.group, force=args.force, timeout=args.timeout)
+            result = (read_job(client, args.job_id, timeout=args.timeout) if args.job_id
+                      else run_group(client, args.group, force=args.force, timeout=args.timeout))
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result["failed"] == 0 else 1
     except (BatchError, httpx.InvalidURL, ValueError):
-        print("Batch failed: check API availability, selected group and server readiness. Source content omitted.", file=sys.stderr)
+        print("Batch failed: check API availability, selected group and server readiness. "
+              "If a job ID was printed, use --job-id to resume waiting; do not submit the group again. "
+              "Source content omitted.", file=sys.stderr)
         return 1
 
 
