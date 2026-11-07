@@ -28,8 +28,18 @@ def issue(code: str, message: str, index: int | None = None,
             "path": path or []}
 
 
+def _utf8_string(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        value.encode("utf-8")
+    except UnicodeEncodeError:
+        return False
+    return True
+
+
 def _nonempty_string(value: Any) -> bool:
-    return isinstance(value, str) and bool(value.strip())
+    return _utf8_string(value) and bool(value.strip())
 
 
 def _required_group(value: Any) -> str:
@@ -73,7 +83,7 @@ def parse_dataset(payload: Any, group_id: str | None = None) -> tuple[str, list,
 
 def _record_error(record, index, code, message, path, mid=None):
     cid = record.get("conversation_id") if isinstance(record, dict) else None
-    cid = cid if isinstance(cid, str) else None
+    cid = cid if _utf8_string(cid) else None
     return [issue(code, message, index, cid, mid, path)]
 
 
@@ -83,7 +93,7 @@ def _header_errors(record: Any, index: int) -> list:
     for key in ("conversation_id", "channel", "language"):
         if not _nonempty_string(record.get(key)):
             return _record_error(record, index, "INVALID_RECORD", "Обязательное поле должно быть непустой строкой.", [key])
-    if record.get("audio_url") is not None and not isinstance(record["audio_url"], str):
+    if record.get("audio_url") is not None and not _utf8_string(record["audio_url"]):
         return _record_error(record, index, "INVALID_RECORD", "Неверный тип ссылки на аудио.", ["audio_url"])
     return []
 
@@ -92,7 +102,7 @@ def _message_errors(message: Any, record: dict, index: int, n: int) -> list:
     if not isinstance(message, dict):
         return _record_error(record, index, "INVALID_MESSAGE", "Реплика должна быть объектом.", ["transcript", n], n + 1)
     for key in ("timestamp", "speaker", "text"):
-        if not isinstance(message.get(key), str) or (key == "speaker" and not message[key].strip()):
+        if not _utf8_string(message.get(key)) or (key == "speaker" and not message[key].strip()):
             return _record_error(record, index, "INVALID_MESSAGE", "Неверное обязательное поле реплики.",
                                  ["transcript", n, key], n + 1)
     return []

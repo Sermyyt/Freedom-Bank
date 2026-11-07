@@ -52,6 +52,12 @@ def fetch_dataset(settings, group):
 
 def _prepare_unique(record, index, seen):
     external = record.get("conversation_id") if isinstance(record, dict) else None
+    if isinstance(external, str):
+        try:
+            external.encode("utf-8")
+        except UnicodeEncodeError:
+            # Let record validation report a null ID before duplicate diagnostics can echo it.
+            return prepare_record(record, index)
     if isinstance(external, str) and external in seen:
         error = dict(record_index=index, conversation_id=external, message_id=None,
                      code="DUPLICATE_CONVERSATION_IN_PAYLOAD", message="Повторный ID внутри набора.",

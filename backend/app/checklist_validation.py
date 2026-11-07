@@ -2,7 +2,7 @@
 from copy import deepcopy
 import math
 
-from app.scoring import same_value, scale_normalized
+from app.scoring import finite_weight_total, same_value, scale_normalized
 
 
 def _finite_number(value):
@@ -111,4 +111,9 @@ def normalize_definition(definition):
         _error(errors, ["criteria"], "Добавьте хотя бы один критерий.")
     for index, criterion in enumerate(criteria):
         _validate_criterion(criterion, ["criteria", index], seen, errors)
+    weights = [criterion["weight"] for criterion in criteria
+               if criterion.get("answer_type") != "flag" and _finite_number(criterion.get("weight"))
+               and criterion["weight"] > 0]
+    if not finite_weight_total(weights):
+        _error(errors, ["criteria"], "Сумма весов превышает допустимый диапазон чисел.")
     return normalized, errors, warnings

@@ -1,6 +1,7 @@
 """All score arithmetic, including normalization and comparison, lives here."""
 from copy import deepcopy
 from decimal import Decimal, ROUND_HALF_EVEN, ROUND_HALF_UP, localcontext
+import math
 
 
 def decimal(value):
@@ -13,6 +14,13 @@ def scale_normalized(value, maximum):
     with localcontext() as context:
         context.prec = 50
         return float(decimal(value) / decimal(maximum))
+
+
+def finite_weight_total(weights):
+    """Whether every possible applicable-weight sum fits the JSON number range."""
+    with localcontext() as context:
+        context.prec = 50
+        return math.isfinite(float(sum((decimal(weight) for weight in weights), Decimal(0))))
 
 
 def difference(right, left):
