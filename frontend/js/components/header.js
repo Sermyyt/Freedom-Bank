@@ -6,6 +6,7 @@ const TABS = [
   { route: 'conversations', label: 'Разговоры', also: ['conversation', 'compare'] },
   { route: 'checklist', label: 'Чек-лист' },
   { route: 'appeals', label: 'Апелляции' },
+  { route: 'history', label: 'История' },
 ];
 
 function healthView(current) {
