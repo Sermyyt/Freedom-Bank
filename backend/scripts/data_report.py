@@ -18,6 +18,15 @@ ROOT = Path(__file__).resolve().parents[2]
 EVENTS_FILE = ROOT / "backend/app/data/system_events.json"
 KNOWN = {"speaker": {"client", "operator", "bot", "system"},
          "channel": {"agent chat", "voice call"}, "language": {"RU", "KZ", "EN"}}
+GROUP_ID = re.compile(r"[A-Za-z0-9_-]+")
+GROUP_ID_RULE = "Invalid group: use letters, digits, underscore or hyphen."
+
+
+def raw_dataset_path(group: object) -> Path:
+    """The one place where a group's downloaded answer lives: data/raw/<group>.json."""
+    if not isinstance(group, str) or not GROUP_ID.fullmatch(group):
+        raise ValueError(GROUP_ID_RULE)
+    return ROOT / "data" / "raw" / f"{group}.json"
 
 
 def normalize(text: str) -> str:
@@ -191,9 +200,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--group", help="Select local data/raw/<group>.json; verify envelope group")
     parser.add_argument("--output", type=Path, help="Full JSON audit; keep in ignored data/ directory")
     args = parser.parse_args(argv)
-    if args.group and not re.fullmatch(r"[A-Za-z0-9_-]+", args.group):
-        parser.error("Invalid group: use letters, digits, underscore or hyphen.")
-    source = args.file or ROOT / "data/raw" / f"{args.group or 'DEV'}.json"
+    if args.group and not GROUP_ID.fullmatch(args.group):
+        parser.error(GROUP_ID_RULE)
+    source = args.file or raw_dataset_path(args.group or "DEV")
     try:
         payload = json.loads(source.read_text(encoding="utf-8-sig"))
         report = build_report(payload, args.group)
