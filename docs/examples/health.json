@@ -8,7 +8,7 @@
     "is_demo": true,
     "evaluation_ready": true,
     "dataset_ready": false,
-    "active_checklist_version_id": "fd491c19-844f-43d6-a0f7-ae0f2605132a",
+    "active_checklist_version_id": "643d442e-1a45-4581-bb2d-3b579f737821",
     "scoring_policy": {
       "rounding": "half_up",
       "decimals": 2,
@@ -16,6 +16,6 @@
     }
   },
   "meta": {
-    "request_id": "98cf06bf-137b-47e7-a1ae-acc2a59ca475"
+    "request_id": "22bf2891-cd7c-49ee-863f-3c42c48e4af7"
   }
 }
