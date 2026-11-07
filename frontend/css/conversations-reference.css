@@ -1,144 +1,4 @@
-/* First-screen reference study, bankffin.kz/ru/cards, 2026-11-08.
-   Only the conversations route uses this theme. Other views keep styles.css.
-   Measured values and intentional workspace adaptations: docs/FRONTEND_NOTES.md. */
-@font-face {
-  font-family: "CQA CoFo Sans";
-  src: url("../assets/fonts/CoFoSans-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "CQA CoFo Sans";
-  src: url("../assets/fonts/CoFoSans-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-.cqa-app[data-screen="conversations"] {
-  --cqa-font-text: "CQA CoFo Sans", Arial, sans-serif;
-  --cqa-font-num: var(--cqa-font-text);
-  --cqa-paper: #f5f6f7;
-  --cqa-sheet: #fff;
-  --cqa-sheet-2: #f5f6f7;
-  --cqa-ink: #191919;
-  --cqa-ink-2: #5c5c5c;
-  --cqa-rule: #e8e8e8;
-  --cqa-rule-strong: #d1d1d1;
-  --cqa-accent: #2a8640;
-  --cqa-accent-hover: #4fb84e;
-  --cqa-accent-soft: #f5f6f7;
-  --cqa-success: #2a8640;
-  --cqa-radius-md: 12px;
-  --cqa-radius-lg: 20px;
-  --cqa-shadow-sm: 2px 2px 46px 12px rgb(0 0 0 / 4%);
-  --cqa-duration-enter: 0ms;
-  font-size: 14px;
-  line-height: 21px;
-}
-
-.cqa-app[data-screen="conversations"] .cqa-header {
-  min-height: 64px;
-  padding: 0 max(12px, calc((100% - 1296px) / 2));
-  gap: 0 32px;
-  box-shadow: none;
-}
-.cqa-app[data-screen="conversations"] .cqa-brand {
-  align-items: center;
-  padding: 0;
-  gap: 12px;
-}
-.cqa-app[data-screen="conversations"] .cqa-brand strong { font-size: 24px; letter-spacing: 0; }
-.cqa-app[data-screen="conversations"] .cqa-brand span { max-width: 140px; font-size: 12px; line-height: 16px; }
-.cqa-app[data-screen="conversations"] .cqa-tabs { gap: 0; }
-.cqa-app[data-screen="conversations"] .cqa-tab {
-  position: relative;
-  min-height: 64px;
-  padding: 0 16px;
-  border: 0;
-  font-size: 14px;
-  font-weight: 400;
-  color: #191919;
-  background: transparent;
-}
-.cqa-app[data-screen="conversations"] .cqa-tab.is-active { color: #191919; background: transparent; }
-.cqa-app[data-screen="conversations"] .cqa-tab.is-active::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: 16px;
-  right: 16px;
-  height: 3px;
-  border-radius: 2px;
-  background: #2a8640;
-}
-.cqa-app[data-screen="conversations"] .cqa-tab:hover { color: #4fb84e; }
-.cqa-app[data-screen="conversations"] .cqa-header-status { font-size: 12px; gap: 24px; }
-.cqa-app[data-screen="conversations"] .cqa-header-version,
-.cqa-app[data-screen="conversations"] .cqa-health { font-weight: 400; }
-.cqa-app[data-screen="conversations"] .cqa-health { font-size: 12px; }
-.cqa-app[data-screen="conversations"] .cqa-demo-banner {
-  padding: 10px max(12px, calc((100% - 1296px) / 2));
-  background: #fff;
-  color: #5c5c5c;
-  border: 0;
-  border-bottom: 1px solid #e8e8e8;
-  font-size: 12px;
-  line-height: 18px;
-}
-.cqa-app[data-screen="conversations"] .cqa-demo-banner strong { color: var(--cqa-warning); }
-.cqa-app[data-screen="conversations"] .cqa-main {
-  max-width: 1320px;
-  padding: 48px 12px;
-}
-.cqa-app[data-screen="conversations"] .cqa-page { gap: 24px; }
-.cqa-app[data-screen="conversations"] .cqa-page-head { align-items: center; justify-content: space-between; margin-bottom: 0; gap: 24px; }
-.cqa-app[data-screen="conversations"] h1 { font-size: 40px; line-height: 48px; font-weight: 700; letter-spacing: 0; }
-.cqa-app[data-screen="conversations"] h2 { font-size: 28px; line-height: 34px; letter-spacing: 0; }
-.cqa-app[data-screen="conversations"] h3 { font-size: 20px; line-height: 28px; letter-spacing: 0; }
-.cqa-app[data-screen="conversations"] .cqa-card { border: 0; border-radius: 20px; padding: 24px; gap: 16px; }
-
-/* Button geometry is copied from the catalog's .button._primary. */
-.cqa-app[data-screen="conversations"] .cqa-button {
-  min-height: 0;
-  padding: 14px 28px;
-  border: 1px solid #2a8640;
-  border-radius: 12px;
-  color: #2a8640;
-  background: transparent;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-  transition: background-color 300ms, color 300ms, border-color 300ms;
-}
-.cqa-app[data-screen="conversations"] .cqa-button--primary { background: #2a8640; color: #fff; }
-.cqa-app[data-screen="conversations"] .cqa-button:hover:not(:disabled) { color: #2a8640; border-color: #2a8640; background: #f5f6f7; transform: none; }
-.cqa-app[data-screen="conversations"] .cqa-button--primary:hover:not(:disabled) { background: #4fb84e; border-color: #4fb84e; color: #fff; box-shadow: 8px 8px 32px -12px #4fb84e; }
-.cqa-app[data-screen="conversations"] .cqa-button--primary:active:not(:disabled) { box-shadow: 0 0 32px -12px #4fb84e; }
-.cqa-app[data-screen="conversations"] .cqa-button:active:not(:disabled) { transform: none; }
-.cqa-app[data-screen="conversations"] .cqa-button:disabled { opacity: 1; color: #5c5c5c; background: #d1d1d1; border-color: #d1d1d1; }
-.cqa-app[data-screen="conversations"] .cqa-button--small { min-height: 42px; padding: 10px 24px; line-height: 20px; }
-.cqa-app[data-screen="conversations"] .cqa-button--ghost { border-color: transparent; background: transparent; }
-.cqa-app[data-screen="conversations"] :focus-visible { outline-color: #2a8640; }
-
-/* Form shape follows /ru/check-receipt; labels use the catalog's readable gray. */
-.cqa-app[data-screen="conversations"] .cqa-field { gap: 8px; }
-.cqa-app[data-screen="conversations"] .cqa-field label { font-size: 13px; line-height: 18px; font-weight: 400; color: #5c5c5c; }
-.cqa-app[data-screen="conversations"] .cqa-field input,
-.cqa-app[data-screen="conversations"] .cqa-field select {
-  min-height: 58px;
-  padding: 16px 14px;
-  border: 1px solid #d1d1d1;
-  border-radius: 12px;
-  background: #f5f6f7;
-  font: 400 16px/24px var(--cqa-font-text);
-}
-.cqa-app[data-screen="conversations"] .cqa-field input:hover,
-.cqa-app[data-screen="conversations"] .cqa-field select:hover { border-color: #191919; }
-.cqa-app[data-screen="conversations"] .cqa-field input[type="file"] { padding: 8px; }
-.cqa-app[data-screen="conversations"] .cqa-field input::file-selector-button { padding: 8px 12px; border: 0; border-radius: 8px; background: #fff; color: #191919; font: inherit; cursor: pointer; }
-.cqa-app[data-screen="conversations"] .cqa-field-hint { font-size: 13px; line-height: 20px; }
+/* List-specific layout; shared bank theme lives in bank-reference.css. */
 .cqa-app[data-screen="conversations"] .cqa-import-grid { gap: 32px; }
 .cqa-app[data-screen="conversations"] .cqa-import-form { padding: 0; border: 0; background: transparent; gap: 16px; }
 .cqa-app[data-screen="conversations"] .cqa-import-form .cqa-actions { margin-top: auto; }
@@ -186,33 +46,14 @@
 .cqa-app[data-screen="conversations"] .cqa-empty { padding: 32px 0; border: 0; }
 
 @media (max-width: 1199px) {
-  .cqa-app[data-screen="conversations"] .cqa-header { gap: 0 24px; }
-  .cqa-app[data-screen="conversations"] .cqa-brand span { display: none; }
-  .cqa-app[data-screen="conversations"] .cqa-header-status { gap: 12px; }
-  .cqa-app[data-screen="conversations"] .cqa-main { padding-top: 48px; }
-  .cqa-app[data-screen="conversations"] h1 { font-size: 40px; line-height: 48px; }
   .cqa-app[data-screen="conversations"] .cqa-table { min-width: 1050px; }
 }
 @media (max-width: 800px) {
-  .cqa-app[data-screen="conversations"] .cqa-header-status { flex-direction: column; justify-content: center; align-items: flex-end; gap: 0; }
-  .cqa-app[data-screen="conversations"] .cqa-tab { padding: 0 12px; }
-  .cqa-app[data-screen="conversations"] .cqa-card { padding: 24px; }
   .cqa-app[data-screen="conversations"] .cqa-filters-primary { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .cqa-app[data-screen="conversations"] .cqa-filters-secondary { grid-template-columns: 1fr; }
   .cqa-app[data-screen="conversations"] .cqa-group-eval-head { align-items: flex-start; }
 }
 @media (max-width: 640px) {
-  .cqa-app[data-screen="conversations"] .cqa-header { gap: 0 16px; padding-top: 0; }
-  .cqa-app[data-screen="conversations"] .cqa-brand { min-height: 64px; }
-  .cqa-app[data-screen="conversations"] .cqa-header-status { width: auto; padding: 8px 0; margin-left: auto; }
-  .cqa-app[data-screen="conversations"] .cqa-tabs { flex-wrap: nowrap; gap: 0; }
-  .cqa-app[data-screen="conversations"] .cqa-tab { min-height: 48px; padding: 0 8px; font-size: 14px; }
-  .cqa-app[data-screen="conversations"] .cqa-tab.is-active::after { left: 8px; right: 8px; }
-  .cqa-app[data-screen="conversations"] .cqa-main { padding: 32px 12px; }
-  .cqa-app[data-screen="conversations"] .cqa-page { gap: 24px; }
-  .cqa-app[data-screen="conversations"] .cqa-page-head { gap: 24px; margin-bottom: 8px; }
-  .cqa-app[data-screen="conversations"] h1 { font-size: 40px; line-height: 48px; }
-  .cqa-app[data-screen="conversations"] .cqa-card { padding: 32px 24px; }
   .cqa-app[data-screen="conversations"] .cqa-import-toggle { width: 100%; }
   .cqa-app[data-screen="conversations"] .cqa-import-grid { grid-template-columns: minmax(0,1fr); }
   .cqa-app[data-screen="conversations"] .cqa-import-form + .cqa-import-form { padding-top: 24px; border-top: 1px solid #e8e8e8; }
