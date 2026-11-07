@@ -1,0 +1,930 @@
+{
+  "data": {
+    "appeal": {
+      "id": "16cfa780-1fe5-4a3a-b01d-b595b16b2de5",
+      "evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+      "criterion_id": "contact",
+      "comment": "Синтетическая апелляция для демонстрации интерфейса.",
+      "status": "resolved",
+      "opened_at_final_revision": 0,
+      "decision": {
+        "id": "ec3a794b-cb21-4fad-9c1c-7380fd95ccbf",
+        "action": "change",
+        "reason": "Синтетическое решение проверяющего без дополнительных ссылок.",
+        "before": {
+          "criterion_id": "contact",
+          "answer": {
+            "status": "answered",
+            "value": true
+          },
+          "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+          "evidence_message_ids": [
+            2
+          ],
+          "evidence": [
+            {
+              "message_id": 2,
+              "text": "Hello, I am Demo. Please open the demo account section.",
+              "speaker": "operator",
+              "timestamp": "00:02",
+              "phase": "client"
+            }
+          ],
+          "checked_range": null,
+          "expected_action": null,
+          "na_reason": null,
+          "manual_review": false,
+          "manual_review_reasons": [],
+          "warnings": [],
+          "reused": false,
+          "reused_from_evaluation_id": null,
+          "original_weight": 10.0,
+          "normalized_answer": 1.0,
+          "effective_weight": 10.0,
+          "weighted_points": 10.0,
+          "contribution": 10.0
+        },
+        "after": {
+          "criterion_id": "contact",
+          "answer": {
+            "status": "answered",
+            "value": false
+          },
+          "rationale": "Синтетическое решение проверяющего без дополнительных ссылок.",
+          "evidence_message_ids": [],
+          "evidence": [],
+          "checked_range": null,
+          "expected_action": null,
+          "na_reason": null,
+          "manual_review": false,
+          "manual_review_reasons": [],
+          "warnings": [
+            "Решение человека сохранено без доказательств и проверенного диапазона."
+          ],
+          "reused": false,
+          "reused_from_evaluation_id": null,
+          "original_weight": 10.0,
+          "normalized_answer": 0.0,
+          "effective_weight": 10.0,
+          "weighted_points": 0.0,
+          "contribution": 0.0
+        },
+        "resulting_final_revision": 1,
+        "created_at": "2026-11-07T12:09:43.232784Z"
+      },
+      "created_at": "2026-11-07T12:09:43.216695Z",
+      "resolved_at": "2026-11-07T12:09:43.232784Z"
+    },
+    "evaluation": {
+      "id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+      "conversation": {
+        "id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
+        "group_id": "SYNTHETIC",
+        "conversation_id": "demo-en",
+        "revision_id": "eba47c96-c351-4c42-a17b-820af11da76f",
+        "revision": 1
+      },
+      "checklist_version_id": "eb926b9d-2617-4426-b796-e34a689e23c5",
+      "checklist_snapshot": {
+        "name": "Чек-лист качества чатов Freedom Broker",
+        "description": "Восемь критериев для оценки работы оператора по переписке. Один и тот же чек-лист применяется к чатам на русском, казахском и английском. N/A означает неприменимость по условию критерия; пропущенное необходимое действие означает «Нет». Порог первой реакции в 3 минуты, теги и вложения в оценку не входят. Источник: CQA_Chat_Quality_Checklist.pdf, страницы 1–3.",
+        "criteria": [
+          {
+            "id": "contact",
+            "name": "Установление контакта",
+            "description": "Да — оператор поздоровался на языке клиента и представился в первом ответе.",
+            "section": "Начало и понимание запроса",
+            "answer_type": "binary",
+            "weight": 10.0,
+            "options": [
+              {
+                "value": true,
+                "label": "Да",
+                "description": "Условие выполнено.",
+                "normalized": 1.0
+              },
+              {
+                "value": false,
+                "label": "Нет",
+                "description": "Действие было нужно, но оператор его пропустил или выполнил неправильно.",
+                "normalized": 0.0
+              }
+            ],
+            "na_allowed": false,
+            "na_condition": null
+          },
+          {
+            "id": "needs",
+            "name": "Выявление потребности",
+            "description": "Да — оператор учёл известные детали и уточнил недостающее до ответа.",
+            "section": "Начало и понимание запроса",
+            "answer_type": "binary",
+            "weight": 15.0,
+            "options": [
+              {
+                "value": true,
+                "label": "Да",
+                "description": "Условие выполнено.",
+                "normalized": 1.0
+              },
+              {
+                "value": false,
+                "label": "Нет",
+                "description": "Действие было нужно, но оператор его пропустил или выполнил неправильно.",
+                "normalized": 0.0
+              }
+            ],
+            "na_allowed": true,
+            "na_condition": "Данных для ответа хватало с самого начала."
+          },
+          {
+            "id": "identity",
+            "name": "Идентификация",
+            "description": "Да — проверка личности подтверждена до раскрытия данных или защищённого действия. Общий вопрос о тарифах не требует идентификации. Если требовалась проверка личности перед защищённым действием и она не подтверждена в чате, ставьте «Нет».",
+            "section": "Безопасность и решение",
+            "answer_type": "binary",
+            "weight": 20.0,
+            "options": [
+              {
+                "value": true,
+                "label": "Да",
+                "description": "Проверка личности подтверждена до защищённого действия.",
+                "normalized": 1.0
+              },
+              {
+                "value": false,
+                "label": "Нет",
+                "description": "Проверка требовалась, но не подтверждена до защищённого действия.",
+                "normalized": 0.0
+              }
+            ],
+            "na_allowed": true,
+            "na_condition": "Запрос не требовал идентификации."
+          },
+          {
+            "id": "consultation",
+            "name": "Корректная и полная консультация",
+            "description": "Оцените ответ или следующий шаг по шкале. Консультация оценивает, правильно и полно ли решён запрос. Ясный ответ на один из двух важных вопросов может получить высокий балл за ведение диалога и частичный за консультацию.",
+            "section": "Безопасность и решение",
+            "answer_type": "scale",
+            "weight": 20.0,
+            "options": [
+              {
+                "value": 0.0,
+                "label": "0",
+                "description": "Ответа по существу нет или ключевая рекомендация ошибочна.",
+                "normalized": 0.0
+              },
+              {
+                "value": 5.0,
+                "label": "5",
+                "description": "Есть общая подсказка, но клиенту всё ещё непонятно, как действовать.",
+                "normalized": 0.25
+              },
+              {
+                "value": 10.0,
+                "label": "10",
+                "description": "Часть запроса закрыта, существенный вопрос остался открытым.",
+                "normalized": 0.5
+              },
+              {
+                "value": 15.0,
+                "label": "15",
+                "description": "Основной вопрос решён, пропущена второстепенная деталь.",
+                "normalized": 0.75
+              },
+              {
+                "value": 20.0,
+                "label": "20",
+                "description": "Все существенные вопросы закрыты или дан корректный следующий шаг.",
+                "normalized": 1.0
+              }
+            ],
+            "na_allowed": true,
+            "na_condition": "Чат закончился до того, как клиент сформулировал запрос."
+          },
+          {
+            "id": "empathy",
+            "name": "Эмпатия и клиентоориентированность",
+            "description": "Да — оператор вежлив и, если клиент выразил недовольство или описал неудобство, отреагировал на конкретную проблему.",
+            "section": "Ведение и завершение диалога",
+            "answer_type": "binary",
+            "weight": 15.0,
+            "options": [
+              {
+                "value": true,
+                "label": "Да",
+                "description": "Условие выполнено.",
+                "normalized": 1.0
+              },
+              {
+                "value": false,
+                "label": "Нет",
+                "description": "Действие было нужно, но оператор его пропустил или выполнил неправильно.",
+                "normalized": 0.0
+              }
+            ],
+            "na_allowed": false,
+            "na_condition": null
+          },
+          {
+            "id": "dialogue",
+            "name": "Управление диалогом, скорость и грамотность",
+            "description": "Оцените ясность, порядок ответов и предупреждение об ожидании по шкале. Ведение диалога оценивает, насколько понятно и последовательно оператор общался. Порог первой реакции в 3 минуты в оценку не входит.",
+            "section": "Ведение и завершение диалога",
+            "answer_type": "scale",
+            "weight": 15.0,
+            "options": [
+              {
+                "value": 0.0,
+                "label": "0",
+                "description": "Из-за бессвязных или противоречивых реплик ход диалога непонятен.",
+                "normalized": 0.0
+              },
+              {
+                "value": 4.0,
+                "label": "4",
+                "description": "Клиенту приходится переспрашивать из-за формулировок или порядка ответов.",
+                "normalized": 0.4
+              },
+              {
+                "value": 7.0,
+                "label": "7",
+                "description": "Один заметный сбой, но клиент может понять ответ и продолжить.",
+                "normalized": 0.7
+              },
+              {
+                "value": 10.0,
+                "label": "10",
+                "description": "Ответы ясные и связные. Если было явное ожидание, оператор предупредил.",
+                "normalized": 1.0
+              }
+            ],
+            "na_allowed": false,
+            "na_condition": null
+          },
+          {
+            "id": "closing",
+            "name": "Завершение",
+            "description": "Да — оператор подвёл итог или предложил дальнейшую помощь и попрощался.",
+            "section": "Ведение и завершение диалога",
+            "answer_type": "binary",
+            "weight": 5.0,
+            "options": [
+              {
+                "value": true,
+                "label": "Да",
+                "description": "Условие выполнено.",
+                "normalized": 1.0
+              },
+              {
+                "value": false,
+                "label": "Нет",
+                "description": "Действие было нужно, но оператор его пропустил или выполнил неправильно.",
+                "normalized": 0.0
+              }
+            ],
+            "na_allowed": true,
+            "na_condition": "Чат оборвался до возможности его завершить."
+          },
+          {
+            "id": "gross_violation",
+            "name": "Грубые ошибки",
+            "description": "Да — выявлено оскорбление клиента, предложение платной услуги в обход компании или раскрытие конфиденциальной информации. Нет — ни одно из трёх не выявлено. Ставьте флаг, если оператор предлагает перевести деньги ему лично для инвестирования или просит личный номер клиента, чтобы оказать платную консультацию в частном порядке. Достаточно самого предложения в переписке. Согласие клиента или перевод денег для отметки не требуются.",
+            "section": "Грубые нарушения",
+            "answer_type": "flag",
+            "weight": null,
+            "options": [
+              {
+                "value": true,
+                "label": "Да",
+                "description": "Выявлено хотя бы одно из перечисленных нарушений.",
+                "normalized": null
+              },
+              {
+                "value": false,
+                "label": "Нет",
+                "description": "Ни одно из трёх нарушений не выявлено.",
+                "normalized": null
+              }
+            ],
+            "na_allowed": false,
+            "na_condition": null
+          }
+        ]
+      },
+      "scoring_policy": {
+        "rounding": "half_up",
+        "decimals": 2,
+        "gross_error_zeroes_total": false
+      },
+      "is_demo": true,
+      "original": {
+        "status": "completed",
+        "criteria": [
+          {
+            "criterion_id": "contact",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 10.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 10.0,
+            "weighted_points": 10.0,
+            "contribution": 10.0
+          },
+          {
+            "criterion_id": "needs",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 15.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 15.0,
+            "weighted_points": 15.0,
+            "contribution": 15.0
+          },
+          {
+            "criterion_id": "identity",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 20.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 20.0,
+            "weighted_points": 20.0,
+            "contribution": 20.0
+          },
+          {
+            "criterion_id": "consultation",
+            "answer": {
+              "status": "answered",
+              "value": 20.0
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 20.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 20.0,
+            "weighted_points": 20.0,
+            "contribution": 20.0
+          },
+          {
+            "criterion_id": "empathy",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 15.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 15.0,
+            "weighted_points": 15.0,
+            "contribution": 15.0
+          },
+          {
+            "criterion_id": "dialogue",
+            "answer": {
+              "status": "answered",
+              "value": 10.0
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 15.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 15.0,
+            "weighted_points": 15.0,
+            "contribution": 15.0
+          },
+          {
+            "criterion_id": "closing",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 5.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 5.0,
+            "weighted_points": 5.0,
+            "contribution": 5.0
+          },
+          {
+            "criterion_id": "gross_violation",
+            "answer": {
+              "status": "answered",
+              "value": false
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [],
+            "evidence": [],
+            "checked_range": {
+              "start_id": 1,
+              "end_id": 4
+            },
+            "expected_action": "Проверка описанного нарушения по диапазону (синтетическая демонстрация).",
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": null,
+            "normalized_answer": null,
+            "effective_weight": null,
+            "weighted_points": null,
+            "contribution": null
+          }
+        ],
+        "total": 100.0,
+        "total_before_override": 100.0,
+        "total_reason": null,
+        "applicable_weight": 100.0,
+        "sections": [
+          {
+            "section": "Начало и понимание запроса",
+            "applicable_weight": 25.0,
+            "weighted_points": 25.0,
+            "completion_percent": 100.0,
+            "contribution": 25.0
+          },
+          {
+            "section": "Безопасность и решение",
+            "applicable_weight": 40.0,
+            "weighted_points": 40.0,
+            "completion_percent": 100.0,
+            "contribution": 40.0
+          },
+          {
+            "section": "Ведение и завершение диалога",
+            "applicable_weight": 35.0,
+            "weighted_points": 35.0,
+            "completion_percent": 100.0,
+            "contribution": 35.0
+          }
+        ],
+        "flags": [
+          {
+            "criterion_id": "gross_violation",
+            "value": false
+          }
+        ],
+        "gross_error": false,
+        "manual_review_reasons": []
+      },
+      "final": {
+        "status": "completed",
+        "criteria": [
+          {
+            "criterion_id": "contact",
+            "answer": {
+              "status": "answered",
+              "value": false
+            },
+            "rationale": "Синтетическое решение проверяющего без дополнительных ссылок.",
+            "evidence_message_ids": [],
+            "evidence": [],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [
+              "Решение человека сохранено без доказательств и проверенного диапазона."
+            ],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 10.0,
+            "normalized_answer": 0.0,
+            "effective_weight": 10.0,
+            "weighted_points": 0.0,
+            "contribution": 0.0
+          },
+          {
+            "criterion_id": "needs",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 15.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 15.0,
+            "weighted_points": 15.0,
+            "contribution": 15.0
+          },
+          {
+            "criterion_id": "identity",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 20.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 20.0,
+            "weighted_points": 20.0,
+            "contribution": 20.0
+          },
+          {
+            "criterion_id": "consultation",
+            "answer": {
+              "status": "answered",
+              "value": 20.0
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 20.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 20.0,
+            "weighted_points": 20.0,
+            "contribution": 20.0
+          },
+          {
+            "criterion_id": "empathy",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 15.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 15.0,
+            "weighted_points": 15.0,
+            "contribution": 15.0
+          },
+          {
+            "criterion_id": "dialogue",
+            "answer": {
+              "status": "answered",
+              "value": 10.0
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 15.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 15.0,
+            "weighted_points": 15.0,
+            "contribution": 15.0
+          },
+          {
+            "criterion_id": "closing",
+            "answer": {
+              "status": "answered",
+              "value": true
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [
+              2
+            ],
+            "evidence": [
+              {
+                "message_id": 2,
+                "text": "Hello, I am Demo. Please open the demo account section.",
+                "speaker": "operator",
+                "timestamp": "00:02",
+                "phase": "client"
+              }
+            ],
+            "checked_range": null,
+            "expected_action": null,
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": 5.0,
+            "normalized_answer": 1.0,
+            "effective_weight": 5.0,
+            "weighted_points": 5.0,
+            "contribution": 5.0
+          },
+          {
+            "criterion_id": "gross_violation",
+            "answer": {
+              "status": "answered",
+              "value": false
+            },
+            "rationale": "Демо: синтетический ответ для проверки интерфейса, не оценка качества разговора.",
+            "evidence_message_ids": [],
+            "evidence": [],
+            "checked_range": {
+              "start_id": 1,
+              "end_id": 4
+            },
+            "expected_action": "Проверка описанного нарушения по диапазону (синтетическая демонстрация).",
+            "na_reason": null,
+            "manual_review": false,
+            "manual_review_reasons": [],
+            "warnings": [],
+            "reused": false,
+            "reused_from_evaluation_id": null,
+            "original_weight": null,
+            "normalized_answer": null,
+            "effective_weight": null,
+            "weighted_points": null,
+            "contribution": null
+          }
+        ],
+        "total": 90.0,
+        "total_before_override": 90.0,
+        "total_reason": null,
+        "applicable_weight": 100.0,
+        "sections": [
+          {
+            "section": "Начало и понимание запроса",
+            "applicable_weight": 25.0,
+            "weighted_points": 15.0,
+            "completion_percent": 60.0,
+            "contribution": 15.0
+          },
+          {
+            "section": "Безопасность и решение",
+            "applicable_weight": 40.0,
+            "weighted_points": 40.0,
+            "completion_percent": 100.0,
+            "contribution": 40.0
+          },
+          {
+            "section": "Ведение и завершение диалога",
+            "applicable_weight": 35.0,
+            "weighted_points": 35.0,
+            "completion_percent": 100.0,
+            "contribution": 35.0
+          }
+        ],
+        "flags": [
+          {
+            "criterion_id": "gross_violation",
+            "value": false
+          }
+        ],
+        "gross_error": false,
+        "manual_review_reasons": []
+      },
+      "final_revision": 1,
+      "applied_decision_ids": [
+        "ec3a794b-cb21-4fad-9c1c-7380fd95ccbf"
+      ],
+      "usage": {
+        "provider": "fake",
+        "model": null,
+        "prompt_version": "cqa-v1",
+        "duration_ms": 16,
+        "calls": 1,
+        "input_tokens": null,
+        "output_tokens": null,
+        "cost": null,
+        "currency": null
+      },
+      "created_at": "2026-11-07T12:09:43.005470Z",
+      "updated_at": "2026-11-07T12:09:43.232784Z"
+    }
+  },
+  "meta": {
+    "request_id": "a8bb52df-a7f0-4eb4-9e14-bf0f40d86d10"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "status": "ok",
+    "api_version": "1",
+    "database_ready": true,
+    "provider": "fake",
+    "model": null,
+    "is_demo": true,
+    "evaluation_ready": true,
+    "dataset_ready": false,
+    "active_checklist_version_id": "eb926b9d-2617-4426-b796-e34a689e23c5",
+    "scoring_policy": {
+      "rounding": "half_up",
+      "decimals": 2,
+      "gross_error_zeroes_total": false
+    }
+  },
+  "meta": {
+    "request_id": "5211c7dd-8ccc-4ff5-92c7-0f8bc0bfe7e2"
+  }
+}

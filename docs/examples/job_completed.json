@@ -1,0 +1,36 @@
+{
+  "data": {
+    "id": "bb4371ee-a9d6-45fb-b709-d310eda2b59c",
+    "status": "completed",
+    "checklist_version_id": "eb926b9d-2617-4426-b796-e34a689e23c5",
+    "is_demo": true,
+    "provider": "fake",
+    "total": 2,
+    "processed": 2,
+    "succeeded": 2,
+    "failed": 0,
+    "manual_review_count": 0,
+    "progress_percent": 100.0,
+    "items": [
+      {
+        "revision_id": "eba47c96-c351-4c42-a17b-820af11da76f",
+        "status": "completed",
+        "evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+        "error": null
+      },
+      {
+        "revision_id": "164a895b-53a0-4285-aeec-77f2d819d72f",
+        "status": "completed",
+        "evaluation_id": "ff4c9a41-0120-4436-83fc-a97ddf647f54",
+        "error": null
+      }
+    ],
+    "error": null,
+    "created_at": "2026-11-07T12:09:42.979956Z",
+    "started_at": "2026-11-07T12:09:42.985956Z",
+    "finished_at": "2026-11-07T12:09:43.078698Z"
+  },
+  "meta": {
+    "request_id": "cffcb968-9b35-475b-ac8b-2616620dfb36"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "VERSION_CONFLICT",
+    "message": "Данные изменились. Загрузите актуальную версию.",
+    "details": [],
+    "retryable": false
+  },
+  "meta": {
+    "request_id": "d458d1cd-bfba-4022-813c-45064870bbf7"
+  }
+}

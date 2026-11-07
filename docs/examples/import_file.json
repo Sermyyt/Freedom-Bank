@@ -1,0 +1,18 @@
+{
+  "data": {
+    "import_id": "2cea2c20-3477-4c4a-9b08-32bd8342bf79",
+    "group_id": "SYNTHETIC",
+    "received": 2,
+    "created": 2,
+    "unchanged": 0,
+    "revised": 0,
+    "skipped": 0,
+    "errors": [],
+    "warnings": [],
+    "unknown_system_phrases": [],
+    "created_at": "2026-11-07T12:09:42.908063Z"
+  },
+  "meta": {
+    "request_id": "417593ee-a737-4237-b0fd-1fea2fa4fc52"
+  }
+}

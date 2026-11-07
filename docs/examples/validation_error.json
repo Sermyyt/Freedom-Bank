@@ -1,0 +1,19 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Проверьте поля запроса.",
+    "details": [
+      {
+        "path": [
+          "body"
+        ],
+        "code": "value_error",
+        "message": "Неверное или отсутствующее значение."
+      }
+    ],
+    "retryable": false
+  },
+  "meta": {
+    "request_id": "a2147d82-796a-4e2f-94d6-4b97a076b16b"
+  }
+}

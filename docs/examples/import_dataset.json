@@ -1,0 +1,18 @@
+{
+  "data": {
+    "import_id": "f4e7c9fa-ab81-43e8-b4ed-4ab529c10167",
+    "group_id": "SYNTHETIC_REMOTE",
+    "received": 2,
+    "created": 2,
+    "unchanged": 0,
+    "revised": 0,
+    "skipped": 0,
+    "errors": [],
+    "warnings": [],
+    "unknown_system_phrases": [],
+    "created_at": "2026-11-07T12:09:42.916704Z"
+  },
+  "meta": {
+    "request_id": "b2d0001d-7f10-4720-946b-7af78dc6640c"
+  }
+}
