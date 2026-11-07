@@ -1,6 +1,7 @@
 // Hash-маршруты. Экран — модуль с mount(container, route) → { update?(route), destroy?() }.
 // При уходе с экрана вызывается destroy: он останавливает опросы и отменяет запросы.
 import { DEFAULT_ROUTE, parseHash } from './lib/route.js';
+import { reveal } from './lib/motion.js';
 
 export function startRouter(container, routes, { notFound, onChange } = {}) {
   let current = null;
@@ -19,11 +20,20 @@ export function startRouter(container, routes, { notFound, onChange } = {}) {
         return;
       }
     }
+    const movedBetweenScreens = Boolean(current);
     if (current && current.instance && typeof current.instance.destroy === 'function') current.instance.destroy();
     container.replaceChildren();
     current = { view, instance: view.mount(container, route) || null };
     if (onChange) onChange(route);
     window.scrollTo(0, 0);
+    reveal(container);
+    if (movedBetweenScreens) {
+      const heading = container.querySelector('h1');
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+      }
+    }
   }
 
   window.addEventListener('hashchange', render);

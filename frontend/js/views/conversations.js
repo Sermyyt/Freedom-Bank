@@ -7,6 +7,8 @@ import { field } from '../components/field.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { clear, debounce, h } from '../dom.js';
+import { setExpanded } from '../lib/disclosure.js';
+import { reveal } from '../lib/motion.js';
 import { fieldErrors, isAbortError } from '../lib/errors.js';
 import { buildGroupEvaluationRequest, groupJobSummary } from '../lib/group-evaluation.js';
 import { isTerminalJob, pollJob } from '../lib/poll.js';
@@ -121,12 +123,14 @@ export function mount(container, route) {
     h(
       'summary',
       // Клик (и Enter/пробел) по заголовку — действие человека: запоминаем новое состояние.
-      { class: 'cqa-collapsible-summary', on: { click: () => setImportOpen(!importBox.open) } },
+      { class: 'cqa-collapsible-summary' },
       h('h2', { text: 'Импорт' }),
       h('span', { class: 'cqa-muted', text: 'группа с сервера организаторов или JSON-файл' }),
     ),
     h('div', { class: 'cqa-collapsible-body' }, h('div', { class: 'cqa-import-grid' }, datasetForm, fileForm), report),
   );
+
+  importBox.addEventListener('cqa:disclosure', event => setImportOpen(event.detail.open));
 
   function setImportBoxOpen(open) {
     importBox.open = open;
@@ -360,14 +364,14 @@ export function mount(container, route) {
         { class: 'cqa-report-head' },
         h('h3', { text: `Отчёт импорта: группа ${result.group_id}` }),
         h('span', { class: 'cqa-muted', text: formatDateTime(result.created_at) }),
-        h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => { report.hidden = true; } } }),
+        h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => setExpanded(report, false) } }),
       ),
       h('dl', { class: 'cqa-stats' }, stats.map(([label, value]) => h('div', { class: 'cqa-stat' }, h('dt', { text: label }), h('dd', { text: String(value) })))),
       issueList('Ошибки', result.errors, 'bad'),
       issueList('Предупреждения', result.warnings, 'warn'),
       unknownPhrases(result.unknown_system_phrases),
     );
-    report.hidden = false;
+    setExpanded(report, true);
   }
 
   // ---------- Фильтры: действия ----------
@@ -662,6 +666,7 @@ export function mount(container, route) {
       tableWrap.hidden = false;
       listEmpty.hidden = true;
       tableBody.replaceChildren(...page.items.map(row));
+      [...tableBody.children].slice(0, 6).forEach((item, index) => reveal(item, index * 24));
       listStatus.textContent = `Показаны ${range.from}–${range.to} из ${range.total}`;
     }
     renderPager(page);

@@ -117,6 +117,8 @@
   --cqa-duration-fast: 120ms;
   --cqa-duration-normal: 180ms;
   --cqa-duration-slow: 240ms;
+  --cqa-duration-score: 480ms;
+  --cqa-duration-marker: 550ms;
   --cqa-duration-enter: 180ms;
   --cqa-duration-exit: 140ms;
   --cqa-ease: cubic-bezier(0.2, 0, 0, 1);
@@ -1048,10 +1050,6 @@
 
 .cqa-app .cqa-msg-text-inner {
   padding: var(--cqa-space-1) 0;
-  background-image: linear-gradient(90deg, var(--cqa-marker) 0 50%, transparent 50% 100%);
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  background-repeat: no-repeat;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -1124,8 +1122,14 @@
   outline: none;
 }
 
-.cqa-app .cqa-msg.is-target .cqa-msg-text-inner {
-  animation: cqa-marker 0.55s ease-out forwards;
+.cqa-app .cqa-msg.is-target::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 3px solid var(--cqa-marker-border);
+  opacity: 0;
+  animation: cqa-marker var(--cqa-duration-marker) var(--cqa-ease-out);
 }
 
 .cqa-app .cqa-msg.is-target.cqa-msg--event,
@@ -1136,8 +1140,8 @@
 .cqa-app .cqa-msg.in-range .cqa-msg-gutter { box-shadow: 3px 0 0 var(--cqa-petrol); padding-right: var(--cqa-space-2); }
 
 @keyframes cqa-marker {
-  from { background-position: 100% 0; }
-  to { background-position: 0 0; }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 .cqa-app .cqa-seek {
@@ -1207,9 +1211,11 @@
 .cqa-app .cqa-progress-fill {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
   background: var(--cqa-petrol);
-  transition: width 0.3s ease-out;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--cqa-duration-slow) var(--cqa-ease);
 }
 
 .cqa-app .cqa-job-errors {
@@ -1287,12 +1293,6 @@
   border-radius: var(--cqa-radius-sm);
   background: repeating-linear-gradient(135deg, var(--cqa-rule) 0 1px, var(--cqa-sheet-2) 1px 6px);
   transform-origin: left center;
-  animation: cqa-grow 0.6s ease-out both;
-}
-
-@keyframes cqa-grow {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
 }
 
 .cqa-app .cqa-composition-part { display: block; height: 100%; }
@@ -2451,13 +2451,32 @@
   .cqa-app .cqa-pager { flex-wrap: wrap; justify-content: flex-start; }
 }
 
+.cqa-app .cqa-button,
+.cqa-app .cqa-icon-button,
+.cqa-app .cqa-chip,
+.cqa-app .cqa-tab,
+.cqa-app .cqa-row-link { transition: transform var(--cqa-duration-fast) var(--cqa-ease); }
+.cqa-app .cqa-button:not(:disabled):hover,
+.cqa-app .cqa-icon-button:not(:disabled):hover,
+.cqa-app .cqa-chip:hover { transform: translateY(-1px); }
+.cqa-app .cqa-button:not(:disabled):active,
+.cqa-app .cqa-icon-button:not(:disabled):active,
+.cqa-app .cqa-chip:active { transform: translateY(0) scale(0.98); }
+.cqa-app .cqa-row-link:hover { transform: translateX(2px); }
+
 @media (prefers-reduced-motion: reduce) {
   .cqa-app *,
   .cqa-app *::before,
   .cqa-app *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
+  .cqa-app .cqa-button:hover,
+  .cqa-app .cqa-button:active,
+  .cqa-app .cqa-icon-button:hover,
+  .cqa-app .cqa-icon-button:active,
+  .cqa-app .cqa-chip:hover,
+  .cqa-app .cqa-chip:active,
+  .cqa-app .cqa-row-link:hover { transform: none; }
 }

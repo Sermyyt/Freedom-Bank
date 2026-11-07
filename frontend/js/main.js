@@ -2,6 +2,7 @@
 import { createHeader } from './components/header.js';
 import { initToasts } from './components/toast.js';
 import { h } from './dom.js';
+import { bindDetailsMotion } from './lib/disclosure.js';
 import { startRouter } from './router.js';
 import { startHealthPolling } from './state.js';
 import * as appeals from './views/appeals.js';
@@ -15,6 +16,7 @@ const root = document.getElementById('cqa-root');
 const header = createHeader();
 const main = h('main', { class: 'cqa-main' });
 root.replaceChildren(header.el, main);
+bindDetailsMotion(main);
 header.trackHeight(root);
 initToasts(root);
 startHealthPolling();

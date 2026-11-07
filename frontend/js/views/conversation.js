@@ -34,6 +34,8 @@ import {
 } from '../lib/labels.js';
 import { groupTranscript, isClientFacingPhase, isHiddenFromClientPhase, phaseLabel } from '../lib/phases.js';
 import { describeJob, pollJob } from '../lib/poll.js';
+import { prefersReducedMotion } from '../lib/motion.js';
+import { animateScore } from '../lib/score-motion.js';
 import { buildHash } from '../lib/route.js';
 import { getChecklistVersion, setLastConversation, setViewDemo, state, subscribe } from '../state.js';
 import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
@@ -41,10 +43,6 @@ import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
 const KNOWN_ROLES = ['client', 'operator', 'bot', 'system'];
 const KNOWN_PHASES = ['pre_operator', 'client', 'hold', 'internal_consult', 'after_end'];
 const FLAG_TONES = { duplicate_of_prev: 'neutral', after_end: 'neutral', pii_masked: 'info', unknown_event: 'partial' };
-
-function prefersReducedMotion() {
-  return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-}
 
 function healthDecimals() {
   return state.health && state.health.scoring_policy ? state.health.scoring_policy.decimals : undefined;
@@ -71,6 +69,8 @@ export function mount(container, route) {
   let summariesTotal = 0;
   let jobRunning = false;
   let jobEvaluationId = null;
+  let pendingScoreAnimationId = null;
+  let cancelScoreAnimation = () => {};
   let audio = null;
   const messageNodes = new Map();
   const messagesById = new Map();
@@ -512,6 +512,7 @@ export function mount(container, route) {
       const summary = describeJob(finished);
       const evaluationId = summary.evaluationIds[0];
       jobEvaluationId = evaluationId || null;
+      if (evaluationId && evaluationId !== evaluation?.id) pendingScoreAnimationId = evaluationId;
       if (evaluationId) {
         showToast(finished.status === 'completed' ? 'Оценка готова.' : 'Оценка сохранена с ошибками: проверьте результат.', {
           tone: finished.status === 'completed' ? 'success' : 'error',
@@ -579,7 +580,8 @@ export function mount(container, route) {
       { class: 'cqa-total' },
       h('p', { class: 'cqa-total-label', text: 'Итоговый балл' }),
       h('p', { class: 'cqa-total-figure' },
-        h('span', { class: 'cqa-total-value', text: formatNumber(final.total, decimals) }),
+        h('span', { class: 'cqa-total-value', 'aria-label': formatNumber(final.total, decimals) },
+          h('span', { class: 'cqa-total-digits', 'aria-hidden': 'true', text: formatNumber(final.total, decimals) })),
         hasTotal ? h('span', { class: 'cqa-total-of', text: 'из 100' }) : null),
     );
     if (final.total_reason) block.append(h('p', { class: 'cqa-total-reason', text: final.total_reason }));
@@ -902,6 +904,7 @@ export function mount(container, route) {
   }
 
   function renderScore() {
+    cancelScoreAnimation();
     updateEvaluateControls();
     // Итог задания остаётся рядом с оценкой, которую оно создало; у других оценок он лишний.
     if (!jobRunning && jobEvaluationId && (!evaluation || evaluation.id !== jobEvaluationId)) {
@@ -934,6 +937,10 @@ export function mount(container, route) {
       flagsBlock(rows.filter((row) => row.isFlag), decimals),
       pastEvaluations(),
     ]);
+    if (pendingScoreAnimationId === evaluation.id) {
+      pendingScoreAnimationId = null;
+      cancelScoreAnimation = animateScore(scoreBody.querySelector('.cqa-total-digits'), evaluation.final.total, value => formatNumber(value, decimals));
+    }
     if (focused && document.activeElement !== focused) focused.focus({ preventScroll: true });
   }
 
@@ -1116,6 +1123,7 @@ export function mount(container, route) {
       return true;
     },
     destroy() {
+      cancelScoreAnimation();
       controller.abort();
       if (pollController) pollController.abort();
       if (activeModal) activeModal.close();

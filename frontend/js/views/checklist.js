@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { loadingState } from '../components/loading-state.js';
+import { setExpanded } from '../lib/disclosure.js';
 import { field } from '../components/field.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
@@ -558,7 +559,7 @@ export function mount(container) {
     if (!item) return;
     item.classList.toggle('is-open', open);
     item.querySelector('.cqa-ed-toggle').setAttribute('aria-expanded', String(open));
-    item.querySelector('.cqa-ed-body').hidden = !open;
+    setExpanded(item.querySelector('.cqa-ed-body'), open);
   }
 
   function setAllOpen(open) {
