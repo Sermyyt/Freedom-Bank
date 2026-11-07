@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "CQA frontend: plain ES modules, no dependencies, no build step. Tests: node --test frontend/tests/"
+}
