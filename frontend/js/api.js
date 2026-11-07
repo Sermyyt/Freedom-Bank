@@ -69,6 +69,15 @@ export function createApi({ base = API_BASE, fetchImpl } = {}) {
     listEvaluations: (query, options) => request('GET', '/evaluations', { ...options, query }),
     getEvaluation: (evaluationId, options) => request('GET', `/evaluations/${id(evaluationId)}`, options),
     getChecklistVersion: (versionId, options) => request('GET', `/checklist-versions/${id(versionId)}`, options),
+    listChecklists: (query, options) => request('GET', '/checklists', { ...options, query }),
+    getChecklist: (checklistId, options) => request('GET', `/checklists/${id(checklistId)}`, options),
+    listChecklistVersions: (checklistId, query, options) =>
+      request('GET', `/checklists/${id(checklistId)}/versions`, { ...options, query }),
+    // Проверка ничего не сохраняет; её можно отменить сигналом, когда человек продолжает печатать.
+    validateChecklist: (definition, options) => request('POST', '/checklists/validate', { ...options, json: definition }),
+    createChecklistVersion: (checklistId, body) => request('POST', `/checklists/${id(checklistId)}/versions`, { json: body }),
+    compareEvaluations: (leftId, rightId, options) =>
+      request('GET', '/evaluations/compare', { ...options, query: { left_id: leftId, right_id: rightId } }),
     createAppeal: (body) => request('POST', '/appeals', { json: body }),
     listAppeals: (query, options) => request('GET', '/appeals', { ...options, query }),
     getAppeal: (appealId, options) => request('GET', `/appeals/${id(appealId)}`, options),

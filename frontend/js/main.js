@@ -5,6 +5,8 @@ import { h } from './dom.js';
 import { startRouter } from './router.js';
 import { startHealthPolling } from './state.js';
 import * as appeals from './views/appeals.js';
+import * as checklist from './views/checklist.js';
+import * as compare from './views/compare.js';
 import * as conversation from './views/conversation.js';
 import * as conversations from './views/conversations.js';
 import { notFound, placeholder } from './views/placeholder.js';
@@ -22,9 +24,9 @@ startRouter(
   {
     conversations,
     conversation,
-    checklist: placeholder('Чек-лист', 'F4'),
+    checklist,
     appeals,
-    compare: placeholder('Сравнение оценок', 'F4'),
+    compare,
     history: placeholder('История', 'F5'),
   },
   { notFound, onChange: (route) => header.setActive(route.name) },

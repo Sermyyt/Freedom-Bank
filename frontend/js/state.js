@@ -31,6 +31,9 @@ export const state = {
   viewDemo: false,
   lastListHash: '#/conversations',
   lastAppealsHash: '#/appeals',
+  // Последний открытый разговор: после новой версии чек-листа его предлагают переоценить и сравнить.
+  // Только ID и внешний ID — без транскрипта и аудио.
+  lastConversation: null,
   pageSize: normalizePageSize(readPref('pageSize', DEFAULT_PAGE_SIZE)),
   // null — человек ещё не сворачивал и не разворачивал блок импорта.
   importOpen: (() => {
@@ -127,4 +130,8 @@ export function setLastListHash(hash) {
 
 export function setLastAppealsHash(hash) {
   state.lastAppealsHash = hash;
+}
+
+export function setLastConversation(conversation) {
+  state.lastConversation = conversation;
 }

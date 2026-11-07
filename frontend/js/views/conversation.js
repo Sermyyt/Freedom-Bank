@@ -34,7 +34,7 @@ import {
 import { groupTranscript, isClientFacingPhase, isHiddenFromClientPhase, phaseLabel } from '../lib/phases.js';
 import { describeJob, pollJob } from '../lib/poll.js';
 import { buildHash } from '../lib/route.js';
-import { getChecklistVersion, setViewDemo, state, subscribe } from '../state.js';
+import { getChecklistVersion, setLastConversation, setViewDemo, state, subscribe } from '../state.js';
 import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
 
 const KNOWN_ROLES = ['client', 'operator', 'bot', 'system'];
@@ -212,6 +212,11 @@ export function mount(container, route) {
   // ---------- Вывод ----------
   function render() {
     grid.hidden = false;
+    setLastConversation({
+      id: conversationId,
+      externalId: current.ref.conversation_id,
+      revisionId: current.ref.revision_id,
+    });
     renderHead();
     renderNotices();
     // Переписку той же ревизии не перестраиваем: после решения апелляции не теряется место прокрутки.
