@@ -114,7 +114,7 @@ export function mount(container, route) {
   function table(rows, decimals, leftLabel, rightLabel) {
     return h(
       'div',
-      { class: 'cqa-table-wrap' },
+      { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'Сравнение критериев, прокручиваемая таблица' },
       h(
         'table',
         { class: 'cqa-table cqa-compare-table' },
@@ -132,7 +132,7 @@ export function mount(container, route) {
             { class: `cqa-compare-row cqa-compare-row--${row.change}` },
             h('th', { scope: 'row' }, h('span', { class: 'cqa-compare-name', text: row.name }), h('code', { class: 'cqa-compare-id', text: row.id })),
             h('td', {},
-              badge(row.changeLabel, row.changeTone),
+              badge(`${row.change === 'added' ? '+ ' : row.change === 'removed' ? '− ' : ''}${row.changeLabel}`, row.changeTone),
               row.weights ? h('div', { class: 'cqa-muted cqa-small', text: `вес ${formatNumber(row.weights.left, decimals)} → ${formatNumber(row.weights.right, decimals)}` }) : null),
             answerCell(row.left, 'Критерия нет в версии слева', false),
             answerCell(row.right, 'Критерия нет в версии справа', row.answerChanged),

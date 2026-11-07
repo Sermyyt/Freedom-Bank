@@ -171,7 +171,7 @@
   color: var(--cqa-petrol);
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 .cqa-app a:hover { color: var(--cqa-petrol-dark); }
@@ -187,6 +187,11 @@
 }
 
 .cqa-app .cqa-muted { color: var(--cqa-ink-2); }
+.cqa-app .cqa-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.cqa-app .cqa-skip { position: fixed; top: var(--cqa-space-3); left: var(--cqa-space-3); z-index: 100; padding: var(--cqa-space-3) var(--cqa-space-4); border: 2px solid var(--cqa-accent); border-radius: var(--cqa-radius-md); background: var(--cqa-sheet); color: var(--cqa-ink); font: inherit; transform: translateY(-200%); }
+.cqa-app .cqa-skip:focus { transform: none; }
+.cqa-app h1 { width: fit-content; max-width: 100%; }
+.cqa-app h1:focus-visible { outline-offset: var(--cqa-space-1); border-radius: var(--cqa-radius-sm); }
 .cqa-app .cqa-small { font-size: var(--cqa-text-xs); }
 .cqa-app .cqa-strong { font-weight: 600; }
 
@@ -349,8 +354,6 @@
   color: var(--cqa-ink-2);
 }
 
-.cqa-app a { color: var(--cqa-accent); text-underline-offset: 3px; }
-.cqa-app a:hover { color: var(--cqa-accent-hover); }
 .cqa-app .cqa-loading-state { padding: var(--cqa-space-4); }
 .cqa-app .cqa-skeleton { display: grid; gap: var(--cqa-space-4); margin-top: var(--cqa-space-4); }
 .cqa-app .cqa-skeleton-row { display: grid; gap: var(--cqa-space-2); padding: var(--cqa-space-3) 0; }
@@ -1134,6 +1137,8 @@
 
 .cqa-app .cqa-msg.is-target.cqa-msg--event,
 .cqa-app .cqa-msg.is-target:focus-visible { box-shadow: inset 0 0 0 2px var(--cqa-marker); }
+.cqa-app .cqa-msg.is-target:focus-visible { outline: 2px solid var(--cqa-accent); outline-offset: -2px; }
+.cqa-app .cqa-message-pick { width: var(--cqa-space-5); height: var(--cqa-space-5); margin-top: var(--cqa-space-2); accent-color: var(--cqa-accent); cursor: pointer; }
 
 .cqa-app .cqa-msg.in-range { background: var(--cqa-petrol-wash); }
 
@@ -1704,7 +1709,7 @@
 
 .cqa-app .cqa-segment:hover { background: var(--cqa-petrol-wash); }
 .cqa-app .cqa-segment:has(input:checked) { background: var(--cqa-petrol); color: var(--cqa-neutral-0); }
-.cqa-app .cqa-segment:has(input:focus-visible) { outline: 2px solid var(--cqa-petrol); outline-offset: 2px; }
+.cqa-app .cqa-segment:has(input:focus-visible) { outline: 2px solid currentColor; outline-offset: -4px; }
 
 /* Варианты ответа — разлинованный список, как критерии: подпись ответа цифровым шрифтом, под ней описание. */
 .cqa-app .cqa-choices {
@@ -1915,6 +1920,7 @@
 .cqa-app .cqa-filter-tab:last-child { border-right: 0; }
 .cqa-app .cqa-filter-tab:hover { background: var(--cqa-sheet-2); color: var(--cqa-ink); }
 .cqa-app .cqa-filter-tab.is-active { background: var(--cqa-petrol); color: var(--cqa-neutral-0); }
+.cqa-app .cqa-filter-tab:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 
 .cqa-app .cqa-appeals-table td { vertical-align: top; }
 .cqa-app .cqa-appeal-comment-cell { min-width: 22ch; max-width: 48ch; }

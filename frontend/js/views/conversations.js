@@ -198,7 +198,7 @@ export function mount(container, route) {
   let groupPoll = null;
 
   // ---------- Таблица ----------
-  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite' });
+  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite', tabindex: '-1' });
   const listError = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const tableBody = h('tbody');
   const table = h(
@@ -207,7 +207,7 @@ export function mount(container, route) {
     h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', class: NUMERIC_COLUMNS.has(title) ? 'cqa-num' : null, text: title })))),
     tableBody,
   );
-  const tableWrap = h('div', { class: 'cqa-table-wrap cqa-list-scroll' }, table);
+  const tableWrap = h('div', { class: 'cqa-table-wrap cqa-list-scroll', role: 'region', tabindex: '0', 'aria-label': 'Разговоры, прокручиваемый список' }, table);
   const loading = loadingState();
   const listEmpty = h('div', { hidden: true });
   const pager = h('nav', { class: 'cqa-pager', 'aria-label': 'Страницы списка' });
@@ -364,7 +364,14 @@ export function mount(container, route) {
         { class: 'cqa-report-head' },
         h('h3', { text: `Отчёт импорта: группа ${result.group_id}` }),
         h('span', { class: 'cqa-muted', text: formatDateTime(result.created_at) }),
-        h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => setExpanded(report, false) } }),
+        h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => {
+          const hadFocus = report.contains(document.activeElement);
+          setExpanded(report, false).then(() => {
+            if (hadFocus && importBox.isConnected && (report.contains(document.activeElement) || document.activeElement === document.body)) {
+              importBox.querySelector('summary').focus({ preventScroll: true });
+            }
+          });
+        } } }),
       ),
       h('dl', { class: 'cqa-stats' }, stats.map(([label, value]) => h('div', { class: 'cqa-stat' }, h('dt', { text: label }), h('dd', { text: String(value) })))),
       issueList('Ошибки', result.errors, 'bad'),
@@ -600,7 +607,12 @@ export function mount(container, route) {
   }
 
   function renderPager(page) {
+    const hadFocus = pager.contains(document.activeElement);
     clear(pager);
+    if (hadFocus) {
+      listStatus.focus({ preventScroll: true });
+      listStatus.scrollIntoView({ block: 'center' });
+    }
     if (!page || page.total <= page.limit) return;
     const pages = Math.ceil(page.total / page.limit);
     const current = Math.floor(page.offset / page.limit) + 1;

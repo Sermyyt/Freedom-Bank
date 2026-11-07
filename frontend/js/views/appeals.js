@@ -52,13 +52,13 @@ export function mount(container, route) {
 
   const filterLinks = FILTERS.map((filter) => h('a', { class: 'cqa-filter-tab', text: filter.label, dataset: { status: filter.status } }));
   const filterNav = h('nav', { class: 'cqa-filter-tabs', 'aria-label': 'Статус апелляций' }, filterLinks);
-  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite' });
+  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite', tabindex: '-1' });
   const listError = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const tableBody = h('tbody');
   const loading = loadingState();
   const tableWrap = h(
     'div',
-    { class: 'cqa-table-wrap' },
+    { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'Апелляции, прокручиваемая таблица' },
     h('table', { class: 'cqa-table cqa-appeals-table' }, h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', text: title })))), tableBody),
   );
   const listEmpty = h('div', { hidden: true });
@@ -177,7 +177,12 @@ export function mount(container, route) {
   }
 
   function renderPager(page) {
+    const hadFocus = pager.contains(document.activeElement);
     clear(pager);
+    if (hadFocus) {
+      listStatus.focus({ preventScroll: true });
+      listStatus.scrollIntoView({ block: 'center' });
+    }
     if (!page || page.total <= page.limit) return;
     const pages = Math.ceil(page.total / page.limit);
     const currentPage = Math.floor(page.offset / page.limit) + 1;

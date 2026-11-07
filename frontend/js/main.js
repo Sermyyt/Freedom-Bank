@@ -14,8 +14,16 @@ import { notFound, placeholder } from './views/placeholder.js';
 
 const root = document.getElementById('cqa-root');
 const header = createHeader();
-const main = h('main', { class: 'cqa-main' });
-root.replaceChildren(header.el, main);
+const main = h('main', { class: 'cqa-main', id: 'cqa-main', tabindex: '-1' });
+const skip = h('button', {
+  type: 'button', class: 'cqa-skip', text: 'К содержимому',
+  on: { click: () => {
+    const target = main.querySelector('h1') || main;
+    target.tabIndex = -1;
+    target.focus();
+  } },
+});
+root.replaceChildren(skip, header.el, main);
 bindDetailsMotion(main);
 header.trackHeight(root);
 initToasts(root);

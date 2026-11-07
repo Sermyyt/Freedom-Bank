@@ -340,6 +340,11 @@ export function mount(container, route) {
       { class: 'cqa-msg-gutter' },
       h('span', { class: 'cqa-msg-num', text: `#${message.id}` }),
       h('time', { class: 'cqa-msg-time', title: message.timestamp, text: displayTimestamp(message.timestamp) }),
+      h('input', {
+        type: 'checkbox', class: 'cqa-message-pick', hidden: true,
+        'aria-label': `Использовать реплику #${message.id} как доказательство`,
+        on: { change: event => pickMessage(event.currentTarget.closest('.cqa-msg')) },
+      }),
     );
     let body;
     if (isEvent) {
@@ -398,7 +403,10 @@ export function mount(container, route) {
     transcriptPane.classList.toggle('is-picking', picking);
     pickHint.hidden = !picking;
     for (const [id, node] of messageNodes) {
-      node.tabIndex = picking ? 0 : -1;
+      node.tabIndex = -1;
+      const checkbox = node.querySelector('.cqa-message-pick');
+      checkbox.hidden = !picking;
+      checkbox.checked = picked.has(id);
       node.classList.toggle('is-picked', picked.has(id));
       if (picking) node.title = picked.has(id) ? 'Убрать из доказательств решения' : 'Добавить в доказательства решения';
       else node.removeAttribute('title');
@@ -580,7 +588,8 @@ export function mount(container, route) {
       { class: 'cqa-total' },
       h('p', { class: 'cqa-total-label', text: 'Итоговый балл' }),
       h('p', { class: 'cqa-total-figure' },
-        h('span', { class: 'cqa-total-value', 'aria-label': formatNumber(final.total, decimals) },
+        h('span', { class: 'cqa-total-value' },
+          h('span', { class: 'cqa-sr-only', text: formatNumber(final.total, decimals) }),
           h('span', { class: 'cqa-total-digits', 'aria-hidden': 'true', text: formatNumber(final.total, decimals) })),
         hasTotal ? h('span', { class: 'cqa-total-of', text: 'из 100' }) : null),
     );
@@ -886,7 +895,7 @@ export function mount(container, route) {
         h('td', {}, badge(labelFor(EVALUATION_STATUS_LABELS, summary.status), EVALUATION_STATUS_TONES[summary.status] || 'neutral')),
         h('td', {}, action));
     });
-    block.append(h('div', { class: 'cqa-table-wrap' }, h(
+    block.append(h('div', { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'История оценок, прокручиваемая таблица' }, h(
       'table',
       { class: 'cqa-table cqa-table--compact' },
       h('thead', {}, h('tr', {},
