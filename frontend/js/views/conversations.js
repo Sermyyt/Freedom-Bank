@@ -2,10 +2,13 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { field } from '../components/field.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { clear, debounce, h } from '../dom.js';
+import { setExpanded } from '../lib/disclosure.js';
+import { reveal } from '../lib/motion.js';
 import { fieldErrors, isAbortError } from '../lib/errors.js';
 import { buildGroupEvaluationRequest, groupJobSummary } from '../lib/group-evaluation.js';
 import { isTerminalJob, pollJob } from '../lib/poll.js';
@@ -120,12 +123,14 @@ export function mount(container, route) {
     h(
       'summary',
       // Клик (и Enter/пробел) по заголовку — действие человека: запоминаем новое состояние.
-      { class: 'cqa-collapsible-summary', on: { click: () => setImportOpen(!importBox.open) } },
+      { class: 'cqa-collapsible-summary' },
       h('h2', { text: 'Импорт' }),
       h('span', { class: 'cqa-muted', text: 'группа с сервера организаторов или JSON-файл' }),
     ),
     h('div', { class: 'cqa-collapsible-body' }, h('div', { class: 'cqa-import-grid' }, datasetForm, fileForm), report),
   );
+
+  importBox.addEventListener('cqa:disclosure', event => setImportOpen(event.detail.open));
 
   function setImportBoxOpen(open) {
     importBox.open = open;
@@ -193,16 +198,17 @@ export function mount(container, route) {
   let groupPoll = null;
 
   // ---------- Таблица ----------
-  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite' });
+  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite', tabindex: '-1' });
   const listError = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const tableBody = h('tbody');
   const table = h(
     'table',
-    { class: 'cqa-table' },
+    { class: 'cqa-table cqa-conversations-table', role: 'table', 'aria-label': 'Разговоры' },
     h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', class: NUMERIC_COLUMNS.has(title) ? 'cqa-num' : null, text: title })))),
     tableBody,
   );
-  const tableWrap = h('div', { class: 'cqa-table-wrap' }, table);
+  const tableWrap = h('div', { class: 'cqa-table-wrap cqa-list-scroll', role: 'region', tabindex: '0', 'aria-label': 'Разговоры, прокручиваемый список' }, table);
+  const loading = loadingState();
   const listEmpty = h('div', { hidden: true });
   const pager = h('nav', { class: 'cqa-pager', 'aria-label': 'Страницы списка' });
 
@@ -220,6 +226,7 @@ export function mount(container, route) {
         groupBox,
         listStatus,
         listError,
+        loading,
         tableWrap,
         listEmpty,
         pager,
@@ -357,14 +364,21 @@ export function mount(container, route) {
         { class: 'cqa-report-head' },
         h('h3', { text: `Отчёт импорта: группа ${result.group_id}` }),
         h('span', { class: 'cqa-muted', text: formatDateTime(result.created_at) }),
-        h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => { report.hidden = true; } } }),
+        h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Скрыть отчёт', on: { click: () => {
+          const hadFocus = report.contains(document.activeElement);
+          setExpanded(report, false).then(() => {
+            if (hadFocus && importBox.isConnected && (report.contains(document.activeElement) || document.activeElement === document.body)) {
+              importBox.querySelector('summary').focus({ preventScroll: true });
+            }
+          });
+        } } }),
       ),
       h('dl', { class: 'cqa-stats' }, stats.map(([label, value]) => h('div', { class: 'cqa-stat' }, h('dt', { text: label }), h('dd', { text: String(value) })))),
       issueList('Ошибки', result.errors, 'bad'),
       issueList('Предупреждения', result.warnings, 'warn'),
       unknownPhrases(result.unknown_system_phrases),
     );
-    report.hidden = false;
+    setExpanded(report, true);
   }
 
   // ---------- Фильтры: действия ----------
@@ -558,10 +572,10 @@ export function mount(container, route) {
     const evaluation = item.latest_evaluation;
     const href = buildHash('conversation', [item.ref.id]);
     const status = evaluation ? evaluation.status : 'not_evaluated';
-    return h(
+    const tr = h(
       'tr',
       {
-        class: 'cqa-row-link',
+        class: 'cqa-row-link', role: 'row',
         on: {
           click: (event) => {
             if (event.target.closest('a')) return;
@@ -585,10 +599,20 @@ export function mount(container, route) {
       h('td', {}, item.has_open_appeals ? badge('Есть открытая', 'warn') : h('span', { class: 'cqa-muted', text: 'нет' })),
       h('td', {}, evaluation && evaluation.is_demo ? badge('Демо', 'demo') : h('span', { class: 'cqa-muted', text: DASH })),
     );
+    [...tr.children].forEach((cell, index) => {
+      cell.setAttribute('role', 'cell');
+      cell.prepend(h('span', { class: 'cqa-mobile-label', 'aria-hidden': 'true', text: COLUMNS[index] }));
+    });
+    return tr;
   }
 
   function renderPager(page) {
+    const hadFocus = pager.contains(document.activeElement);
     clear(pager);
+    if (hadFocus) {
+      listStatus.focus({ preventScroll: true });
+      listStatus.scrollIntoView({ block: 'center' });
+    }
     if (!page || page.total <= page.limit) return;
     const pages = Math.ceil(page.total / page.limit);
     const current = Math.floor(page.offset / page.limit) + 1;
@@ -654,6 +678,7 @@ export function mount(container, route) {
       tableWrap.hidden = false;
       listEmpty.hidden = true;
       tableBody.replaceChildren(...page.items.map(row));
+      [...tableBody.children].slice(0, 6).forEach((item, index) => reveal(item, index * 24));
       listStatus.textContent = `Показаны ${range.from}–${range.to} из ${range.total}`;
     }
     renderPager(page);
@@ -664,6 +689,8 @@ export function mount(container, route) {
     setLastListHash(buildHash('conversations', [], listQueryToHash(query)));
     listError.hidden = true;
     tableWrap.classList.add('is-loading');
+    tableWrap.setAttribute('aria-busy', 'true');
+    loading.hidden = Boolean(tableBody.childElementCount);
     listStatus.textContent = 'Загрузка…';
     try {
       const page = await api.listConversations(query, { signal: controller.signal });
@@ -680,7 +707,11 @@ export function mount(container, route) {
       listError.hidden = false;
       showError(error);
     } finally {
-      if (seq === loadSeq) tableWrap.classList.remove('is-loading');
+      if (seq === loadSeq) {
+        tableWrap.classList.remove('is-loading');
+        tableWrap.setAttribute('aria-busy', 'false');
+        loading.hidden = true;
+      }
     }
   }
 

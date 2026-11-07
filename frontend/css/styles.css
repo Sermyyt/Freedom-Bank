@@ -2,39 +2,129 @@
    Все правила только под .cqa-app: без глобальных сбросов, чтобы интерфейс можно было
    встроить в чужую страницу (HTML-компонент Dynamics 365). Шрифты только системные — работает офлайн.
 
-   Система: бумага и чернила; петроль — цвет действий; маркер — доказательства;
-   фиолетовая штриховка — реплики, которых клиент не слышит. Цифры — Bahnschrift (DIN), текст — Segoe UI. */
+   Светлое рабочее пространство: нейтральные поверхности, синий акцент действий,
+   отдельные цвета статусов и фаз. Текст и табличные цифры — системный Segoe UI. */
 
 .cqa-app {
-  --cqa-paper: #eef1f4;
-  --cqa-sheet: #ffffff;
-  --cqa-sheet-2: #f6f8fa;
-  --cqa-rule: #d4dae2;
-  --cqa-rule-strong: #aab4c1;
-  --cqa-ink: #1a2332;
-  --cqa-ink-2: #4f5b6d;
-  --cqa-petrol: #0f5b6b;
-  --cqa-petrol-dark: #0a4552;
-  --cqa-petrol-wash: #e2eef1;
-  --cqa-yes: #237a3f;
-  --cqa-yes-wash: #e4f2e7;
-  --cqa-no: #b3261e;
-  --cqa-no-wash: #fbe7e4;
-  --cqa-part: #8c5c00;
-  --cqa-part-wash: #fff0cf;
-  --cqa-hold: #6e5a9c;
-  --cqa-hold-wash: #f2eff8;
-  --cqa-marker: #ffe27a;
-  --cqa-demo: #ffd36b;
-  --cqa-demo-2: #ffe08f;
-  --cqa-demo-ink: #4a3300;
-  --cqa-tint-0: #0f5b6b;
-  --cqa-tint-1: #3d8696;
-  --cqa-tint-2: #78afbb;
-  --cqa-tint-3: #aed0d7;
-  --cqa-hatch-unheard: repeating-linear-gradient(135deg, var(--cqa-hold) 0 2px, transparent 2px 5px);
-  --cqa-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --cqa-font-num: Bahnschrift, "DIN Alternate", "DIN 2014", Barlow, "Segoe UI", system-ui, sans-serif;
+  /* Primitive tokens belong to the component root, never to the host page. */
+  --cqa-neutral-0: #ffffff;
+  --cqa-neutral-50: #f8fafc;
+  --cqa-neutral-100: #f1f4f8;
+  --cqa-neutral-200: #dce3ed;
+  --cqa-neutral-300: #c4cedc;
+  --cqa-neutral-400: #8795aa;
+  --cqa-neutral-600: #526177;
+  --cqa-neutral-800: #25334a;
+  --cqa-neutral-900: #17243a;
+  --cqa-accent: #2555d9;
+  --cqa-accent-hover: #1b43b4;
+  --cqa-accent-soft: #edf2ff;
+  --cqa-accent-border: #bdcdf9;
+  --cqa-accent-selected: #dce6ff;
+  --cqa-success: #207343;
+  --cqa-success-soft: #edf8f0;
+  --cqa-success-border: #b9ddc5;
+  --cqa-warning: #805300;
+  --cqa-warning-soft: #fff7e5;
+  --cqa-warning-border: #e7cc8e;
+  --cqa-error: #b02e32;
+  --cqa-error-soft: #fff0f0;
+  --cqa-error-border: #efbabc;
+  --cqa-info: var(--cqa-accent);
+  --cqa-info-soft: var(--cqa-accent-soft);
+  --cqa-info-border: var(--cqa-accent-border);
+  --cqa-phase-client: #14756f;
+  --cqa-phase-client-soft: #ecf7f5;
+  --cqa-phase-hold: #8a5b08;
+  --cqa-phase-hold-soft: #fff8e9;
+  --cqa-phase-hold-border: #ead5a7;
+  --cqa-phase-internal: #7150a1;
+  --cqa-phase-internal-soft: #f5f0fb;
+  --cqa-phase-internal-border: #d8c9ed;
+  --cqa-phase-after: #5d6b80;
+  --cqa-phase-after-soft: #f1f4f8;
+  --cqa-marker: #ffe6a3;
+  --cqa-marker-soft: #fff8df;
+  --cqa-marker-hover: #ffedbc;
+  --cqa-marker-border: #d6b757;
+  --cqa-paper: var(--cqa-neutral-100);
+  --cqa-sheet: var(--cqa-neutral-0);
+  --cqa-sheet-2: var(--cqa-neutral-50);
+  --cqa-rule: var(--cqa-neutral-200);
+  --cqa-rule-strong: var(--cqa-neutral-400);
+  --cqa-ink: var(--cqa-neutral-900);
+  --cqa-ink-2: var(--cqa-neutral-600);
+  /* Existing module aliases retain their names while sharing one action color. */
+  --cqa-petrol: var(--cqa-accent);
+  --cqa-petrol-dark: var(--cqa-accent-hover);
+  --cqa-petrol-wash: var(--cqa-accent-soft);
+  --cqa-yes: var(--cqa-success);
+  --cqa-yes-wash: var(--cqa-success-soft);
+  --cqa-no: var(--cqa-error);
+  --cqa-no-wash: var(--cqa-error-soft);
+  --cqa-part: var(--cqa-warning);
+  --cqa-part-wash: var(--cqa-warning-soft);
+  --cqa-hold: var(--cqa-phase-hold);
+  --cqa-hold-wash: var(--cqa-phase-hold-soft);
+  --cqa-demo: var(--cqa-warning-soft);
+  --cqa-demo-2: #ffedbc;
+  --cqa-demo-ink: #664600;
+  --cqa-tint-0: var(--cqa-accent);
+  --cqa-tint-1: #5d7fe1;
+  --cqa-tint-2: #91a9ec;
+  --cqa-tint-3: #c7d4f6;
+  --cqa-hatch-unheard: repeating-linear-gradient(135deg, var(--cqa-phase-ink, var(--cqa-phase-hold)) 0 2px, transparent 2px 5px);
+  --cqa-font-text: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --cqa-font-num: var(--cqa-font-text);
+  --cqa-font-mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --cqa-text-xs: 12px;
+  --cqa-text-sm: 13px;
+  --cqa-text-base: 14px;
+  --cqa-text-md: 15px;
+  --cqa-text-lg: 16px;
+  --cqa-text-xl: 18px;
+  --cqa-text-2xl: 20px;
+  --cqa-text-3xl: 24px;
+  --cqa-text-4xl: 28px;
+  --cqa-text-5xl: 32px;
+  --cqa-text-6xl: 40px;
+  --cqa-text-display: 48px;
+  --cqa-text-score: 64px;
+  --cqa-leading-tight: 1.25;
+  --cqa-leading-normal: 1.5;
+  --cqa-leading-reading: 1.6;
+  --cqa-space-1: 4px;
+  --cqa-space-2: 8px;
+  --cqa-space-3: 12px;
+  --cqa-space-4: 16px;
+  --cqa-space-5: 20px;
+  --cqa-space-6: 24px;
+  --cqa-space-7: 28px;
+  --cqa-space-8: 32px;
+  --cqa-space-10: 40px;
+  --cqa-space-12: 48px;
+  --cqa-space-14: 56px;
+  --cqa-space-16: 64px;
+  --cqa-radius-sm: 4px;
+  --cqa-radius-md: 8px;
+  --cqa-radius-lg: 12px;
+  --cqa-radius-full: 999px;
+  --cqa-shadow-sm: 0 1px 2px rgb(23 36 58 / 4%);
+  --cqa-shadow-popover: 0 8px 24px rgb(23 36 58 / 12%);
+  --cqa-shadow-dialog: 0 20px 64px rgb(23 36 58 / 20%);
+  --cqa-shadow-sticky: 0 -4px 16px rgb(23 36 58 / 6%);
+  --cqa-backdrop: rgb(23 36 58 / 42%);
+  --cqa-duration-fast: 120ms;
+  --cqa-duration-normal: 180ms;
+  --cqa-duration-slow: 240ms;
+  --cqa-duration-score: 480ms;
+  --cqa-duration-marker: 550ms;
+  --cqa-duration-enter: 180ms;
+  --cqa-duration-exit: 140ms;
+  --cqa-ease: cubic-bezier(0.2, 0, 0, 1);
+  --cqa-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --cqa-ease-enter: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --cqa-ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --cqa-top-offset: 96px;
 
   box-sizing: border-box;
@@ -43,8 +133,9 @@
   background: var(--cqa-paper);
   color: var(--cqa-ink);
   font-family: var(--cqa-font-text);
-  font-size: 14px;
-  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--cqa-text-base);
+  line-height: var(--cqa-leading-normal);
   text-align: left;
 }
 
@@ -65,14 +156,14 @@
   margin: 0;
   font-family: var(--cqa-font-num);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: var(--cqa-leading-tight);
   letter-spacing: 0.005em;
 }
 
-.cqa-app h1 { font-size: 24px; }
-.cqa-app h2 { font-size: 18px; }
-.cqa-app h3 { font-size: 16px; }
-.cqa-app h4 { font-size: 14px; }
+.cqa-app h1 { font-size: var(--cqa-text-3xl); }
+.cqa-app h2 { font-size: var(--cqa-text-xl); }
+.cqa-app h3 { font-size: var(--cqa-text-lg); }
+.cqa-app h4 { font-size: var(--cqa-text-base); }
 
 .cqa-app p { margin: 0; }
 
@@ -80,14 +171,14 @@
   color: var(--cqa-petrol);
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 .cqa-app a:hover { color: var(--cqa-petrol-dark); }
 
 .cqa-app code {
-  font-family: Consolas, "Cascadia Mono", ui-monospace, monospace;
-  font-size: 12px;
+  font-family: var(--cqa-font-mono);
+  font-size: var(--cqa-text-xs);
 }
 
 .cqa-app :focus-visible {
@@ -96,7 +187,12 @@
 }
 
 .cqa-app .cqa-muted { color: var(--cqa-ink-2); }
-.cqa-app .cqa-small { font-size: 12px; }
+.cqa-app .cqa-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.cqa-app .cqa-skip { position: fixed; top: var(--cqa-space-3); left: var(--cqa-space-3); z-index: 100; padding: var(--cqa-space-3) var(--cqa-space-4); border: 2px solid var(--cqa-accent); border-radius: var(--cqa-radius-md); background: var(--cqa-sheet); color: var(--cqa-ink); font: inherit; transform: translateY(-200%); }
+.cqa-app .cqa-skip:focus { transform: none; }
+.cqa-app h1 { width: fit-content; max-width: 100%; }
+.cqa-app h1:focus-visible { outline-offset: var(--cqa-space-1); border-radius: var(--cqa-radius-sm); }
+.cqa-app .cqa-small { font-size: var(--cqa-text-xs); }
 .cqa-app .cqa-strong { font-weight: 600; }
 
 .cqa-app .cqa-num {
@@ -117,25 +213,26 @@
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 0 28px;
-  padding: 0 24px;
+  gap: 0 var(--cqa-space-7);
+  padding: 0 var(--cqa-space-6);
   background: var(--cqa-sheet);
   border-bottom: 1px solid var(--cqa-rule);
+  box-shadow: var(--cqa-shadow-sm);
 }
 
 .cqa-app .cqa-brand {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  padding: 14px 0 12px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-4) 0 var(--cqa-space-3);
 }
 
 .cqa-app .cqa-brand strong {
   font-family: var(--cqa-font-num);
-  font-size: 20px;
+  font-size: var(--cqa-text-2xl);
   font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--cqa-petrol);
+  letter-spacing: -0.03em;
+  color: var(--cqa-ink);
 }
 
 .cqa-app .cqa-brand span { color: var(--cqa-ink-2); }
@@ -144,17 +241,17 @@
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 4px;
+  gap: var(--cqa-space-1);
 }
 
 .cqa-app .cqa-tab {
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 var(--cqa-space-3);
   border-bottom: 3px solid transparent;
   color: var(--cqa-ink);
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 500;
   text-decoration: none;
 }
@@ -167,14 +264,15 @@
 .cqa-app .cqa-tab.is-active {
   border-bottom-color: var(--cqa-petrol);
   color: var(--cqa-petrol);
+  background: var(--cqa-petrol-wash);
 }
 
 .cqa-app .cqa-header-status {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--cqa-space-4);
   margin-left: auto;
-  padding: 10px 0;
+  padding: var(--cqa-space-3) 0;
 }
 
 .cqa-app .cqa-header-version {
@@ -186,17 +284,17 @@
 .cqa-app .cqa-health {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: var(--cqa-space-2);
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .cqa-app .cqa-health::before {
   content: "";
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--cqa-radius-full);
   background: var(--cqa-rule-strong);
 }
 
@@ -210,10 +308,11 @@
 
 /* Демо — лента предупреждения: заметная, но не кричащая. */
 .cqa-app .cqa-demo-banner {
-  padding: 7px 24px;
-  background: repeating-linear-gradient(-45deg, var(--cqa-demo) 0 14px, var(--cqa-demo-2) 14px 28px);
+  padding: var(--cqa-space-2) var(--cqa-space-6);
+  background: var(--cqa-demo);
   color: var(--cqa-demo-ink);
-  border-bottom: 1px solid #e9b949;
+  border-bottom: 1px solid var(--cqa-warning-border);
+  border-left: 4px solid var(--cqa-warning);
 }
 
 /* ---------- Каркас ---------- */
@@ -221,36 +320,45 @@
 .cqa-app .cqa-main {
   max-width: 1520px;
   margin: 0 auto;
-  padding: 20px 24px 56px;
+  padding: var(--cqa-space-6) var(--cqa-space-6) var(--cqa-space-14);
 }
 
 .cqa-app .cqa-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cqa-space-4);
+  min-width: 0;
 }
 
 .cqa-app .cqa-page-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 8px 16px;
+  gap: var(--cqa-space-2) var(--cqa-space-4);
 }
 
 .cqa-app .cqa-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: var(--cqa-space-4);
+  padding: var(--cqa-space-5);
   background: var(--cqa-sheet);
   border: 1px solid var(--cqa-rule);
-  border-radius: 6px;
+  border-radius: var(--cqa-radius-lg);
+  min-width: 0;
+  box-shadow: var(--cqa-shadow-sm);
 }
 
 .cqa-app .cqa-loading {
-  padding: 16px 0;
+  padding: var(--cqa-space-4) 0;
   color: var(--cqa-ink-2);
 }
+
+.cqa-app .cqa-loading-state { padding: var(--cqa-space-4); }
+.cqa-app .cqa-skeleton { display: grid; gap: var(--cqa-space-4); margin-top: var(--cqa-space-4); }
+.cqa-app .cqa-skeleton-row { display: grid; gap: var(--cqa-space-2); padding: var(--cqa-space-3) 0; }
+.cqa-app .cqa-skeleton-line { display: block; width: 90%; height: var(--cqa-space-3); border-radius: var(--cqa-radius-sm); background: var(--cqa-neutral-200); }
+.cqa-app .cqa-skeleton-line:last-child { width: 60%; background: var(--cqa-neutral-100); }
 
 /* ---------- Кнопки и поля ---------- */
 
@@ -258,11 +366,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 5px 14px;
+  gap: var(--cqa-space-2);
+  min-height: 36px;
+  padding: var(--cqa-space-2) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule-strong);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-md);
   background: var(--cqa-sheet);
   color: var(--cqa-ink);
   font: inherit;
@@ -287,13 +395,13 @@
 .cqa-app .cqa-button--primary {
   border-color: var(--cqa-petrol);
   background: var(--cqa-petrol);
-  color: #ffffff;
+  color: var(--cqa-neutral-0);
 }
 
 .cqa-app .cqa-button--primary:hover:not(:disabled) {
   border-color: var(--cqa-petrol-dark);
   background: var(--cqa-petrol-dark);
-  color: #ffffff;
+  color: var(--cqa-neutral-0);
 }
 
 .cqa-app .cqa-button--ghost {
@@ -306,18 +414,18 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cqa-space-1);
   min-width: 0;
 }
 
 .cqa-app .cqa-field label {
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
   color: var(--cqa-ink);
 }
@@ -326,16 +434,16 @@
 .cqa-app .cqa-field select,
 .cqa-app .cqa-field textarea {
   width: 100%;
-  min-height: 32px;
-  padding: 5px 8px;
+  min-height: 36px;
+  padding: var(--cqa-space-2) var(--cqa-space-2);
   border: 1px solid var(--cqa-rule-strong);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-md);
   background: var(--cqa-sheet);
   color: var(--cqa-ink);
   font: inherit;
 }
 
-.cqa-app .cqa-field input[type="file"] { padding: 4px; }
+.cqa-app .cqa-field input[type="file"] { padding: var(--cqa-space-1); }
 
 .cqa-app .cqa-field input:disabled,
 .cqa-app .cqa-field select:disabled {
@@ -350,13 +458,13 @@
 
 .cqa-app .cqa-field-hint {
   color: var(--cqa-ink-2);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
 }
 
 .cqa-app .cqa-field-error,
 .cqa-app .cqa-form-error {
   color: var(--cqa-no);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
 }
 
@@ -366,11 +474,11 @@
 .cqa-app .cqa-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0 6px;
+  gap: var(--cqa-space-1);
+  padding: 0 var(--cqa-space-2);
   border: 1px solid transparent;
-  border-radius: 3px;
-  font-size: 12px;
+  border-radius: var(--cqa-radius-sm);
+  font-size: var(--cqa-text-xs);
   font-weight: 600;
   line-height: 1.6;
   white-space: nowrap;
@@ -387,43 +495,43 @@
 .cqa-app .cqa-tag--bad { background: var(--cqa-no-wash); color: var(--cqa-no); }
 .cqa-app .cqa-badge--info,
 .cqa-app .cqa-tag--info { background: var(--cqa-petrol-wash); color: var(--cqa-petrol); }
-.cqa-app .cqa-badge--demo { border-color: #e9b949; background: var(--cqa-demo-2); color: var(--cqa-demo-ink); }
+.cqa-app .cqa-badge--demo { border-color: var(--cqa-warning-border); background: var(--cqa-demo-2); color: var(--cqa-demo-ink); }
 .cqa-app .cqa-tag--phase { border-color: var(--cqa-rule); background: var(--cqa-sheet); color: var(--cqa-ink-2); font-weight: 500; }
 
-.cqa-app .cqa-tag--inline { margin-left: 6px; }
+.cqa-app .cqa-tag--inline { margin-left: var(--cqa-space-2); }
 
 .cqa-app .cqa-alert {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: var(--cqa-space-1);
+  padding: var(--cqa-space-3) var(--cqa-space-3);
   border: 1px solid var(--cqa-rule);
   border-left-width: 4px;
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet-2);
 }
 
 .cqa-app .cqa-alert ul {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--cqa-space-5);
 }
 
 .cqa-app .cqa-alert-title {
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 600;
 }
 
-.cqa-app .cqa-alert--bad { border-color: #efb4ae; border-left-color: var(--cqa-no); background: var(--cqa-no-wash); color: var(--cqa-no); }
-.cqa-app .cqa-alert--warn { border-color: #efd28f; border-left-color: var(--cqa-part); background: var(--cqa-part-wash); color: var(--cqa-part); }
-.cqa-app .cqa-alert--info { border-color: #b7d3da; border-left-color: var(--cqa-petrol); background: var(--cqa-petrol-wash); color: var(--cqa-ink); }
+.cqa-app .cqa-alert--bad { border-color: var(--cqa-error-border); border-left-color: var(--cqa-no); background: var(--cqa-no-wash); color: var(--cqa-no); }
+.cqa-app .cqa-alert--warn { border-color: var(--cqa-warning-border); border-left-color: var(--cqa-part); background: var(--cqa-part-wash); color: var(--cqa-part); }
+.cqa-app .cqa-alert--info { border-color: var(--cqa-info-border); border-left-color: var(--cqa-petrol); background: var(--cqa-petrol-wash); color: var(--cqa-ink); }
 
 /* Грубое нарушение — отдельная красная плашка, не смешивается с баллом. */
 .cqa-app .cqa-alert--gross {
   border-color: var(--cqa-no);
   border-left-width: 4px;
   background: var(--cqa-no);
-  color: #ffffff;
+  color: var(--cqa-neutral-0);
 }
 
 .cqa-app .cqa-toasts {
@@ -433,20 +541,20 @@
   z-index: 50;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cqa-space-2);
   max-width: min(420px, calc(100vw - 32px));
 }
 
 .cqa-app .cqa-toast {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-3) var(--cqa-space-3);
   border: 1px solid var(--cqa-rule);
   border-left-width: 4px;
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet);
-  box-shadow: 0 6px 18px rgba(26, 35, 50, 0.16);
+  box-shadow: var(--cqa-shadow-popover);
 }
 
 .cqa-app .cqa-toast--error { border-left-color: var(--cqa-no); }
@@ -459,7 +567,7 @@
   border: 0;
   background: transparent;
   color: var(--cqa-ink-2);
-  font-size: 18px;
+  font-size: var(--cqa-text-xl);
   line-height: 1;
   cursor: pointer;
 }
@@ -468,16 +576,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding: 22px;
+  gap: var(--cqa-space-2);
+  padding: var(--cqa-space-6);
   border: 1px dashed var(--cqa-rule-strong);
-  border-radius: 6px;
+  border-radius: var(--cqa-radius-md);
   background: var(--cqa-sheet);
 }
 
 .cqa-app .cqa-empty-title {
   font-family: var(--cqa-font-num);
-  font-size: 16px;
+  font-size: var(--cqa-text-lg);
   font-weight: 600;
 }
 
@@ -494,7 +602,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
   cursor: pointer;
   list-style: none;
 }
@@ -504,7 +612,7 @@
 .cqa-app .cqa-collapsible-summary::before {
   content: "▸";
   color: var(--cqa-ink-2);
-  transition: transform 0.15s;
+  transition: transform var(--cqa-duration-fast) var(--cqa-ease);
 }
 
 .cqa-app details[open] > .cqa-collapsible-summary::before { transform: rotate(90deg); }
@@ -512,8 +620,8 @@
 .cqa-app .cqa-collapsible-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 14px;
+  gap: var(--cqa-space-4);
+  margin-top: var(--cqa-space-4);
 }
 
 /* ---------- Импорт ---------- */
@@ -521,27 +629,27 @@
 .cqa-app .cqa-import-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  gap: var(--cqa-space-4);
 }
 
 .cqa-app .cqa-import-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-4) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet-2);
 }
 
 .cqa-app .cqa-import-report {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-4) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule);
   border-left: 4px solid var(--cqa-petrol);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet);
 }
 
@@ -549,7 +657,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 8px 12px;
+  gap: var(--cqa-space-2) var(--cqa-space-3);
 }
 
 .cqa-app .cqa-report-head .cqa-button { margin-left: auto; }
@@ -560,14 +668,14 @@
   gap: 0;
   margin: 0;
   border: 1px solid var(--cqa-rule);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   width: fit-content;
   max-width: 100%;
 }
 
 .cqa-app .cqa-stat {
   min-width: 112px;
-  padding: 8px 14px;
+  padding: var(--cqa-space-2) var(--cqa-space-4);
   border-right: 1px solid var(--cqa-rule);
 }
 
@@ -575,13 +683,13 @@
 
 .cqa-app .cqa-stat dt {
   color: var(--cqa-ink-2);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
 }
 
 .cqa-app .cqa-stat dd {
   margin: 0;
   font-family: var(--cqa-font-num);
-  font-size: 24px;
+  font-size: var(--cqa-text-3xl);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -596,8 +704,8 @@
 
 .cqa-app .cqa-issues ul {
   max-height: 260px;
-  margin: 6px 0 0;
-  padding-left: 20px;
+  margin: var(--cqa-space-2) 0 0;
+  padding-left: var(--cqa-space-5);
   overflow: auto;
 }
 
@@ -609,7 +717,7 @@
 .cqa-app .cqa-filters {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-  gap: 10px 12px;
+  gap: var(--cqa-space-3) var(--cqa-space-3);
   align-items: end;
 }
 
@@ -622,11 +730,11 @@
 .cqa-app .cqa-group-eval {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: var(--cqa-space-2);
+  padding: var(--cqa-space-3) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule);
   border-left: 4px solid var(--cqa-petrol);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet-2);
 }
 
@@ -635,20 +743,20 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
+  gap: var(--cqa-space-2) var(--cqa-space-4);
 }
 
 .cqa-app .cqa-group-eval-text {
   display: flex;
   flex: 1 1 280px;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cqa-space-1);
   min-width: 0;
 }
 
 .cqa-app .cqa-group-eval-title {
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 500;
   overflow-wrap: anywhere;
 }
@@ -667,8 +775,10 @@
 
 .cqa-app .cqa-table-wrap {
   overflow-x: auto;
-  border-top: 2px solid var(--cqa-ink);
-  transition: opacity 0.15s;
+  max-width: 100%;
+  min-width: 0;
+  border-top: 1px solid var(--cqa-rule);
+  transition: opacity var(--cqa-duration-fast) var(--cqa-ease);
 }
 
 .cqa-app .cqa-table-wrap.is-loading,
@@ -677,12 +787,12 @@
 .cqa-app .cqa-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: var(--cqa-text-base);
 }
 
 .cqa-app .cqa-table th,
 .cqa-app .cqa-table td {
-  padding: 9px 10px;
+  padding: var(--cqa-space-3) var(--cqa-space-3);
   border-bottom: 1px solid var(--cqa-rule);
   text-align: left;
   vertical-align: baseline;
@@ -690,11 +800,19 @@
 
 .cqa-app .cqa-table thead th {
   font-family: var(--cqa-font-num);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
   color: var(--cqa-ink-2);
+  background: var(--cqa-sheet-2);
   white-space: nowrap;
+  background: var(--cqa-sheet-2);
 }
+
+.cqa-app .cqa-list-scroll { max-height: 65vh; scrollbar-gutter: stable; }
+.cqa-app .cqa-list-scroll thead th { position: sticky; top: 0; z-index: 1; }
+.cqa-app .cqa-conversations-table td:first-child { min-width: 160px; max-width: 280px; overflow-wrap: anywhere; }
+.cqa-app .cqa-mobile-label { display: none; }
+.cqa-app .cqa-row-link:focus-within { background: var(--cqa-accent-soft); }
 
 .cqa-app .cqa-table .cqa-num { text-align: right; }
 
@@ -705,21 +823,21 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
+  gap: var(--cqa-space-3);
 }
 
 .cqa-app .cqa-pager:empty { display: none; }
 
-.cqa-app .cqa-table--compact { font-size: 13px; }
+.cqa-app .cqa-table--compact { font-size: var(--cqa-text-sm); }
 .cqa-app .cqa-table--compact th,
-.cqa-app .cqa-table--compact td { padding: 6px 8px; }
+.cqa-app .cqa-table--compact td { padding: var(--cqa-space-2) var(--cqa-space-2); }
 .cqa-app .cqa-table--compact tbody tr.is-current { background: var(--cqa-petrol-wash); }
 
 .cqa-app .cqa-table-caption {
-  padding-bottom: 6px;
+  padding-bottom: var(--cqa-space-2);
   caption-side: top;
   font-family: var(--cqa-font-num);
-  font-size: 14px;
+  font-size: var(--cqa-text-base);
   font-weight: 600;
   text-align: left;
 }
@@ -729,16 +847,16 @@
 .cqa-app .cqa-conv-head {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 6px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-back {
   justify-self: start;
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-conv-title {
-  font-size: 28px;
+  font-size: var(--cqa-text-4xl);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -746,23 +864,23 @@
 .cqa-app .cqa-facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 24px;
+  gap: var(--cqa-space-1) var(--cqa-space-6);
   margin: 0;
 }
 
 .cqa-app .cqa-fact {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--cqa-space-2);
 }
 
-.cqa-app .cqa-fact dt { color: var(--cqa-ink-2); font-size: 13px; }
-.cqa-app .cqa-fact dd { margin: 0; font-family: var(--cqa-font-num); font-size: 15px; font-weight: 500; }
+.cqa-app .cqa-fact dt { color: var(--cqa-ink-2); font-size: var(--cqa-text-sm); }
+.cqa-app .cqa-fact dd { margin: 0; font-family: var(--cqa-font-num); font-size: var(--cqa-text-md); font-weight: 500; }
 
 .cqa-app .cqa-conv-notices {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-conv-notices:empty { display: none; }
@@ -770,9 +888,9 @@
 .cqa-app .cqa-conv-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--cqa-space-4);
   align-items: start;
-  transition: opacity 0.15s;
+  transition: opacity var(--cqa-duration-fast) var(--cqa-ease);
 }
 
 .cqa-app .cqa-pane {
@@ -781,9 +899,11 @@
   max-height: calc(100vh - var(--cqa-top-offset) - 24px);
   overflow: auto;
   overscroll-behavior: contain;
+  min-width: 0;
   background: var(--cqa-sheet);
   border: 1px solid var(--cqa-rule);
-  border-radius: 6px;
+  border-radius: var(--cqa-radius-lg);
+  box-shadow: var(--cqa-shadow-sm);
 }
 
 .cqa-app .cqa-pane-head {
@@ -794,8 +914,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
-  padding: 12px 16px;
+  gap: var(--cqa-space-2) var(--cqa-space-4);
+  padding: var(--cqa-space-3) var(--cqa-space-4);
   background: var(--cqa-sheet);
   border-bottom: 1px solid var(--cqa-rule);
 }
@@ -803,35 +923,36 @@
 .cqa-app .cqa-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 14px;
+  gap: var(--cqa-space-1) var(--cqa-space-4);
   margin: 0;
   padding: 0;
   list-style: none;
   color: var(--cqa-ink-2);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
 }
 
 .cqa-app .cqa-legend li {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-legend-swatch {
   width: 6px;
   height: 16px;
-  border-radius: 1px;
+  border-radius: var(--cqa-radius-sm);
 }
 
-.cqa-app .cqa-legend-swatch--heard { background: var(--cqa-petrol); }
+.cqa-app .cqa-legend-swatch--heard { background: var(--cqa-phase-client); }
 .cqa-app .cqa-legend-swatch--unheard { background: var(--cqa-hatch-unheard); box-shadow: inset 0 0 0 1px var(--cqa-hold); }
-.cqa-app .cqa-legend-swatch--after { background: repeating-linear-gradient(180deg, var(--cqa-rule-strong) 0 3px, transparent 3px 6px); }
+.cqa-app .cqa-legend-swatch--internal { background: var(--cqa-phase-internal); }
+.cqa-app .cqa-legend-swatch--after { background: repeating-linear-gradient(180deg, var(--cqa-phase-after) 0 3px, transparent 3px 6px); }
 
 .cqa-app .cqa-audio-box {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 16px;
+  gap: var(--cqa-space-1);
+  padding: var(--cqa-space-3) var(--cqa-space-4);
   border-bottom: 1px solid var(--cqa-rule);
   background: var(--cqa-sheet-2);
 }
@@ -841,7 +962,7 @@
 /* Переписка: номер и время на полях, слева — шкала слышимости. */
 .cqa-app .cqa-transcript {
   margin: 0;
-  padding: 8px 0;
+  padding: var(--cqa-space-2) 0;
   list-style: none;
 }
 
@@ -851,8 +972,8 @@
   position: relative;
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
-  gap: 12px;
-  padding: 7px 16px 7px 20px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-2) var(--cqa-space-4) var(--cqa-space-2) var(--cqa-space-5);
   scroll-margin: 72px 0 24px;
 }
 
@@ -863,13 +984,14 @@
   bottom: 0;
   left: 8px;
   width: 5px;
-  background: var(--cqa-petrol);
+  background: var(--cqa-phase-client);
 }
 
-.cqa-app .cqa-msg--phase-pre_operator::before { background: var(--cqa-tint-2); }
+.cqa-app .cqa-msg--phase-pre_operator::before { background: var(--cqa-neutral-400); }
 .cqa-app .cqa-msg.is-unheard::before { background: var(--cqa-hatch-unheard); }
 /* После завершения клиента уже нет на линии: своя пунктирная полоса, не штриховка удержания. */
-.cqa-app .cqa-msg.cqa-msg--phase-after_end::before { background: repeating-linear-gradient(180deg, var(--cqa-rule-strong) 0 3px, transparent 3px 6px); }
+.cqa-app .cqa-msg.cqa-msg--phase-after_end { background: var(--cqa-phase-after-soft); }
+.cqa-app .cqa-msg.cqa-msg--phase-after_end::before { background: repeating-linear-gradient(180deg, var(--cqa-phase-after) 0 3px, transparent 3px 6px); }
 .cqa-app .cqa-msg.cqa-msg--phase-other::before { background: var(--cqa-rule-strong); }
 
 .cqa-app .cqa-msg-gutter {
@@ -877,26 +999,26 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 0;
-  padding-top: 1px;
+  padding-top: var(--cqa-space-1);
   font-family: var(--cqa-font-num);
   font-variant-numeric: tabular-nums;
 }
 
 .cqa-app .cqa-msg-num {
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
   color: var(--cqa-ink);
 }
 
 .cqa-app .cqa-msg-time {
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
   color: var(--cqa-ink-2);
 }
 
 .cqa-app .cqa-msg-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cqa-space-1);
   min-width: 0;
 }
 
@@ -904,23 +1026,23 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
+  gap: var(--cqa-space-1) var(--cqa-space-2);
 }
 
 .cqa-app .cqa-msg-role {
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 700;
 }
 
 .cqa-app .cqa-msg--client .cqa-msg-role { color: var(--cqa-ink); }
-.cqa-app .cqa-msg--operator .cqa-msg-role { color: var(--cqa-petrol); }
+.cqa-app .cqa-msg--operator .cqa-msg-role { color: var(--cqa-phase-client); }
 .cqa-app .cqa-msg--bot .cqa-msg-role,
 .cqa-app .cqa-msg--other .cqa-msg-role { color: var(--cqa-ink-2); }
 
 .cqa-app .cqa-msg-text {
   max-width: 72ch;
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: var(--cqa-text-md);
+  line-height: var(--cqa-leading-reading);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -930,34 +1052,30 @@
 .cqa-app .cqa-msg--client .cqa-msg-text { color: var(--cqa-ink); }
 
 .cqa-app .cqa-msg-text-inner {
-  padding: 1px 0;
-  background-image: linear-gradient(90deg, var(--cqa-marker) 0 50%, transparent 50% 100%);
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  background-repeat: no-repeat;
+  padding: var(--cqa-space-1) 0;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
 
 /* Системные события — компактная строка. */
-.cqa-app .cqa-msg--event { padding-top: 3px; padding-bottom: 3px; }
+.cqa-app .cqa-msg--event { padding-top: var(--cqa-space-1); padding-bottom: var(--cqa-space-1); }
 .cqa-app .cqa-msg--event .cqa-msg-body {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 8px;
+  gap: var(--cqa-space-1) var(--cqa-space-2);
 }
 
 .cqa-app .cqa-msg-event {
   font-family: var(--cqa-font-num);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 500;
   color: var(--cqa-ink-2);
 }
 
 .cqa-app .cqa-msg-original {
   color: var(--cqa-ink-2);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
 }
 
 /* Реплики, которых клиент не слышит, — приглушены и собраны в блок. */
@@ -965,18 +1083,29 @@
 .cqa-app .cqa-msg.is-unheard .cqa-msg-role { color: var(--cqa-ink-2); }
 
 .cqa-app .cqa-phase-block {
-  margin: 6px 0;
-  background: var(--cqa-hold-wash);
-  border-top: 1px solid #d8cfea;
-  border-bottom: 1px solid #d8cfea;
+  --cqa-phase-ink: var(--cqa-phase-hold);
+  --cqa-phase-surface: var(--cqa-phase-hold-soft);
+  --cqa-phase-rule: var(--cqa-phase-hold-border);
+  --cqa-hatch-unheard: repeating-linear-gradient(135deg, var(--cqa-phase-ink) 0 2px, transparent 2px 5px);
+  margin: var(--cqa-space-2) 0;
+  background: var(--cqa-phase-surface);
+  border-top: 1px solid var(--cqa-phase-rule);
+  border-bottom: 1px solid var(--cqa-phase-rule);
+  border-left: var(--cqa-space-1) solid var(--cqa-phase-ink);
+}
+
+.cqa-app .cqa-phase-block--internal_consult {
+  --cqa-phase-ink: var(--cqa-phase-internal);
+  --cqa-phase-surface: var(--cqa-phase-internal-soft);
+  --cqa-phase-rule: var(--cqa-phase-internal-border);
 }
 
 .cqa-app .cqa-phase-caption {
   position: relative;
-  padding: 6px 16px 2px 108px;
-  color: var(--cqa-hold);
+  padding: var(--cqa-space-2) var(--cqa-space-4) var(--cqa-space-1) 108px;
+  color: var(--cqa-phase-ink);
   font-family: var(--cqa-font-num);
-  font-size: 13px;
+  font-size: var(--cqa-text-base);
   font-weight: 600;
 }
 
@@ -992,34 +1121,42 @@
 
 /* Доказательство: реплика отмечается маркером; диапазон — скобкой на полях. */
 .cqa-app .cqa-msg.is-target {
-  background: #fff9dc;
+  background: var(--cqa-marker-soft);
   outline: none;
 }
 
-.cqa-app .cqa-msg.is-target .cqa-msg-text-inner {
-  animation: cqa-marker 0.55s ease-out forwards;
+.cqa-app .cqa-msg.is-target::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 3px solid var(--cqa-marker-border);
+  opacity: 0;
+  animation: cqa-marker var(--cqa-duration-marker) var(--cqa-ease-out);
 }
 
 .cqa-app .cqa-msg.is-target.cqa-msg--event,
 .cqa-app .cqa-msg.is-target:focus-visible { box-shadow: inset 0 0 0 2px var(--cqa-marker); }
+.cqa-app .cqa-msg.is-target:focus-visible { outline: 2px solid var(--cqa-accent); outline-offset: -2px; }
+.cqa-app .cqa-message-pick { width: var(--cqa-space-5); height: var(--cqa-space-5); margin-top: var(--cqa-space-2); accent-color: var(--cqa-accent); cursor: pointer; }
 
 .cqa-app .cqa-msg.in-range { background: var(--cqa-petrol-wash); }
 
-.cqa-app .cqa-msg.in-range .cqa-msg-gutter { box-shadow: 3px 0 0 var(--cqa-petrol); padding-right: 6px; }
+.cqa-app .cqa-msg.in-range .cqa-msg-gutter { box-shadow: 3px 0 0 var(--cqa-petrol); padding-right: var(--cqa-space-2); }
 
 @keyframes cqa-marker {
-  from { background-position: 100% 0; }
-  to { background-position: 0 0; }
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 .cqa-app .cqa-seek {
-  padding: 0 6px;
+  padding: 0 var(--cqa-space-2);
   border: 1px solid var(--cqa-rule-strong);
-  border-radius: 3px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet);
   color: var(--cqa-petrol);
   font-family: var(--cqa-font-num);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
   cursor: pointer;
 }
 
@@ -1028,19 +1165,19 @@
 .cqa-app .cqa-evaluate {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 16px;
+  gap: var(--cqa-space-2);
+  padding: 0 var(--cqa-space-4);
 }
 
-.cqa-app .cqa-evaluate:has(> :not([hidden])) { padding-top: 12px; }
+.cqa-app .cqa-evaluate:has(> :not([hidden])) { padding-top: var(--cqa-space-3); }
 
 .cqa-app .cqa-job {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: var(--cqa-space-2);
+  padding: var(--cqa-space-3) var(--cqa-space-3);
   border: 1px solid var(--cqa-rule);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet-2);
 }
 
@@ -1048,7 +1185,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
 }
 
 .cqa-app .cqa-job-label {
@@ -1063,71 +1200,77 @@
 .cqa-app .cqa-job-counts {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 12px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
   color: var(--cqa-ink-2);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
 }
 
 .cqa-app .cqa-progress {
   display: block;
   height: 6px;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-rule);
 }
 
 .cqa-app .cqa-progress-fill {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
   background: var(--cqa-petrol);
-  transition: width 0.3s ease-out;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--cqa-duration-slow) var(--cqa-ease);
 }
 
 .cqa-app .cqa-job-errors {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--cqa-space-5);
   color: var(--cqa-no);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-score-body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 14px 16px 20px;
+  gap: var(--cqa-space-5);
+  padding: var(--cqa-space-4) var(--cqa-space-4) var(--cqa-space-5);
 }
 
 .cqa-app .cqa-eval-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 14px;
+  gap: var(--cqa-space-2) var(--cqa-space-4);
   color: var(--cqa-ink-2);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-total {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cqa-space-1);
+  padding: var(--cqa-space-5);
+  border: 1px solid var(--cqa-accent-border);
+  border-radius: var(--cqa-radius-lg);
+  background: var(--cqa-accent-soft);
 }
 
 .cqa-app .cqa-total-label {
   color: var(--cqa-ink-2);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-total-figure {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: var(--cqa-space-3);
   font-family: var(--cqa-font-num);
   font-variant-numeric: tabular-nums;
 }
 
 .cqa-app .cqa-total-value {
-  font-size: 56px;
+  font-size: var(--cqa-text-score);
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -1135,32 +1278,26 @@
 
 .cqa-app .cqa-total-of {
   color: var(--cqa-ink-2);
-  font-size: 18px;
+  font-size: var(--cqa-text-xl);
 }
 
 .cqa-app .cqa-total-reason { color: var(--cqa-ink-2); }
 
 .cqa-app .cqa-total-change {
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
 }
 
 /* Из чего сложился итог: вклад секций на шкале 0–100, остаток — недобранные баллы. */
 .cqa-app .cqa-composition {
   display: flex;
-  gap: 2px;
+  gap: var(--cqa-space-1);
   height: 14px;
-  margin-top: 8px;
+  margin-top: var(--cqa-space-2);
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: var(--cqa-radius-sm);
   background: repeating-linear-gradient(135deg, var(--cqa-rule) 0 1px, var(--cqa-sheet-2) 1px 6px);
   transform-origin: left center;
-  animation: cqa-grow 0.6s ease-out both;
-}
-
-@keyframes cqa-grow {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
 }
 
 .cqa-app .cqa-composition-part { display: block; height: 100%; }
@@ -1173,8 +1310,8 @@
   display: inline-block;
   width: 10px;
   height: 10px;
-  margin-right: 8px;
-  border-radius: 2px;
+  margin-right: var(--cqa-space-2);
+  border-radius: var(--cqa-radius-sm);
   vertical-align: baseline;
 }
 
@@ -1188,7 +1325,7 @@
 .cqa-app .cqa-criteria {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--cqa-space-3);
 }
 
 .cqa-app .cqa-criteria-group {
@@ -1197,10 +1334,10 @@
 }
 
 .cqa-app .cqa-criteria-section {
-  padding: 6px 0;
-  border-bottom: 2px solid var(--cqa-ink);
+  padding: var(--cqa-space-2) 0;
+  border-bottom: 1px solid var(--cqa-rule-strong);
   color: var(--cqa-ink);
-  font-size: 14px;
+  font-size: var(--cqa-text-base);
 }
 
 .cqa-app .cqa-criteria-list {
@@ -1212,8 +1349,8 @@
 .cqa-app .cqa-criterion {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 10px 0 12px;
+  gap: var(--cqa-space-2);
+  padding: var(--cqa-space-3) 0 var(--cqa-space-3);
   border-bottom: 1px solid var(--cqa-rule);
 }
 
@@ -1221,21 +1358,21 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--cqa-space-3);
 }
 
 .cqa-app .cqa-criterion-name {
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: var(--cqa-text-md);
 }
 
 .cqa-app .cqa-verdict {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 6px;
+  gap: var(--cqa-space-2);
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1245,15 +1382,15 @@
   place-items: center;
   width: 20px;
   height: 20px;
-  border-radius: 3px;
-  font-size: 13px;
+  border-radius: var(--cqa-radius-sm);
+  font-size: var(--cqa-text-sm);
   line-height: 1;
 }
 
 .cqa-app .cqa-verdict--good { color: var(--cqa-yes); }
-.cqa-app .cqa-verdict--good .cqa-verdict-mark { background: var(--cqa-yes); color: #ffffff; }
+.cqa-app .cqa-verdict--good .cqa-verdict-mark { background: var(--cqa-yes); color: var(--cqa-neutral-0); }
 .cqa-app .cqa-verdict--bad { color: var(--cqa-no); }
-.cqa-app .cqa-verdict--bad .cqa-verdict-mark { background: var(--cqa-no); color: #ffffff; }
+.cqa-app .cqa-verdict--bad .cqa-verdict-mark { background: var(--cqa-no); color: var(--cqa-neutral-0); }
 .cqa-app .cqa-verdict--partial { color: var(--cqa-part); }
 .cqa-app .cqa-verdict--partial .cqa-verdict-mark { background: var(--cqa-part-wash); color: var(--cqa-part); box-shadow: inset 0 0 0 1px var(--cqa-part); }
 .cqa-app .cqa-verdict--na { color: var(--cqa-ink-2); }
@@ -1264,9 +1401,12 @@
 .cqa-app .cqa-criterion-score {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 18px;
+  gap: var(--cqa-space-1) var(--cqa-space-5);
   color: var(--cqa-ink-2);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
+  padding: var(--cqa-space-2) var(--cqa-space-3);
+  background: var(--cqa-sheet-2);
+  border-radius: var(--cqa-radius-md);
 }
 
 .cqa-app .cqa-criterion-score strong {
@@ -1276,10 +1416,10 @@
 }
 
 .cqa-app .cqa-criterion-change {
-  padding: 3px 8px;
+  padding: var(--cqa-space-1) var(--cqa-space-2);
   border-left: 3px solid var(--cqa-part);
   background: var(--cqa-part-wash);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-criterion-rationale {
@@ -1291,28 +1431,28 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: var(--cqa-space-2);
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-note-label {
   color: var(--cqa-ink-2);
-  font-size: 12.5px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
 }
 
 .cqa-app .cqa-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cqa-space-2);
   min-height: 26px;
-  padding: 1px 9px;
-  border: 1px solid #e8c440;
-  border-radius: 3px;
-  background: #fff6c8;
+  padding: var(--cqa-space-1) var(--cqa-space-3);
+  border: 1px solid var(--cqa-marker-border);
+  border-radius: var(--cqa-radius-sm);
+  background: var(--cqa-marker-soft);
   color: var(--cqa-ink);
   font-family: var(--cqa-font-num);
-  font-size: 13.5px;
+  font-size: var(--cqa-text-base);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
@@ -1321,18 +1461,18 @@
 .cqa-app .cqa-chip:hover { background: var(--cqa-marker); }
 
 .cqa-app .cqa-chip--range {
-  border-color: #9fc3cc;
+  border-color: var(--cqa-accent-border);
   background: var(--cqa-petrol-wash);
 }
 
-.cqa-app .cqa-chip--range:hover { background: #cfe4e9; }
+.cqa-app .cqa-chip--range:hover { background: var(--cqa-accent-selected); }
 
 .cqa-app .cqa-chip-phase {
-  padding-left: 6px;
-  border-left: 1px solid #e0c35a;
+  padding-left: var(--cqa-space-2);
+  border-left: 1px solid var(--cqa-marker-border);
   color: var(--cqa-hold);
   font-family: var(--cqa-font-text);
-  font-size: 12px;
+  font-size: var(--cqa-text-xs);
   font-weight: 600;
 }
 
@@ -1341,36 +1481,36 @@
 .cqa-app .cqa-criterion-notes {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cqa-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-note--warn .cqa-note-label { color: var(--cqa-part); }
 
-.cqa-app .cqa-flags .cqa-criteria-list { border-top: 2px solid var(--cqa-ink); }
-.cqa-app .cqa-flags .cqa-criterion--bad { padding-left: 10px; border-left: 4px solid var(--cqa-no); }
+.cqa-app .cqa-flags .cqa-criteria-list { border-top: 1px solid var(--cqa-rule-strong); }
+.cqa-app .cqa-flags .cqa-criterion--bad { padding-left: var(--cqa-space-3); border-left: 4px solid var(--cqa-no); }
 
 .cqa-app .cqa-past {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-row-actions {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
 }
 
 /* ---------- Апелляции ---------- */
 
 .cqa-app .cqa-button--small {
-  min-height: 26px;
-  padding: 2px 10px;
-  font-size: 13px;
+  min-height: 28px;
+  padding: var(--cqa-space-1) var(--cqa-space-3);
+  font-size: var(--cqa-text-sm);
 }
 
 /* «Оспорить» — тихое действие у каждого критерия, не спорит с ответом за внимание. */
@@ -1389,14 +1529,14 @@
 .cqa-app .cqa-back-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 18px;
+  gap: var(--cqa-space-1) var(--cqa-space-5);
 }
 
 .cqa-app .cqa-appeal-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 2px;
+  gap: var(--cqa-space-2);
+  margin-top: var(--cqa-space-1);
 }
 
 .cqa-app .cqa-criterion-actions {
@@ -1408,8 +1548,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
-  font-size: 13px;
+  gap: var(--cqa-space-2) var(--cqa-space-3);
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-appeal-comment {
@@ -1422,17 +1562,17 @@
 .cqa-app .cqa-appeal-history {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cqa-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-appeal-record summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 8px;
+  gap: var(--cqa-space-1) var(--cqa-space-2);
   color: var(--cqa-ink-2);
   cursor: pointer;
 }
@@ -1441,16 +1581,16 @@
 
 .cqa-app .cqa-appeal-record-body {
   display: grid;
-  gap: 2px;
-  margin: 4px 0 2px;
-  padding-left: 12px;
+  gap: var(--cqa-space-1);
+  margin: var(--cqa-space-1) 0 var(--cqa-space-1);
+  padding-left: var(--cqa-space-3);
   border-left: 2px solid var(--cqa-rule);
 }
 
 .cqa-app .cqa-appeal-record-body div {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-appeal-record-body dt { color: var(--cqa-ink-2); }
@@ -1458,14 +1598,14 @@
 
 /* Пересчёт после решения: что изменилось и итог до → после. */
 .cqa-app .cqa-decision-note {
-  border-color: #b8dcc2;
+  border-color: var(--cqa-success-border);
   border-left-color: var(--cqa-yes);
   background: var(--cqa-yes-wash);
   color: var(--cqa-ink);
-  font-size: 13.5px;
+  font-size: var(--cqa-text-base);
 }
 
-.cqa-app .cqa-decision-note .cqa-alert-title { color: var(--cqa-yes); font-size: 14px; }
+.cqa-app .cqa-decision-note .cqa-alert-title { color: var(--cqa-yes); font-size: var(--cqa-text-base); }
 .cqa-app .cqa-decision-note strong { font-family: var(--cqa-font-num); font-weight: 600; }
 
 /* Решение проверяющего — лист проверки, подшитый к критерию. */
@@ -1475,11 +1615,11 @@
 .cqa-app .cqa-decision {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px 14px 14px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-3) var(--cqa-space-4) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule);
   border-left: 4px solid var(--cqa-petrol);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet);
 }
 
@@ -1487,22 +1627,22 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
 }
 
-.cqa-app .cqa-decision-head h4 { font-size: 15px; }
+.cqa-app .cqa-decision-head h4 { font-size: var(--cqa-text-md); }
 
 .cqa-app .cqa-decision-label {
   color: var(--cqa-ink-2);
-  font-size: 12.5px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
 }
 
 .cqa-app .cqa-appeal-quote {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 2px 0 2px 12px;
+  gap: var(--cqa-space-1);
+  padding: var(--cqa-space-1) 0 var(--cqa-space-1) var(--cqa-space-3);
   border-left: 3px solid var(--cqa-rule-strong);
 }
 
@@ -1517,13 +1657,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
 }
 
 .cqa-app .cqa-fieldset {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cqa-space-2);
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -1531,9 +1671,9 @@
 }
 
 .cqa-app .cqa-fieldset legend {
-  margin-bottom: 4px;
+  margin-bottom: var(--cqa-space-1);
   padding: 0;
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
 }
 
@@ -1543,7 +1683,7 @@
   width: fit-content;
   max-width: 100%;
   border: 1px solid var(--cqa-petrol);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   overflow: hidden;
 }
 
@@ -1552,7 +1692,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 32px;
-  padding: 4px 14px;
+  padding: var(--cqa-space-1) var(--cqa-space-4);
   border-right: 1px solid var(--cqa-petrol);
   color: var(--cqa-petrol);
   font-weight: 600;
@@ -1568,8 +1708,8 @@
 }
 
 .cqa-app .cqa-segment:hover { background: var(--cqa-petrol-wash); }
-.cqa-app .cqa-segment:has(input:checked) { background: var(--cqa-petrol); color: #ffffff; }
-.cqa-app .cqa-segment:has(input:focus-visible) { outline: 2px solid var(--cqa-petrol); outline-offset: 2px; }
+.cqa-app .cqa-segment:has(input:checked) { background: var(--cqa-petrol); color: var(--cqa-neutral-0); }
+.cqa-app .cqa-segment:has(input:focus-visible) { outline: 2px solid currentColor; outline-offset: -4px; }
 
 /* Варианты ответа — разлинованный список, как критерии: подпись ответа цифровым шрифтом, под ней описание. */
 .cqa-app .cqa-choices {
@@ -1581,8 +1721,8 @@
 .cqa-app .cqa-choice {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
-  column-gap: 8px;
-  padding: 7px 8px;
+  column-gap: var(--cqa-space-2);
+  padding: var(--cqa-space-2) var(--cqa-space-2);
   border-bottom: 1px solid var(--cqa-rule);
   cursor: pointer;
 }
@@ -1590,7 +1730,7 @@
 .cqa-app .cqa-choice input {
   grid-row: span 2;
   align-self: start;
-  margin: 4px 0 0;
+  margin: var(--cqa-space-1) 0 0;
   accent-color: var(--cqa-petrol);
 }
 
@@ -1601,24 +1741,24 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
+  gap: var(--cqa-space-1) var(--cqa-space-2);
 }
 
 .cqa-app .cqa-choice-label {
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 600;
 }
 
 .cqa-app .cqa-choice-desc {
   color: var(--cqa-ink-2);
-  font-size: 12.5px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-decision-evidence {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cqa-space-1);
 }
 
 .cqa-app .cqa-chip--picked {
@@ -1633,7 +1773,7 @@
 .cqa-app .cqa-chip-remove {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--cqa-space-2);
   min-height: 26px;
   border: 0;
   background: transparent;
@@ -1642,10 +1782,10 @@
   cursor: pointer;
 }
 
-.cqa-app .cqa-chip-show { padding: 1px 6px 1px 9px; }
-.cqa-app .cqa-chip-remove { padding: 1px 8px; border-left: 1px solid #e0c35a; font-size: 15px; line-height: 1; }
+.cqa-app .cqa-chip-show { padding: var(--cqa-space-1) var(--cqa-space-2) var(--cqa-space-1) var(--cqa-space-3); }
+.cqa-app .cqa-chip-remove { padding: var(--cqa-space-1) var(--cqa-space-2); border-left: 1px solid var(--cqa-marker-border); font-size: var(--cqa-text-md); line-height: 1; }
 .cqa-app .cqa-chip-show:hover,
-.cqa-app .cqa-chip-remove:hover { background: #ffd84d; }
+.cqa-app .cqa-chip-remove:hover { background: var(--cqa-marker); }
 
 .cqa-app .cqa-decision textarea,
 .cqa-app .cqa-appeal-form textarea { resize: vertical; }
@@ -1653,22 +1793,22 @@
 /* Выбор реплик-доказательств: переписка становится «щёлкаемой», выбранные реплики отмечены маркером. */
 .cqa-app .cqa-pick-hint {
   flex-basis: 100%;
-  padding: 4px 8px;
-  border: 1px solid #e8c440;
-  border-radius: 3px;
-  background: #fff6c8;
-  font-size: 12.5px;
+  padding: var(--cqa-space-1) var(--cqa-space-2);
+  border: 1px solid var(--cqa-marker-border);
+  border-radius: var(--cqa-radius-sm);
+  background: var(--cqa-marker-soft);
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-transcript-pane.is-picking .cqa-msg { cursor: pointer; }
-.cqa-app .cqa-transcript-pane.is-picking .cqa-msg:hover { background: #fffbe8; box-shadow: inset 0 0 0 1px #e8c440; }
+.cqa-app .cqa-transcript-pane.is-picking .cqa-msg:hover { background: var(--cqa-marker-soft); box-shadow: inset 0 0 0 1px var(--cqa-marker-border); }
 
-.cqa-app .cqa-msg.is-picked { background: #fff6c8; }
-.cqa-app .cqa-transcript-pane.is-picking .cqa-msg.is-picked:hover { background: #fff0b0; }
+.cqa-app .cqa-msg.is-picked { background: var(--cqa-marker-soft); }
+.cqa-app .cqa-transcript-pane.is-picking .cqa-msg.is-picked:hover { background: var(--cqa-marker-hover); }
 
 .cqa-app .cqa-msg.is-picked .cqa-msg-num {
-  padding: 0 4px;
-  border-radius: 2px;
+  padding: 0 var(--cqa-space-1);
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-marker);
 }
 
@@ -1681,20 +1821,20 @@
   max-height: calc(100vh - 48px);
   padding: 0;
   border: 1px solid var(--cqa-rule-strong);
-  border-radius: 6px;
+  border-radius: var(--cqa-radius-lg);
   background: var(--cqa-sheet);
   color: var(--cqa-ink);
-  box-shadow: 0 18px 48px rgba(26, 35, 50, 0.28);
+  box-shadow: var(--cqa-shadow-dialog);
 }
 
-.cqa-app .cqa-modal::backdrop { background: rgba(26, 35, 50, 0.45); }
+.cqa-app .cqa-modal::backdrop { background: var(--cqa-backdrop); }
 
 .cqa-app .cqa-modal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px 12px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-4) var(--cqa-space-5) var(--cqa-space-3);
   border-bottom: 1px solid var(--cqa-rule);
 }
 
@@ -1702,43 +1842,43 @@
   border: 0;
   background: transparent;
   color: var(--cqa-ink-2);
-  font-size: 22px;
+  font-size: var(--cqa-text-3xl);
   line-height: 1;
   cursor: pointer;
 }
 
-.cqa-app .cqa-modal-body { padding: 14px 18px 18px; }
+.cqa-app .cqa-modal-body { padding: var(--cqa-space-4) var(--cqa-space-5) var(--cqa-space-5); }
 
 .cqa-app .cqa-appeal-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--cqa-space-4);
 }
 
 .cqa-app .cqa-appeal-subject {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: var(--cqa-space-2);
+  padding: var(--cqa-space-3) var(--cqa-space-3);
   border-left: 3px solid var(--cqa-rule-strong);
   background: var(--cqa-sheet-2);
 }
 
 .cqa-app .cqa-appeal-criterion {
   font-family: var(--cqa-font-num);
-  font-size: 16px;
+  font-size: var(--cqa-text-lg);
   font-weight: 600;
 }
 
 .cqa-app .cqa-appeal-rationale {
   color: var(--cqa-ink-2);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-modal-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
 /* ---------- Список апелляций ---------- */
@@ -1746,7 +1886,7 @@
 .cqa-app .cqa-page-intro {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-page-lead {
@@ -1759,18 +1899,18 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
+  gap: var(--cqa-space-2) var(--cqa-space-4);
 }
 
 .cqa-app .cqa-filter-tabs {
   display: inline-flex;
   border: 1px solid var(--cqa-rule-strong);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   overflow: hidden;
 }
 
 .cqa-app .cqa-filter-tab {
-  padding: 4px 14px;
+  padding: var(--cqa-space-1) var(--cqa-space-4);
   border-right: 1px solid var(--cqa-rule-strong);
   color: var(--cqa-ink);
   font-weight: 600;
@@ -1779,7 +1919,8 @@
 
 .cqa-app .cqa-filter-tab:last-child { border-right: 0; }
 .cqa-app .cqa-filter-tab:hover { background: var(--cqa-sheet-2); color: var(--cqa-ink); }
-.cqa-app .cqa-filter-tab.is-active { background: var(--cqa-petrol); color: #ffffff; }
+.cqa-app .cqa-filter-tab.is-active { background: var(--cqa-petrol); color: var(--cqa-neutral-0); }
+.cqa-app .cqa-filter-tab:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 
 .cqa-app .cqa-appeals-table td { vertical-align: top; }
 .cqa-app .cqa-appeal-comment-cell { min-width: 22ch; max-width: 48ch; }
@@ -1802,9 +1943,9 @@
 .cqa-app .cqa-ed-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 16px;
+  gap: var(--cqa-space-4);
   align-items: start;
-  transition: opacity 0.15s;
+  transition: opacity var(--cqa-duration-fast) var(--cqa-ease);
 }
 
 .cqa-app .cqa-ed-grid.is-loading { opacity: 0.55; }
@@ -1812,7 +1953,7 @@
 .cqa-app .cqa-ed-main {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cqa-space-4);
   min-width: 0;
 }
 
@@ -1826,7 +1967,7 @@
 .cqa-app .cqa-ed-list {
   margin: 0;
   padding: 0;
-  border-top: 2px solid var(--cqa-ink);
+  border-top: 1px solid var(--cqa-rule-strong);
   list-style: none;
 }
 
@@ -1839,14 +1980,14 @@
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 6px 10px;
-  padding: 8px 6px 8px 10px;
+  gap: var(--cqa-space-2) var(--cqa-space-3);
+  padding: var(--cqa-space-2) var(--cqa-space-2) var(--cqa-space-2) var(--cqa-space-3);
 }
 
 .cqa-app .cqa-ed-num {
   color: var(--cqa-ink-2);
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -1855,11 +1996,11 @@
 .cqa-app .cqa-ed-toggle {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--cqa-space-2);
   min-width: 0;
-  padding: 2px 4px;
+  padding: var(--cqa-space-1) var(--cqa-space-1);
   border: 0;
-  border-radius: 3px;
+  border-radius: var(--cqa-radius-sm);
   background: transparent;
   color: var(--cqa-ink);
   font: inherit;
@@ -1873,7 +2014,7 @@
   content: "▸";
   display: inline-block;
   color: var(--cqa-ink-2);
-  transition: transform 0.15s;
+  transition: transform var(--cqa-duration-fast) var(--cqa-ease);
 }
 
 .cqa-app .cqa-ed-item.is-open .cqa-ed-caret::before { transform: rotate(90deg); }
@@ -1881,22 +2022,22 @@
 .cqa-app .cqa-ed-title {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--cqa-space-1);
   min-width: 0;
 }
 
 .cqa-app .cqa-ed-name {
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: var(--cqa-text-md);
   overflow-wrap: anywhere;
 }
 
 .cqa-app .cqa-ed-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 12px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
   color: var(--cqa-ink-2);
-  font-size: 12.5px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-ed-id { color: var(--cqa-ink); }
@@ -1904,7 +2045,7 @@
 .cqa-app .cqa-ed-tags {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--cqa-space-1);
 }
 
 .cqa-app .cqa-ed-actions {
@@ -1912,7 +2053,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: var(--cqa-space-1);
 }
 
 .cqa-app .cqa-icon-button {
@@ -1922,11 +2063,11 @@
   height: 28px;
   padding: 0;
   border: 1px solid var(--cqa-rule);
-  border-radius: 4px;
+  border-radius: var(--cqa-radius-sm);
   background: var(--cqa-sheet);
   color: var(--cqa-ink);
   font: inherit;
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   line-height: 1;
   cursor: pointer;
 }
@@ -1953,7 +2094,7 @@
 }
 
 .cqa-app .cqa-button--quiet-danger:hover:not(:disabled) {
-  border-color: #efb4ae;
+  border-color: var(--cqa-error-border);
   background: var(--cqa-no-wash);
   color: var(--cqa-no);
 }
@@ -1961,14 +2102,14 @@
 .cqa-app .cqa-ed-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 4px 14px 16px 48px;
+  gap: var(--cqa-space-3);
+  padding: var(--cqa-space-1) var(--cqa-space-4) var(--cqa-space-4) var(--cqa-space-12);
 }
 
 .cqa-app .cqa-ed-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 10px 12px;
+  gap: var(--cqa-space-3) var(--cqa-space-3);
   align-items: start;
 }
 
@@ -1981,7 +2122,7 @@
 .cqa-app .cqa-check {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--cqa-space-2);
   font-weight: 600;
   cursor: pointer;
 }
@@ -1996,10 +2137,10 @@
 .cqa-app .cqa-ed-na {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
-.cqa-app .cqa-ed-options { gap: 8px; }
+.cqa-app .cqa-ed-options { gap: var(--cqa-space-2); }
 
 .cqa-app .cqa-ed-option-list {
   display: flex;
@@ -2013,9 +2154,9 @@
 .cqa-app .cqa-ed-option {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr) minmax(0, 2fr);
-  gap: 8px 10px;
+  gap: var(--cqa-space-2) var(--cqa-space-3);
   align-items: end;
-  padding: 8px 0;
+  padding: var(--cqa-space-2) 0;
   border-bottom: 1px solid var(--cqa-rule);
 }
 
@@ -2026,37 +2167,37 @@
 .cqa-app .cqa-ed-option-value {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-bottom: 4px;
+  gap: var(--cqa-space-1);
+  padding-bottom: var(--cqa-space-1);
 }
 
 .cqa-app .cqa-ed-option-answer {
   font-family: var(--cqa-font-num);
-  font-size: 15px;
+  font-size: var(--cqa-text-md);
   font-weight: 600;
 }
 
 .cqa-app .cqa-ed-option-value code { color: var(--cqa-ink-2); }
-.cqa-app .cqa-ed-option-remove { margin-bottom: 2px; }
+.cqa-app .cqa-ed-option-remove { margin-bottom: var(--cqa-space-1); }
 
 .cqa-app .cqa-ed-removed {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
-  padding: 6px 10px;
+  gap: var(--cqa-space-1) var(--cqa-space-2);
+  padding: var(--cqa-space-2) var(--cqa-space-3);
   border-left: 3px solid var(--cqa-rule-strong);
   background: var(--cqa-sheet-2);
 }
 
 .cqa-app .cqa-ed-general {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--cqa-space-5);
 }
 
 .cqa-app .cqa-ed-warnings {
   margin: 0;
-  padding: 8px 12px 8px 28px;
+  padding: var(--cqa-space-2) var(--cqa-space-3) var(--cqa-space-2) var(--cqa-space-7);
   border-left: 3px solid var(--cqa-part);
   background: var(--cqa-part-wash);
   color: var(--cqa-part);
@@ -2070,20 +2211,20 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 20px;
-  padding: 12px 16px;
+  gap: var(--cqa-space-3) var(--cqa-space-5);
+  padding: var(--cqa-space-3) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule-strong);
   border-top: 3px solid var(--cqa-petrol);
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--cqa-radius-md) var(--cqa-radius-md) 0 0;
   background: var(--cqa-sheet);
-  box-shadow: 0 -6px 18px rgba(26, 35, 50, 0.1);
+  box-shadow: var(--cqa-shadow-sticky);
 }
 
 .cqa-app .cqa-savebar-info {
   display: flex;
   flex: 1 1 260px;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--cqa-space-1);
   min-width: 0;
 }
 
@@ -2091,16 +2232,16 @@
 .cqa-app .cqa-savebar-status[data-tone="good"] { color: var(--cqa-yes); }
 .cqa-app .cqa-savebar-status[data-tone="bad"] { color: var(--cqa-no); }
 .cqa-app .cqa-savebar-status[data-tone="warn"] { color: var(--cqa-part); }
-.cqa-app .cqa-savebar-changes { color: var(--cqa-ink-2); font-size: 13px; }
+.cqa-app .cqa-savebar-changes { color: var(--cqa-ink-2); font-size: var(--cqa-text-sm); }
 
 .cqa-app .cqa-saved {
   /* Не уходить под закреплённую панель сохранения при прокрутке к блоку. */
   scroll-margin-bottom: 140px;
-  border-color: #b8dcc2;
+  border-color: var(--cqa-success-border);
   border-left-color: var(--cqa-yes);
   background: var(--cqa-yes-wash);
   color: var(--cqa-ink);
-  gap: 8px;
+  gap: var(--cqa-space-2);
 }
 
 .cqa-app .cqa-saved .cqa-alert-title { color: var(--cqa-yes); }
@@ -2111,9 +2252,9 @@
 .cqa-app .cqa-saved-next {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #b8dcc2;
+  gap: var(--cqa-space-2);
+  padding-top: var(--cqa-space-2);
+  border-top: 1px solid var(--cqa-success-border);
 }
 
 .cqa-app .cqa-saved-next .cqa-job { background: var(--cqa-sheet); }
@@ -2130,8 +2271,8 @@
 .cqa-app .cqa-version {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
-  gap: 2px 10px;
-  padding: 8px 4px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
+  padding: var(--cqa-space-2) var(--cqa-space-1);
   border-bottom: 1px solid var(--cqa-rule);
 }
 
@@ -2140,21 +2281,21 @@
 .cqa-app .cqa-version-number {
   grid-row: span 2;
   font-family: var(--cqa-font-num);
-  font-size: 18px;
+  font-size: var(--cqa-text-xl);
   font-weight: 600;
 }
 
 .cqa-app .cqa-version-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 10px;
-  font-size: 13px;
+  gap: 0 var(--cqa-space-3);
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-version-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--cqa-space-1);
 }
 
 /* ---------- Сравнение оценок ---------- */
@@ -2162,8 +2303,8 @@
 .cqa-app .cqa-compare-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  transition: opacity 0.15s;
+  gap: var(--cqa-space-4);
+  transition: opacity var(--cqa-duration-fast) var(--cqa-ease);
 }
 
 .cqa-app .cqa-compare-body.is-loading { opacity: 0.55; }
@@ -2171,7 +2312,7 @@
 .cqa-app .cqa-compare-summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(160px, 0.6fr) minmax(0, 1fr);
-  gap: 12px;
+  gap: var(--cqa-space-3);
   align-items: stretch;
 }
 
@@ -2179,27 +2320,27 @@
 .cqa-app .cqa-compare-delta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
+  gap: var(--cqa-space-2);
+  padding: var(--cqa-space-4) var(--cqa-space-4);
   border: 1px solid var(--cqa-rule);
-  border-radius: 6px;
+  border-radius: var(--cqa-radius-md);
   background: var(--cqa-sheet);
 }
 
 .cqa-app .cqa-compare-side-label {
   color: var(--cqa-ink-2);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
   font-weight: 600;
 }
 
 .cqa-app .cqa-compare-version {
   font-family: var(--cqa-font-num);
-  font-size: 16px;
+  font-size: var(--cqa-text-lg);
   font-weight: 600;
 }
 
 .cqa-app .cqa-compare-total {
-  font-size: 40px;
+  font-size: var(--cqa-text-6xl);
   font-weight: 600;
   line-height: 1;
 }
@@ -2208,9 +2349,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
+  gap: var(--cqa-space-1) var(--cqa-space-3);
   color: var(--cqa-ink-2);
-  font-size: 13px;
+  font-size: var(--cqa-text-sm);
 }
 
 .cqa-app .cqa-compare-delta {
@@ -2222,7 +2363,7 @@
 
 .cqa-app .cqa-compare-delta-value {
   font-family: var(--cqa-font-num);
-  font-size: 34px;
+  font-size: var(--cqa-text-5xl);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -2253,11 +2394,63 @@
 .cqa-app .cqa-compare-row--definition_changed { box-shadow: inset 4px 0 0 var(--cqa-part); }
 .cqa-app .cqa-compare-row--weight_changed { box-shadow: inset 4px 0 0 var(--cqa-petrol); }
 
+/* ---------- История ---------- */
+
+/* У поля «Разговор» есть подсказка: выравниваем фильтры по верху, а кнопки — по полям ввода. */
+.cqa-app .cqa-history-filters { align-items: start; }
+.cqa-app .cqa-history-filters .cqa-filters-actions { padding-top: var(--cqa-space-6); }
+
+.cqa-app .cqa-history-search {
+  display: flex;
+  grid-column: span 2;
+  align-items: flex-start;
+  gap: var(--cqa-space-2);
+  min-width: 0;
+}
+
+.cqa-app .cqa-history-search .cqa-field { flex: 1; }
+.cqa-app .cqa-history-search .cqa-button { margin-top: var(--cqa-space-6); }
+
+.cqa-app .cqa-history-active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cqa-space-1) var(--cqa-space-4);
+  padding: var(--cqa-space-2) var(--cqa-space-3);
+  border-left: 3px solid var(--cqa-petrol);
+  background: var(--cqa-petrol-wash);
+}
+
+.cqa-app .cqa-history-matches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cqa-space-2);
+}
+
+.cqa-app .cqa-history-match-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cqa-space-2) var(--cqa-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cqa-app .cqa-history-match-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cqa-space-2);
+}
+
+.cqa-app .cqa-history-table td { vertical-align: top; }
+.cqa-app .cqa-history-summary { min-width: 20ch; max-width: 56ch; }
+
 /* ---------- Узкие экраны и уменьшенное движение ---------- */
 
 @media (max-width: 1100px) {
   .cqa-app .cqa-ed-grid { grid-template-columns: minmax(0, 1fr); }
   .cqa-app .cqa-ed-aside { position: static; }
+  .cqa-app .cqa-savebar { position: static; border-radius: var(--cqa-radius-lg); }
   .cqa-app .cqa-ed-option--scale { grid-template-columns: 80px minmax(0, 1fr) minmax(0, 1.5fr) 96px 28px; }
   .cqa-app .cqa-conv-grid { grid-template-columns: minmax(0, 1fr); }
   .cqa-app .cqa-pane { position: static; max-height: none; overflow: visible; }
@@ -2269,28 +2462,79 @@
   .cqa-app .cqa-ed-head { grid-template-columns: 24px minmax(0, 1fr); }
   .cqa-app .cqa-ed-tags,
   .cqa-app .cqa-ed-actions { grid-column: 2; justify-content: flex-start; }
-  .cqa-app .cqa-ed-body { padding-left: 14px; }
+  .cqa-app .cqa-ed-body { padding-left: var(--cqa-space-4); }
   .cqa-app .cqa-ed-option,
   .cqa-app .cqa-ed-option--scale { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 640px) {
   /* На телефоне закреплённая панель закрывала бы четверть экрана. */
-  .cqa-app .cqa-savebar { position: static; border-radius: 6px; }
-  .cqa-app .cqa-header { padding: 0 12px; }
-  .cqa-app .cqa-main { padding: 14px 12px 40px; }
-  .cqa-app .cqa-msg { grid-template-columns: 52px minmax(0, 1fr); gap: 8px; }
+  .cqa-app .cqa-savebar { position: static; border-radius: var(--cqa-radius-md); }
+  .cqa-app .cqa-history-search { grid-column: 1 / -1; }
+  .cqa-app .cqa-header { padding: 0 var(--cqa-space-3); }
+  .cqa-app .cqa-main { padding: var(--cqa-space-4) var(--cqa-space-3) var(--cqa-space-10); }
+  .cqa-app .cqa-msg { grid-template-columns: 52px minmax(0, 1fr); gap: var(--cqa-space-2); }
   .cqa-app .cqa-phase-caption { padding-left: 80px; }
-  .cqa-app .cqa-total-value { font-size: 44px; }
+  .cqa-app .cqa-total-value { font-size: var(--cqa-text-display); }
+  .cqa-app .cqa-top { position: static; }
+  .cqa-app .cqa-header { gap: var(--cqa-space-2); padding-top: var(--cqa-space-3); }
+  .cqa-app .cqa-brand { flex-wrap: wrap; }
+  .cqa-app .cqa-header-status { justify-content: flex-start; width: 100%; padding-bottom: var(--cqa-space-2); }
+  .cqa-app .cqa-tabs { order: 3; width: 100%; }
+  .cqa-app .cqa-tab { flex: 1; justify-content: center; padding-inline: var(--cqa-space-2); }
+  .cqa-app .cqa-card { padding: var(--cqa-space-4); }
+  .cqa-app .cqa-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cqa-app .cqa-filters > .cqa-field:first-child,
+  .cqa-app .cqa-filters > .cqa-field:has(input[type="search"]),
+  .cqa-app .cqa-filters-actions { grid-column: 1 / -1; }
+  .cqa-app .cqa-total { padding: var(--cqa-space-4); }
+  .cqa-app .cqa-pane-head { padding: var(--cqa-space-3); }
+  .cqa-app .cqa-fact { flex-wrap: wrap; min-width: 0; }
+  .cqa-app .cqa-fact dd { overflow-wrap: anywhere; }
+  .cqa-app .cqa-criterion-head { align-items: flex-start; }
+  .cqa-app .cqa-criterion-name { overflow-wrap: anywhere; }
+  .cqa-app .cqa-verdict { white-space: normal; text-align: right; }
+  .cqa-app .cqa-group-eval { flex-wrap: wrap; }
+  .cqa-app .cqa-group-eval .cqa-button { width: 100%; }
+  .cqa-app .cqa-list-scroll { max-height: none; overflow: visible; border: 0; }
+  .cqa-app .cqa-conversations-table,
+  .cqa-app .cqa-conversations-table tbody { display: block; }
+  .cqa-app .cqa-conversations-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .cqa-app .cqa-conversations-table tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--cqa-space-3); padding: var(--cqa-space-4); margin-bottom: var(--cqa-space-3); border: 1px solid var(--cqa-rule); border-radius: var(--cqa-radius-lg); background: var(--cqa-sheet); }
+  .cqa-app .cqa-conversations-table td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; text-align: left; }
+  .cqa-app .cqa-conversations-table td:first-child { grid-column: 1 / -1; min-width: 0; max-width: none; font-size: var(--cqa-text-base); }
+  .cqa-app .cqa-conversations-table td:nth-child(7) { grid-column: 1 / -1; }
+  .cqa-app .cqa-mobile-label { display: block; margin-bottom: var(--cqa-space-1); font-size: var(--cqa-text-xs); color: var(--cqa-ink-2); font-weight: 400; }
+  .cqa-app .cqa-conversations-table td:nth-child(6) strong { font-size: var(--cqa-text-xl); }
+  .cqa-app .cqa-pager { flex-wrap: wrap; justify-content: flex-start; }
 }
+
+.cqa-app .cqa-button,
+.cqa-app .cqa-icon-button,
+.cqa-app .cqa-chip,
+.cqa-app .cqa-tab,
+.cqa-app .cqa-row-link { transition: transform var(--cqa-duration-fast) var(--cqa-ease); }
+.cqa-app .cqa-button:not(:disabled):hover,
+.cqa-app .cqa-icon-button:not(:disabled):hover,
+.cqa-app .cqa-chip:hover { transform: translateY(-1px); }
+.cqa-app .cqa-button:not(:disabled):active,
+.cqa-app .cqa-icon-button:not(:disabled):active,
+.cqa-app .cqa-chip:active { transform: translateY(0) scale(0.98); }
+.cqa-app .cqa-row-link:hover { transform: translateX(2px); }
 
 @media (prefers-reduced-motion: reduce) {
   .cqa-app *,
   .cqa-app *::before,
   .cqa-app *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
+  .cqa-app .cqa-button:hover,
+  .cqa-app .cqa-button:active,
+  .cqa-app .cqa-icon-button:hover,
+  .cqa-app .cqa-icon-button:active,
+  .cqa-app .cqa-chip:hover,
+  .cqa-app .cqa-chip:active,
+  .cqa-app .cqa-row-link:hover { transform: none; }
 }

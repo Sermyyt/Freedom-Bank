@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { showError } from '../components/toast.js';
 import { append, clear, h } from '../dom.js';
 import {
@@ -51,12 +52,13 @@ export function mount(container, route) {
 
   const filterLinks = FILTERS.map((filter) => h('a', { class: 'cqa-filter-tab', text: filter.label, dataset: { status: filter.status } }));
   const filterNav = h('nav', { class: 'cqa-filter-tabs', 'aria-label': 'Статус апелляций' }, filterLinks);
-  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite' });
+  const listStatus = h('p', { class: 'cqa-list-status', 'aria-live': 'polite', tabindex: '-1' });
   const listError = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const tableBody = h('tbody');
+  const loading = loadingState();
   const tableWrap = h(
     'div',
-    { class: 'cqa-table-wrap' },
+    { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'Апелляции, прокручиваемая таблица' },
     h('table', { class: 'cqa-table cqa-appeals-table' }, h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', text: title })))), tableBody),
   );
   const listEmpty = h('div', { hidden: true });
@@ -75,6 +77,7 @@ export function mount(container, route) {
       h('div', { class: 'cqa-card-head' }, h('h2', { id: 'cqa-appeals-title', text: 'Список апелляций' }), filterNav),
       listStatus,
       listError,
+      loading,
       tableWrap,
       listEmpty,
       pager),
@@ -174,7 +177,12 @@ export function mount(container, route) {
   }
 
   function renderPager(page) {
+    const hadFocus = pager.contains(document.activeElement);
     clear(pager);
+    if (hadFocus) {
+      listStatus.focus({ preventScroll: true });
+      listStatus.scrollIntoView({ block: 'center' });
+    }
     if (!page || page.total <= page.limit) return;
     const pages = Math.ceil(page.total / page.limit);
     const currentPage = Math.floor(page.offset / page.limit) + 1;
@@ -220,6 +228,8 @@ export function mount(container, route) {
     setViewDemo(false);
     listError.hidden = true;
     tableWrap.classList.add('is-loading');
+    tableWrap.setAttribute('aria-busy', 'true');
+    loading.hidden = Boolean(tableBody.childElementCount);
     listStatus.textContent = 'Загрузка…';
     try {
       const page = await api.listAppeals(appealsApiQuery(query), { signal: controller.signal });
@@ -236,7 +246,11 @@ export function mount(container, route) {
       listError.hidden = false;
       showError(error);
     } finally {
-      if (seq === loadSeq) tableWrap.classList.remove('is-loading');
+      if (seq === loadSeq) {
+        tableWrap.classList.remove('is-loading');
+        tableWrap.setAttribute('aria-busy', 'false');
+        loading.hidden = true;
+      }
     }
   }
 

@@ -3,6 +3,7 @@
 import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
+import { loadingState } from '../components/loading-state.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { verdict } from '../components/verdict.js';
@@ -33,6 +34,8 @@ import {
 } from '../lib/labels.js';
 import { groupTranscript, isClientFacingPhase, isHiddenFromClientPhase, phaseLabel } from '../lib/phases.js';
 import { describeJob, pollJob } from '../lib/poll.js';
+import { prefersReducedMotion } from '../lib/motion.js';
+import { animateScore } from '../lib/score-motion.js';
 import { buildHash } from '../lib/route.js';
 import { getChecklistVersion, setLastConversation, setViewDemo, state, subscribe } from '../state.js';
 import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
@@ -40,10 +43,6 @@ import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
 const KNOWN_ROLES = ['client', 'operator', 'bot', 'system'];
 const KNOWN_PHASES = ['pre_operator', 'client', 'hold', 'internal_consult', 'after_end'];
 const FLAG_TONES = { duplicate_of_prev: 'neutral', after_end: 'neutral', pii_masked: 'info', unknown_event: 'partial' };
-
-function prefersReducedMotion() {
-  return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-}
 
 function healthDecimals() {
   return state.health && state.health.scoring_policy ? state.health.scoring_policy.decimals : undefined;
@@ -70,6 +69,8 @@ export function mount(container, route) {
   let summariesTotal = 0;
   let jobRunning = false;
   let jobEvaluationId = null;
+  let pendingScoreAnimationId = null;
+  let cancelScoreAnimation = () => {};
   let audio = null;
   const messageNodes = new Map();
   const messagesById = new Map();
@@ -108,7 +109,7 @@ export function mount(container, route) {
   const evaluateHint = h('p', { class: 'cqa-field-hint', hidden: true });
   const evaluateError = h('div', { class: 'cqa-form-error', role: 'alert', hidden: true });
   const jobProgress = createJobProgress();
-  const scoreBody = h('div', { class: 'cqa-score-body' });
+  const scoreBody = h('div', { class: 'cqa-score-body' }, loadingState('Загрузка оценки…'));
   scorePane.append(
     h('div', { class: 'cqa-pane-head' }, h('h2', { id: 'cqa-score-title', text: 'Оценка' }), evaluateButton),
     h('div', { class: 'cqa-evaluate' }, evaluateHint, evaluateError, jobProgress.el),
@@ -116,7 +117,7 @@ export function mount(container, route) {
   );
   transcriptPane.append(
     h('div', { class: 'cqa-pane-head' }, h('h2', { id: 'cqa-transcript-title', text: 'Переписка' })),
-    h('p', { class: 'cqa-loading', text: 'Загрузка разговора…' }),
+    loadingState('Загрузка разговора…'),
   );
 
   container.append(
@@ -277,7 +278,8 @@ export function mount(container, route) {
       'ul',
       { class: 'cqa-legend', 'aria-label': 'Обозначения полосы слева' },
       h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--heard', 'aria-hidden': 'true' }), 'клиент слышит'),
-      h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--unheard', 'aria-hidden': 'true' }), 'клиент не слышит'),
+      h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--unheard', 'aria-hidden': 'true' }), 'удержание: не слышит'),
+      h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--internal', 'aria-hidden': 'true' }), 'консультация: не слышит'),
       h('li', {}, h('span', { class: 'cqa-legend-swatch cqa-legend-swatch--after', 'aria-hidden': 'true' }), 'после завершения'),
     );
   }
@@ -338,6 +340,11 @@ export function mount(container, route) {
       { class: 'cqa-msg-gutter' },
       h('span', { class: 'cqa-msg-num', text: `#${message.id}` }),
       h('time', { class: 'cqa-msg-time', title: message.timestamp, text: displayTimestamp(message.timestamp) }),
+      h('input', {
+        type: 'checkbox', class: 'cqa-message-pick', hidden: true,
+        'aria-label': `Использовать реплику #${message.id} как доказательство`,
+        on: { change: event => pickMessage(event.currentTarget.closest('.cqa-msg')) },
+      }),
     );
     let body;
     if (isEvent) {
@@ -396,7 +403,10 @@ export function mount(container, route) {
     transcriptPane.classList.toggle('is-picking', picking);
     pickHint.hidden = !picking;
     for (const [id, node] of messageNodes) {
-      node.tabIndex = picking ? 0 : -1;
+      node.tabIndex = -1;
+      const checkbox = node.querySelector('.cqa-message-pick');
+      checkbox.hidden = !picking;
+      checkbox.checked = picked.has(id);
       node.classList.toggle('is-picked', picked.has(id));
       if (picking) node.title = picked.has(id) ? 'Убрать из доказательств решения' : 'Добавить в доказательства решения';
       else node.removeAttribute('title');
@@ -510,6 +520,7 @@ export function mount(container, route) {
       const summary = describeJob(finished);
       const evaluationId = summary.evaluationIds[0];
       jobEvaluationId = evaluationId || null;
+      if (evaluationId && evaluationId !== evaluation?.id) pendingScoreAnimationId = evaluationId;
       if (evaluationId) {
         showToast(finished.status === 'completed' ? 'Оценка готова.' : 'Оценка сохранена с ошибками: проверьте результат.', {
           tone: finished.status === 'completed' ? 'success' : 'error',
@@ -577,7 +588,9 @@ export function mount(container, route) {
       { class: 'cqa-total' },
       h('p', { class: 'cqa-total-label', text: 'Итоговый балл' }),
       h('p', { class: 'cqa-total-figure' },
-        h('span', { class: 'cqa-total-value', text: formatNumber(final.total, decimals) }),
+        h('span', { class: 'cqa-total-value' },
+          h('span', { class: 'cqa-sr-only', text: formatNumber(final.total, decimals) }),
+          h('span', { class: 'cqa-total-digits', 'aria-hidden': 'true', text: formatNumber(final.total, decimals) })),
         hasTotal ? h('span', { class: 'cqa-total-of', text: 'из 100' }) : null),
     );
     if (final.total_reason) block.append(h('p', { class: 'cqa-total-reason', text: final.total_reason }));
@@ -882,7 +895,7 @@ export function mount(container, route) {
         h('td', {}, badge(labelFor(EVALUATION_STATUS_LABELS, summary.status), EVALUATION_STATUS_TONES[summary.status] || 'neutral')),
         h('td', {}, action));
     });
-    block.append(h(
+    block.append(h('div', { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'История оценок, прокручиваемая таблица' }, h(
       'table',
       { class: 'cqa-table cqa-table--compact' },
       h('thead', {}, h('tr', {},
@@ -892,7 +905,7 @@ export function mount(container, route) {
         h('th', { scope: 'col', text: 'Статус' }),
         h('th', { scope: 'col', text: 'Действия' }))),
       h('tbody', {}, rows),
-    ));
+    )));
     if (summariesTotal > summaries.length) {
       block.append(h('p', { class: 'cqa-muted cqa-small', text: `Показаны последние ${summaries.length} из ${summariesTotal}.` }));
     }
@@ -900,6 +913,7 @@ export function mount(container, route) {
   }
 
   function renderScore() {
+    cancelScoreAnimation();
     updateEvaluateControls();
     // Итог задания остаётся рядом с оценкой, которую оно создало; у других оценок он лишний.
     if (!jobRunning && jobEvaluationId && (!evaluation || evaluation.id !== jobEvaluationId)) {
@@ -932,6 +946,10 @@ export function mount(container, route) {
       flagsBlock(rows.filter((row) => row.isFlag), decimals),
       pastEvaluations(),
     ]);
+    if (pendingScoreAnimationId === evaluation.id) {
+      pendingScoreAnimationId = null;
+      cancelScoreAnimation = animateScore(scoreBody.querySelector('.cqa-total-digits'), evaluation.final.total, value => formatNumber(value, decimals));
+    }
     if (focused && document.activeElement !== focused) focused.focus({ preventScroll: true });
   }
 
@@ -1114,6 +1132,7 @@ export function mount(container, route) {
       return true;
     },
     destroy() {
+      cancelScoreAnimation();
       controller.abort();
       if (pollController) pollController.abort();
       if (activeModal) activeModal.close();
