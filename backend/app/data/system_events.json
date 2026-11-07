@@ -1,0 +1,24 @@
+{
+  "exact": {
+    "escalation": ["Эскалация на оператора.", "Чат операторға жіберілді.", "Chat transferred to an agent."],
+    "identity_verified": ["Личность клиента подтверждена.", "Клиенттің жеке басы расталды.", "Customer identity verified."],
+    "connection_lost": ["Соединение с клиентом прервано.", "Клиентпен байланыс үзілді.", "Connection to customer lost."],
+    "operator_closed": ["Оператор закрыл чат.", "Оператор чатты жапты.", "Agent closed the chat."],
+    "client_left": ["Клиент покинул чат."],
+    "client_ended": ["Клиент завершил разговор."],
+    "agent_joined": ["Агент присоединился к разговору с клиентом."],
+    "recording_started": ["Запись и транскрибирование запущены.", "Жазу және транскрипция басталды."],
+    "recording_paused": ["Запись и транскрибирование приостановлены."],
+    "recording_resumed": ["Запись и транскрибирование возобновлены."],
+    "consult_initiated": ["Инициирована консультация с агентом."],
+    "consult_started": ["Началась консультация с агентом."],
+    "hold_start": ["Клиент находится на удержании."],
+    "hold_end": ["Клиент больше не находится на удержании."],
+    "agent_left": ["Агент вышел из разговора."],
+    "transfer_to_support": ["Клиент переведен от агента на представителя службы поддержки"]
+  },
+  "prefix": {
+    "language_changed": ["Bot dialog and transcription languages have been updated."]
+  },
+  "ending_codes": ["client_ended", "operator_closed", "client_left", "connection_lost"]
+}
