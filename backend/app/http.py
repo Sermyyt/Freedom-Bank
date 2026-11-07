@@ -3,7 +3,9 @@ import sqlite3
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
+from starlette.datastructures import MutableHeaders
 from starlette.exceptions import HTTPException
+from starlette.staticfiles import StaticFiles
 from .errors import APIError
 from .evaluation import DomainError
 from .ingestion import IngestionError
@@ -58,6 +60,9 @@ class RequestMiddleware:
             if message["type"] == "http.response.start":
                 started = True
                 message.setdefault("headers", []).append((b"x-request-id", identifier.encode("ascii")))
+                api_path = scope["path"] == "/api" or scope["path"].startswith("/api/")
+                if isinstance(scope.get("endpoint"), StaticFiles) and not api_path:
+                    MutableHeaders(scope=message)["Cache-Control"] = "no-cache"
             await send(message)
         try:
             await self.app(scope, receive, safe_send)
