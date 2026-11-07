@@ -280,8 +280,8 @@ def _wait_before_retry(provider, cause, attempt, sleeper, base_seconds):
     if sleeper is None and provider.is_demo:
         return
     suggested = getattr(cause, "retry_after", None)
-    delay = suggested if suggested is not None else base_seconds * (2 ** min(attempt, 5))
-    (sleeper or time.sleep)(min(8.0, max(0.0, delay)))
+    delay = suggested if suggested is not None else min(8.0, base_seconds * (2 ** min(attempt, 5)))
+    (sleeper or time.sleep)(max(0.0, delay))
 
 
 def _evaluate_selected(criteria, transcript, provider, language, attempts, log, sleeper, base_seconds):

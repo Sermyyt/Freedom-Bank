@@ -32,7 +32,7 @@ def _block_text(blocks, kind):
 def _retry_after(value):
     try:
         seconds = float(value)
-        return min(8.0, max(0.0, seconds)) if math.isfinite(seconds) else None
+        return max(0.0, seconds) if math.isfinite(seconds) else None
     except (ValueError, TypeError):
         return None
 

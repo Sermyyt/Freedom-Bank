@@ -139,6 +139,52 @@ def test_default_http_backoff_increases_between_transient_failures(domain, monke
     assert delays == [0.25, 0.5]
 
 
+def test_rate_limit_retry_waits_the_full_server_requested_interval(domain):
+    attempts = []
+
+    def handler(request):
+        attempts.append(request)
+        if len(attempts) == 1:
+            return httpx.Response(429, json={"error": {}}, headers={"Retry-After": "60"})
+        return httpx.Response(200, json=openai_response())
+
+    delays = []
+    snapshot, usage, _, _ = evaluate(*domain, provider("openai", handler), POLICY, sleeper=delays.append)
+    assert delays == [60.0]
+    assert usage["calls"] == 2
+    assert snapshot["status"] == "completed"
+
+
+@pytest.mark.parametrize("header", ["not-a-delay", "NaN", "Infinity", "-Infinity", "1e9999", ""])
+def test_invalid_retry_after_uses_finite_default_backoff(domain, header):
+    attempts, delays = [], []
+
+    def handler(request):
+        attempts.append(request)
+        if len(attempts) == 1:
+            return httpx.Response(429, json={"error": {}}, headers={"Retry-After": header})
+        return httpx.Response(200, json=openai_response())
+
+    snapshot, usage, _, _ = evaluate(*domain, provider("openai", handler), POLICY, sleeper=delays.append)
+    assert delays == [0.25]
+    assert usage["calls"] == 2
+    assert snapshot["status"] == "completed"
+
+
+def test_zero_retry_after_allows_immediate_retry(domain):
+    attempts, delays = [], []
+
+    def handler(request):
+        attempts.append(request)
+        if len(attempts) == 1:
+            return httpx.Response(429, json={"error": {}}, headers={"Retry-After": "0"})
+        return httpx.Response(200, json=openai_response())
+
+    snapshot, _, _, _ = evaluate(*domain, provider("openai", handler), POLICY, sleeper=delays.append)
+    assert delays == [0.0]
+    assert snapshot["status"] == "completed"
+
+
 @pytest.mark.parametrize("status", [429, 500, 503])
 def test_retryable_http_errors_retry_once_with_bounded_backoff(domain, status):
     requests, delays = [], []
