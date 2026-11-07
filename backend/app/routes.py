@@ -50,7 +50,8 @@ def import_dataset(body: s.DatasetImportRequest, request: Request):
 
 
 @router.post("/api/imports/file", response_model=s.Success[s.ImportReport])
-async def import_file(request: Request, file: UploadFile = File(...), group_id: str | None = Form(None)):
+async def import_file(request: Request, file: UploadFile = File(..., json_schema_extra={"format": "binary"}),
+                      group_id: str | None = Form(None)):
     form = await request.form()
     if set(form) - {"file", "group_id"} or len(form.getlist("file")) != 1 or len(form.getlist("group_id")) > 1:
         raise APIError(422, "VALIDATION_ERROR", "Неизвестные или повторные поля формы.")

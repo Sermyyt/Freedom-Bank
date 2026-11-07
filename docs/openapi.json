@@ -4161,6 +4161,7 @@
           "file": {
             "type": "string",
             "format": "binary",
+            "contentMediaType": "application/octet-stream",
             "title": "File"
           },
           "group_id": {

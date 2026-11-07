@@ -40,7 +40,9 @@ Set-Location backend
 ..\.venv\Scripts\python.exe -m pytest
 ```
 
-В текущей рабочей копии .venv уже подготовлена. Активация окружения не обязательна.
+Активация окружения не обязательна. После обновления проекта остановите API, повторите установку `requirements.txt` в его окружение и запустите сервер прежней командой: уже запущенный процесс не подхватит новые зависимости. После запуска обновите интерфейс сочетанием Ctrl+Shift+R.
+
+HTTP-зависимости обновлены до FastAPI 0.162.2, Starlette 1.6.0 и python-multipart 0.0.33. Эти версии закрывают выявленные проблемы [Windows UNC в StaticFiles](https://github.com/Kludex/starlette/security/advisories/GHSA-wqp7-x3pw-xc5r), [обработки Range](https://github.com/Kludex/starlette/security/advisories/GHSA-7f5h-v6xp-fcq8) и [multipart-заголовков](https://github.com/Kludex/python-multipart/security/advisories/GHSA-pp6c-gr5w-3c5g). Starlette зафиксирован явно, чтобы установка не возвращала уязвимую транзитивную версию; сохранена совместимость с используемым httpx 0.28.1.
 
 Для Python 3.14 требуется Pydantic 2.12 или новее: в `requirements.txt` разрешён диапазон `pydantic>=2.12,<3`. [Поддержка Python 3.14 появилась в Pydantic 2.12](https://pydantic.dev/articles/pydantic-v2-12-release). Установка из готовых wheels и тесты проверены в отдельных окружениях Windows на CPython 3.11.16 и 3.14.7 с Pydantic 2.14.3 / pydantic-core 2.50.4. Остальные прямые зависимости сохранены; полная пересборка окружения по инструкции выше доступна и участнику с Python 3.14.
 

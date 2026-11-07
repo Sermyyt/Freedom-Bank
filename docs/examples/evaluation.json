@@ -1,14 +1,14 @@
 {
   "data": {
-    "id": "8c5ac8ac-ad70-4e11-b1c4-593cdf1443d4",
+    "id": "ace992b4-35c7-4681-a8f0-111f0e74e4b0",
     "conversation": {
-      "id": "295b01ed-e28a-47d8-8e57-d9d3f45ff765",
+      "id": "ec185dea-09d7-482a-a447-acfd78f9c790",
       "group_id": "SYNTHETIC",
       "conversation_id": "demo-en",
-      "revision_id": "cd697362-052c-4f47-914d-9eb60d68fe1e",
+      "revision_id": "472a4864-6dc0-4628-92f6-8473ab296f58",
       "revision": 1
     },
-    "checklist_version_id": "fcaae4dd-ee7b-4f42-9325-268876ab3fa4",
+    "checklist_version_id": "eab21434-44f5-4aaa-a7b8-eb5aa39e1d41",
     "checklist_snapshot": {
       "name": "Чек-лист качества чатов Freedom Broker",
       "description": "Восемь критериев для оценки работы оператора по переписке. Один и тот же чек-лист применяется к чатам на русском, казахском и английском. N/A означает неприменимость по условию критерия; пропущенное необходимое действие означает «Нет». Порог первой реакции в 3 минуты, теги и вложения в оценку не входят. Источник: CQA_Chat_Quality_Checklist.pdf, страницы 1–3.",
@@ -865,17 +865,17 @@
       "provider": "fake",
       "model": null,
       "prompt_version": "cqa-v9",
-      "duration_ms": 0,
+      "duration_ms": 14,
       "calls": 1,
       "input_tokens": null,
       "output_tokens": null,
       "cost": null,
       "currency": null
     },
-    "created_at": "2026-11-07T14:43:18.982661Z",
-    "updated_at": "2026-11-07T14:43:18.982661Z"
+    "created_at": "2026-11-07T21:25:54.563534Z",
+    "updated_at": "2026-11-07T21:25:54.563534Z"
   },
   "meta": {
-    "request_id": "ec127083-ed23-4522-ace9-67f27a5fb43e"
+    "request_id": "e10fbadd-9e81-4981-8f0f-ed9e92e37278"
   }
 }
