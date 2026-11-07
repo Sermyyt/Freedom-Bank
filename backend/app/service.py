@@ -37,14 +37,16 @@ def filtered(items, filters):
     return [item for item in items if all(value is None or item.get(key) == value for key, value in filters.items())]
 
 
-def open_appeals(tx, evaluation_id=None, conversation_id=None):
-    appeals = [a for a in tx.all("appeals") if a["status"] == "open"]
-    if evaluation_id:
-        appeals = [a for a in appeals if a["evaluation_id"] == evaluation_id]
-    if conversation_id:
-        identifiers = {e["id"] for e in tx.all("evaluations") if e["conversation"]["id"] == conversation_id}
-        appeals = [a for a in appeals if a["evaluation_id"] in identifiers]
-    return bool(appeals)
+def filter_evaluation_state(items, status, has_gross_error):
+    if status is not None:
+        items = [c for c in items if (c["latest_evaluation"] or {}).get("status", "not_evaluated") == status]
+    if has_gross_error is not None:
+        items = [c for c in items if (c["latest_evaluation"] or {}).get("gross_error") is has_gross_error]
+    return items
+
+
+def open_appeals(tx, evaluation_id):
+    return any(a["status"] == "open" and a["evaluation_id"] == evaluation_id for a in tx.all("appeals"))
 
 
 def evaluation_summary(tx, item):

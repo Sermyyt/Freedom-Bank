@@ -1,5 +1,5 @@
 """Small durable queue; one server process owns a bounded worker pool."""
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import deepcopy
 from threading import Lock
 from .errors import APIError, require
@@ -31,15 +31,33 @@ def interrupt_unfinished(tx):
             tx.put("jobs", job["id"], job)
 
 
+def select_revisions(tx, request):
+    if request.get("group_id") is not None:
+        conversations = sorted([c for c in tx.all("conversations") if c["group_id"] == request["group_id"]],
+                               key=lambda c: (c["conversation_id"], c["id"]))
+        identifiers = [c["revision_id"] for c in conversations]
+        if not identifiers:
+            raise APIError(404, "NOT_FOUND", "В группе нет импортированных разговоров.")
+    else:
+        identifiers = request["revision_ids"]
+        if not identifiers or len(identifiers) > 1000:
+            raise APIError(422, "VALIDATION_ERROR", "Для задания требуется от 1 до 1000 ревизий.")
+    for identifier in identifiers:
+        require(tx.get("revisions", identifier))
+    return identifiers
+
+
 class JobRunner:
     def __init__(self, store, settings, provider):
         self.store, self.settings, self.provider = store, settings, provider
-        self.pool = ThreadPoolExecutor(max_workers=settings.llm_max_concurrency, thread_name_prefix="cqa")
+        self.pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="cqa-queue")
+        self.workers = ThreadPoolExecutor(max_workers=settings.llm_max_concurrency, thread_name_prefix="cqa-model")
         self.lock = Lock()
         self.futures = set()
 
     def close(self):
         self.pool.shutdown(wait=True)
+        self.workers.shutdown(wait=True)
 
     def submit(self, job_id):
         future = self.pool.submit(self.run, job_id)
@@ -60,18 +78,7 @@ class JobRunner:
         if version_id is None:
             raise APIError(422, "NO_ACTIVE_CHECKLIST", "Нет активного чек-листа.")
         require(tx.get("versions", version_id))
-        if request.get("group_id") is not None:
-            conversations = sorted([c for c in tx.all("conversations") if c["group_id"] == request["group_id"]],
-                                   key=lambda c: (c["conversation_id"], c["id"]))
-            identifiers = [c["revision_id"] for c in conversations]
-            if not identifiers:
-                raise APIError(404, "NOT_FOUND", "В группе нет импортированных разговоров.")
-        else:
-            identifiers = request["revision_ids"]
-        if not identifiers or len(identifiers) > 1000:
-            raise APIError(422, "VALIDATION_ERROR", "Для задания требуется от 1 до 1000 ревизий.")
-        for identifier in identifiers:
-            require(tx.get("revisions", identifier))
+        identifiers = select_revisions(tx, request)
         job = dict(id=new_id(), status="queued", checklist_version_id=version_id,
                    is_demo=self.settings.llm_provider == "fake", provider=self.settings.llm_provider,
                    total=len(identifiers), processed=0, succeeded=0, failed=0, manual_review_count=0, progress_percent=0,
@@ -84,30 +91,47 @@ class JobRunner:
 
     def run(self, identifier):
         try:
-            with self.store.transaction() as tx:
-                job = require(tx.get("jobs", identifier))
-                job.update(status="running", started_at=now())
-                tx.put("jobs", identifier, job)
-                config = tx.get("job_config", identifier)
-                definition = tx.get("versions", job["checklist_version_id"])["definition"]
-            for index in range(job["total"]):
-                self.run_item(identifier, index, definition, config)
-            with self.store.transaction() as tx:
-                job = tx.get("jobs", identifier)
-                job.update(status="failed" if job["failed"] else "completed", finished_at=now())
-                if job["failed"]:
-                    job["error"] = operation_error("ITEMS_FAILED", "Некоторые разговоры не удалось оценить.")
-                tx.put("jobs", identifier, job)
+            self.process_job(identifier)
         except Exception:
-            # Recovery metadata is safe even if a provider exception embeds secrets.
-            with self.store.transaction() as tx:
-                job = require(tx.get("jobs", identifier))
-                for item in job["items"]:
-                    if item["status"] in {"queued", "running"}:
-                        item.update(status="failed", error=operation_error("PROCESSING_FAILED", "Не удалось завершить обработку."))
-                progress(job)
-                job.update(status="failed", finished_at=now(), error=operation_error("PROCESSING_FAILED", "Задание завершилось с ошибкой."))
-                tx.put("jobs", identifier, job)
+            self.fail_unfinished(identifier)
+
+    def process_job(self, identifier):
+        with self.store.transaction() as tx:
+            job = require(tx.get("jobs", identifier))
+            job.update(status="running", started_at=now())
+            tx.put("jobs", identifier, job)
+            config = tx.get("job_config", identifier)
+            definition = tx.get("versions", job["checklist_version_id"])["definition"]
+        self.process_items(identifier, job["total"], definition, config)
+        with self.store.transaction() as tx:
+            job = tx.get("jobs", identifier)
+            job.update(status="failed" if job["failed"] else "completed", finished_at=now())
+            if job["failed"]:
+                job["error"] = operation_error("ITEMS_FAILED", "Некоторые разговоры не удалось оценить.")
+            tx.put("jobs", identifier, job)
+
+    def process_items(self, identifier, count, definition, config):
+        futures = [self.workers.submit(self.run_item, identifier, index, definition, config) for index in range(count)]
+        failed = False
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception:
+                failed = True
+        if failed:
+            # All writers have stopped before marking remaining elements as failed.
+            raise RuntimeError("Batch persistence failed")
+
+    def fail_unfinished(self, identifier):
+        # Recovery metadata is safe even if a provider exception embeds secrets.
+        with self.store.transaction() as tx:
+            job = require(tx.get("jobs", identifier))
+            for item in job["items"]:
+                if item["status"] in {"queued", "running"}:
+                    item.update(status="failed", error=operation_error("PROCESSING_FAILED", "Не удалось завершить обработку."))
+            progress(job)
+            job.update(status="failed", finished_at=now(), error=operation_error("PROCESSING_FAILED", "Задание завершилось с ошибкой."))
+            tx.put("jobs", identifier, job)
 
     def run_item(self, job_id, index, definition, config):
         with self.store.transaction() as tx:

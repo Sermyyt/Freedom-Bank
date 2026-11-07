@@ -1,47 +1,47 @@
 {
   "data": {
     "conversation": {
-      "id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
+      "id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
       "group_id": "SYNTHETIC",
       "conversation_id": "demo-en",
-      "revision_id": "eba47c96-c351-4c42-a17b-820af11da76f",
+      "revision_id": "a24df19d-d83b-4321-9ad6-be1925acdb8f",
       "revision": 1
     },
     "left": {
-      "id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+      "id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
       "conversation": {
-        "id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
+        "id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
         "group_id": "SYNTHETIC",
         "conversation_id": "demo-en",
-        "revision_id": "eba47c96-c351-4c42-a17b-820af11da76f",
+        "revision_id": "a24df19d-d83b-4321-9ad6-be1925acdb8f",
         "revision": 1
       },
-      "checklist_version_id": "eb926b9d-2617-4426-b796-e34a689e23c5",
+      "checklist_version_id": "fd491c19-844f-43d6-a0f7-ae0f2605132a",
       "status": "completed",
       "is_demo": true,
       "original_total": 100.0,
       "final_total": 100.0,
       "gross_error": false,
       "has_open_appeals": false,
-      "created_at": "2026-11-07T12:09:43.005470Z"
+      "created_at": "2026-11-07T12:25:52.387317Z"
     },
     "right": {
-      "id": "aa6dc344-7917-46ad-bcd9-989640885b0c",
+      "id": "017c06dc-76b2-4a77-9a21-2a081df9c941",
       "conversation": {
-        "id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
+        "id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
         "group_id": "SYNTHETIC",
         "conversation_id": "demo-en",
-        "revision_id": "eba47c96-c351-4c42-a17b-820af11da76f",
+        "revision_id": "a24df19d-d83b-4321-9ad6-be1925acdb8f",
         "revision": 1
       },
-      "checklist_version_id": "8ae512d1-2d2e-4236-9724-57f53eebd150",
+      "checklist_version_id": "a5892d1e-05aa-4bcb-9f22-e84e32c631c5",
       "status": "completed",
       "is_demo": true,
       "original_total": 100.0,
       "final_total": 100.0,
       "gross_error": false,
       "has_open_appeals": false,
-      "created_at": "2026-11-07T12:09:43.135896Z"
+      "created_at": "2026-11-07T12:25:52.461803Z"
     },
     "left_final_revision": 0,
     "right_final_revision": 0,
@@ -157,7 +157,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 11.0,
           "normalized_answer": 1.0,
           "effective_weight": 10.891089108910892,
@@ -276,7 +276,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 15.0,
           "normalized_answer": 1.0,
           "effective_weight": 14.851485148514852,
@@ -395,7 +395,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 20.0,
           "normalized_answer": 1.0,
           "effective_weight": 19.801980198019802,
@@ -550,7 +550,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 20.0,
           "normalized_answer": 1.0,
           "effective_weight": 19.801980198019802,
@@ -669,7 +669,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 15.0,
           "normalized_answer": 1.0,
           "effective_weight": 14.851485148514852,
@@ -812,7 +812,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 15.0,
           "normalized_answer": 1.0,
           "effective_weight": 14.851485148514852,
@@ -931,7 +931,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": 5.0,
           "normalized_answer": 1.0,
           "effective_weight": 4.9504950495049505,
@@ -1036,7 +1036,7 @@
           "manual_review_reasons": [],
           "warnings": [],
           "reused": true,
-          "reused_from_evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+          "reused_from_evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
           "original_weight": null,
           "normalized_answer": null,
           "effective_weight": null,
@@ -1048,6 +1048,6 @@
     ]
   },
   "meta": {
-    "request_id": "18c0683d-d905-4c6a-a05c-d144ed4d91d9"
+    "request_id": "2c51cd54-2a0a-4a43-86ad-e951eb38241d"
   }
 }

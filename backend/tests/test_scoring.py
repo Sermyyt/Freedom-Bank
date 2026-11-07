@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 
 from app.checklist_validation import normalize_definition
-from app.scoring import score
+from app.scoring import difference, score
 
 POLICY = {"rounding": "half_up", "decimals": 2, "gross_error_zeroes_total": False}
 
@@ -101,3 +101,60 @@ def test_zero_weight_section_after_na_has_zero_contribution():
     section = next(item for item in snapshot["sections"] if item["section"] == "N/A")
     assert section["completion_percent"] is None
     assert section["contribution"] == 0
+
+
+def test_renormalized_weights_and_contributions_are_server_values():
+    snapshot = score(definition(), results([True, None, None, 15, True, 7, False, False]), POLICY)
+    criterion = snapshot["criteria"][5]
+    assert criterion["effective_weight"] == pytest.approx(23.076923076923077)
+    assert criterion["contribution"] == pytest.approx(16.153846153846153)
+    assert snapshot["sections"][0]["contribution"] == pytest.approx(77.6923076923077)
+    assert snapshot["gross_error"] is False
+
+
+@pytest.mark.parametrize(("decimals", "expected"), [(0, 63), (1, 63.1), (3, 63.125)])
+def test_configured_decimal_count_is_applied_only_to_total(decimals, expected):
+    snapshot = score(definition(), results([True, True, None, 15, False, 7, False, False]),
+                     {**POLICY, "decimals": decimals})
+    assert snapshot["total"] == expected
+    assert snapshot["criteria"][5]["weighted_points"] == 10.5
+
+
+def test_unknown_flag_preserves_weighted_total_but_requires_review():
+    answers = results([True, True, True, 20, True, 10, True, False])
+    answers[-1]["answer"] = {"status": "invalid", "value": None}
+    snapshot = score(definition(), answers, POLICY)
+    assert snapshot["total"] == 100
+    assert snapshot["gross_error"] is None
+    assert snapshot["status"] == "manual_review"
+    assert snapshot["manual_review_reasons"]
+
+
+def test_no_flags_means_no_gross_error():
+    rules = definition()
+    rules["criteria"] = rules["criteria"][:-1]
+    snapshot = score(rules, results([True, True, True, 20, True, 10, True, False])[:-1], POLICY)
+    assert snapshot["gross_error"] is False and snapshot["flags"] == []
+
+
+@pytest.mark.parametrize("source", ["conversation", "criterion"])
+def test_review_reasons_do_not_discard_valid_score(source):
+    answers = results([True, True, True, 20, True, 10, True, False])
+    reasons = ["Удержание без завершения"] if source == "conversation" else []
+    if source == "criterion":
+        answers[0]["manual_review"] = True
+    snapshot = score(definition(), answers, POLICY, reasons)
+    assert snapshot["status"] == "manual_review" and snapshot["total"] == 100
+
+
+def test_all_weighted_answers_na_have_no_section_contribution():
+    snapshot = score(definition(), results([None, None, None, None, None, None, None, False]), POLICY)
+    assert snapshot["total"] is None and snapshot["applicable_weight"] == 0
+    assert all(section["completion_percent"] is None and section["contribution"] is None
+               for section in snapshot["sections"])
+
+
+@pytest.mark.parametrize(("right", "left", "expected"), [(0.3, 0.1, 0.2), (12, 20, -8),
+                                                           (None, 10, None), (10, None, None)])
+def test_comparison_delta_preserves_direction_and_missing_values(right, left, expected):
+    assert difference(right, left) == expected

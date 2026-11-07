@@ -125,53 +125,91 @@ def response_schema(criteria):
             "required": ["criteria"]}
 
 
-def _validate_result(criterion, raw, transcript, human=False):
+def _parse_raw(raw):
     try:
         result = _RawCriterion.model_validate(raw).model_dump()
     except ValidationError:
         raise DomainError("INVALID_ANSWER", "Структура ответа критерия недопустима.") from None
-    answer = result["answer"]
     if not result["rationale"].strip():
         raise DomainError("INVALID_ANSWER", "Необходимо непустое обоснование.")
+    return result
+
+
+def _validate_answer(criterion, result):
+    answer = result["answer"]
     if answer["status"] == "not_applicable":
         if answer["value"] is not None or not criterion["na_allowed"] or not (result["na_reason"] or "").strip():
             raise DomainError("INVALID_ANSWER", "N/A требует разрешения в чек-листе и причины.")
     elif not any(same_value(answer["value"], option["value"]) for option in criterion["options"]):
         raise DomainError("INVALID_ANSWER", "Ответ не входит в сохранённую шкалу критерия.")
-    messages = {message["id"]: message for message in transcript}
-    ids, checked = result["evidence_message_ids"], result["checked_range"]
-    if len(ids) != len(set(ids)) or any(identifier not in messages for identifier in ids):
-        raise DomainError("INVALID_EVIDENCE", "ID доказательства не существует или повторяется.")
+
+
+def _validate_range(checked, messages):
     if checked is not None and (checked["start_id"] not in messages or checked["end_id"] not in messages
                                 or checked["start_id"] > checked["end_id"]):
         raise DomainError("INVALID_EVIDENCE", "Границы проверенного диапазона недопустимы.")
-    warnings = []
-    if human:
-        result["manual_review"] = False
-        result["manual_review_reasons"] = []
-        if not ids and checked is None:
-            warnings.append("Решение человека сохранено без доказательств и проверенного диапазона.")
-        elif checked is not None and not (result["expected_action"] or "").strip() and not ids:
-            warnings.append("В решении человека не описано ожидаемое действие для проверенного диапазона.")
-    elif answer["status"] == "answered" and not ids and (
-            checked is None or not (result["expected_action"] or "").strip()):
+
+
+def _validate_evidence_ids(ids, messages):
+    if len(ids) != len(set(ids)) or any(identifier not in messages for identifier in ids):
+        raise DomainError("INVALID_EVIDENCE", "ID доказательства не существует или повторяется.")
+
+
+def _human_review_warnings(result):
+    result["manual_review"] = False
+    result["manual_review_reasons"] = []
+    ids, checked = result["evidence_message_ids"], result["checked_range"]
+    if not ids and checked is None:
+        return ["Решение человека сохранено без доказательств и проверенного диапазона."]
+    if checked is not None and not (result["expected_action"] or "").strip() and not ids:
+        return ["В решении человека не описано ожидаемое действие для проверенного диапазона."]
+    return []
+
+
+def _require_model_evidence(result):
+    if result["answer"]["status"] != "answered" or result["evidence_message_ids"]:
+        return
+    if result["checked_range"] is None or not (result["expected_action"] or "").strip():
         raise DomainError("INVALID_EVIDENCE", "Нужны доказательства либо диапазон и описание ожидаемого действия.")
-    if not human and (checked is not None or result["expected_action"] is not None) and (
-            checked is None or not (result["expected_action"] or "").strip()):
+
+
+def _validate_omission_range(result):
+    checked, expected = result["checked_range"], result["expected_action"]
+    if (checked is not None or expected is not None) and (checked is None or not (expected or "").strip()):
         raise DomainError("INVALID_EVIDENCE", "Описание пропущенного действия и диапазон должны быть указаны вместе.")
-    if not human and ids and all(not messages[identifier].get("client_facing", True) for identifier in ids):
+
+
+def _model_review_warnings(result, messages):
+    _require_model_evidence(result)
+    _validate_omission_range(result)
+    ids = result["evidence_message_ids"]
+    if ids and all(not messages[identifier].get("client_facing", True) for identifier in ids):
         warning = "Все доказательства находятся вне общения с клиентом."
-        warnings.append(warning)
         result["manual_review"] = True
         result["manual_review_reasons"].append(warning)
-    if result["manual_review"] and not result["manual_review_reasons"]:
-        result["manual_review_reasons"] = ["Ответ требует ручной проверки."]
-    result.update(evidence=[{"message_id": identifier, **{key: messages[identifier][key]
-                           for key in ("text", "speaker", "timestamp", "phase")}} for identifier in ids],
-                  warnings=warnings, reused=False, reused_from_evaluation_id=None,
+        return [warning]
+    return []
+
+
+def _assemble_result(result, messages, warnings):
+    evidence = [{"message_id": identifier, **{key: messages[identifier][key]
+                 for key in ("text", "speaker", "timestamp", "phase")}} for identifier in result["evidence_message_ids"]]
+    result.update(evidence=evidence, warnings=warnings, reused=False, reused_from_evaluation_id=None,
                   original_weight=None, normalized_answer=None, effective_weight=None,
                   weighted_points=None, contribution=None)
     return result
+
+
+def _validate_result(criterion, raw, transcript, human=False):
+    result = _parse_raw(raw)
+    _validate_answer(criterion, result)
+    messages = {message["id"]: message for message in transcript}
+    _validate_evidence_ids(result["evidence_message_ids"], messages)
+    _validate_range(result["checked_range"], messages)
+    warnings = _human_review_warnings(result) if human else _model_review_warnings(result, messages)
+    if result["manual_review"] and not result["manual_review_reasons"]:
+        result["manual_review_reasons"] = ["Ответ требует ручной проверки."]
+    return _assemble_result(result, messages, warnings)
 
 
 def validate_results(criteria, raw_results, transcript):
@@ -195,69 +233,107 @@ def validate_human_result(criterion, decision, transcript):
     return _validate_result(criterion, raw, transcript, human=True)
 
 
-def evaluate(definition, conversation_detail, provider, policy, cached_results=None,
-             force=False, rationale_language="ru", max_attempts=2):
-    started = time.monotonic()
-    cached_results = cached_results or {}
-    transcript = conversation_detail["transcript"]
-    selected, results, cache_entries = [], {}, {}
+class _AttemptLog:
+    def __init__(self, provider):
+        self.started = time.monotonic()
+        self.responses = []
+        self.unknown_usage = set()
+        self.usage = {"provider": provider.name, "model": provider.model, "prompt_version": PROMPT_VERSION,
+                      "duration_ms": 0, "calls": 0, "input_tokens": None, "output_tokens": None,
+                      "cost": None, "currency": None}
+
+    def _tokens(self, reported):
+        for field in ("input_tokens", "output_tokens"):
+            value = reported.get(field)
+            if type(value) is not int or value < 0:
+                self.unknown_usage.add(field)
+                self.usage[field] = None
+            elif field not in self.unknown_usage:
+                self.usage[field] = (self.usage[field] or 0) + value
+
+    def _cost(self, reported):
+        if reported.get("cost") is None:
+            self.unknown_usage.add("cost")
+            self.usage.update(cost=None, currency=None)
+        elif "cost" not in self.unknown_usage:
+            self.usage["cost"] = sum_cost(self.usage["cost"], reported["cost"])
+            self.usage["currency"] = reported.get("currency")
+
+    def capture(self, raw, reported):
+        self.responses.append(deepcopy(raw))
+        self._tokens(reported)
+        self._cost(reported)
+
+    def finish(self):
+        self.usage["duration_ms"] = int((time.monotonic() - self.started) * 1000)
+
+    def fail(self, cause):
+        self.finish()
+        code = "MODEL_OUTPUT_INVALID" if isinstance(cause, DomainError) else cause.code
+        failure = DomainError(code, "Не удалось получить допустимую оценку после разрешённых попыток.")
+        failure.raw_response = self.responses
+        failure.usage = self.usage
+        raise failure from None
+
+
+def _wait_before_retry(provider, cause, attempt, sleeper, base_seconds):
+    if sleeper is None and provider.is_demo:
+        return
+    suggested = getattr(cause, "retry_after", None)
+    delay = suggested if suggested is not None else base_seconds * (2 ** min(attempt, 5))
+    (sleeper or time.sleep)(min(8.0, max(0.0, delay)))
+
+
+def _evaluate_selected(criteria, transcript, provider, language, attempts, log, sleeper, base_seconds):
+    errors = []
+    for attempt in range(max(1, attempts)):
+        log.usage["calls"] += 1
+        try:
+            raw = provider.generate(criteria, transcript, build_prompt(criteria, transcript, language, errors),
+                                    response_schema(criteria), errors=errors)
+            reported = raw.get("usage", {}) if isinstance(raw, dict) else {}
+            log.capture(raw, reported)
+            answers = raw.get("criteria") if isinstance(raw, dict) else raw
+            return validate_results(criteria, answers, transcript)
+        except (DomainError, ProviderError) as exc:
+            if isinstance(exc, ProviderError):
+                log.capture(exc.raw_response, exc.usage)
+            errors = [{"code": exc.code, "message": str(exc)}]
+            permanent = isinstance(exc, ProviderError) and not exc.retryable
+            if permanent or attempt + 1 >= max(1, attempts):
+                log.fail(exc)
+            _wait_before_retry(provider, exc, attempt, sleeper, base_seconds)
+    raise AssertionError("A provider attempt must return or raise")
+
+
+def _select_for_evaluation(definition, conversation, provider, cached_results, force, language):
+    selected, results = [], {}
     for criterion in definition["criteria"]:
-        key = cache_key(criterion, conversation_detail, provider, rationale_language)
+        key = cache_key(criterion, conversation, provider, language)
         cached = None if force else cached_results.get(key)
-        if cached is not None:
+        if cached is None:
+            selected.append(criterion)
+        else:
             result = deepcopy(cached["result"])
             result.update(reused=True, reused_from_evaluation_id=cached.get("evaluation_id"))
             results[criterion["id"]] = result
-        else:
-            selected.append(criterion)
-    usage = {"provider": provider.name, "model": provider.model, "prompt_version": PROMPT_VERSION,
-             "duration_ms": 0, "calls": 0, "input_tokens": None, "output_tokens": None,
-             "cost": None, "currency": None}
-    responses, errors = [], []
-    unknown_usage = set()
+    return selected, results
+
+
+def evaluate(definition, conversation_detail, provider, policy, cached_results=None,
+             force=False, rationale_language="ru", max_attempts=2, sleeper=None, retry_base_seconds=0.25):
+    log = _AttemptLog(provider)
+    selected, results = _select_for_evaluation(definition, conversation_detail, provider,
+                                               cached_results or {}, force, rationale_language)
+    cache_entries = {}
     if selected:
-        for attempt in range(max(1, max_attempts)):
-            usage["calls"] += 1
-            try:
-                raw = provider.generate(selected, transcript,
-                                        build_prompt(selected, transcript, rationale_language, errors),
-                                        response_schema(selected), errors=errors)
-                responses.append(deepcopy(raw))
-                reported = raw.get("usage", {}) if isinstance(raw, dict) else {}
-                for field in ("input_tokens", "output_tokens"):
-                    value = reported.get(field)
-                    if type(value) is not int or value < 0:
-                        unknown_usage.add(field)
-                        usage[field] = None
-                    elif field not in unknown_usage:
-                        usage[field] = (usage[field] or 0) + value
-                # Providers may report cost, but unknown cost is not represented as zero.
-                if reported.get("cost") is None:
-                    unknown_usage.add("cost")
-                    usage["cost"] = None
-                    usage["currency"] = None
-                elif "cost" not in unknown_usage:
-                    usage["cost"] = sum_cost(usage["cost"], reported["cost"])
-                    usage["currency"] = reported.get("currency")
-                validated = validate_results(selected, raw.get("criteria") if isinstance(raw, dict) else raw, transcript)
-                for criterion, result in zip(selected, validated):
-                    results[criterion["id"]] = result
-                    key = cache_key(criterion, conversation_detail, provider, rationale_language)
-                    cache_entries[key] = {"result": deepcopy(result), "evaluation_id": None}
-                break
-            except (DomainError, ProviderError) as exc:
-                if isinstance(exc, ProviderError):
-                    unknown_usage.update(("input_tokens", "output_tokens", "cost"))
-                    usage.update(input_tokens=None, output_tokens=None, cost=None, currency=None)
-                errors = [{"code": exc.code, "message": str(exc)}]
-                if attempt + 1 >= max(1, max_attempts) or (isinstance(exc, ProviderError) and not exc.retryable):
-                    failure = DomainError("MODEL_OUTPUT_INVALID" if isinstance(exc, DomainError) else exc.code,
-                                          "Не удалось получить допустимую оценку после разрешённых попыток.")
-                    failure.raw_response = responses
-                    usage["duration_ms"] = int((time.monotonic() - started) * 1000)
-                    failure.usage = usage
-                    raise failure from None
-    usage["duration_ms"] = int((time.monotonic() - started) * 1000)
+        validated = _evaluate_selected(selected, conversation_detail["transcript"], provider,
+                                       rationale_language, max_attempts, log, sleeper, retry_base_seconds)
+        for criterion, result in zip(selected, validated):
+            results[criterion["id"]] = result
+            key = cache_key(criterion, conversation_detail, provider, rationale_language)
+            cache_entries[key] = {"result": deepcopy(result), "evaluation_id": None}
     snapshot = score(definition, [results[item["id"]] for item in definition["criteria"]], policy,
                      conversation_detail.get("manual_review_reasons", []))
-    return snapshot, usage, responses, cache_entries
+    log.finish()
+    return snapshot, log.usage, log.responses, cache_entries

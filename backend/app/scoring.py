@@ -29,9 +29,6 @@ def same_value(left, right):
     return left == right
 
 
-def _number(value):
-    return None if value is None else float(value)
-
 
 def score(definition, results, policy, manual_review_reasons=None):
     """Return a new snapshot; never mutate the persisted answers or definition."""
@@ -40,17 +37,84 @@ def score(definition, results, policy, manual_review_reasons=None):
         return _score(definition, results, policy, manual_review_reasons or [])
 
 
-def _score(definition, results, policy, manual_review_reasons):
+def _answer_option(criterion, result):
+    if result["answer"]["status"] != "answered":
+        return None
+    return next((option for option in criterion["options"]
+                 if same_value(option["value"], result["answer"]["value"])), None)
+
+
+def _prepared_result(criterion, source):
+    result = deepcopy(source)
+    result.update(original_weight=None, normalized_answer=None, effective_weight=None,
+                  weighted_points=None, contribution=None)
+    if criterion["answer_type"] != "flag":
+        result["original_weight"] = float(decimal(criterion["weight"]))
+    return result
+
+
+class _WeightedTotals:
+    def __init__(self):
+        self.weight = Decimal(0)
+        self.points = Decimal(0)
+        self.incomplete = False
+        self.sections = {}
+
+    def add(self, criterion, result):
+        section = self.sections.setdefault(criterion["section"],
+                                           {"weight": Decimal(0), "points": Decimal(0), "invalid": False})
+        if result["answer"]["status"] == "not_applicable":
+            return
+        weight = decimal(criterion["weight"])
+        self.weight += weight
+        section["weight"] += weight
+        option = _answer_option(criterion, result)
+        if option is None:
+            self.incomplete = True
+            section["invalid"] = True
+            return
+        normalized = decimal(option["normalized"])
+        points = weight * normalized
+        self.points += points
+        section["points"] += points
+        result["normalized_answer"] = float(normalized)
+        result["weighted_points"] = float(points)
+
+    def contribution(self, criterion, result):
+        if criterion["answer_type"] == "flag" or result["answer"]["status"] == "not_applicable":
+            return
+        if self.weight:
+            result["effective_weight"] = float(Decimal(100) * decimal(criterion["weight"]) / self.weight)
+            if not self.incomplete and result["weighted_points"] is not None:
+                option = _answer_option(criterion, result)
+                result["contribution"] = float(Decimal(100) * decimal(criterion["weight"])
+                                               * decimal(option["normalized"]) / self.weight)
+
+    def section_result(self, name, values):
+        weight, points, invalid = values["weight"], values["points"], values["invalid"]
+        return {
+            "section": name, "applicable_weight": float(weight),
+            "weighted_points": None if invalid else float(points),
+            "completion_percent": float(Decimal(100) * points / weight) if weight and not invalid else None,
+            "contribution": float(Decimal(100) * points / self.weight) if self.weight and not self.incomplete else None,
+        }
+
+    def rounded_total(self, policy):
+        if not self.weight:
+            return None, "Нет применимых критериев с положительным весом."
+        if self.incomplete:
+            return None, "Итог недоступен: есть применимые критерии без допустимого ответа."
+        rounding = {"half_up": ROUND_HALF_UP, "half_even": ROUND_HALF_EVEN}[policy["rounding"]]
+        quantum = Decimal(1).scaleb(-policy["decimals"])
+        value = (Decimal(100) * self.points / self.weight).quantize(quantum, rounding=rounding)
+        return float(value), None
+
+
+def _collect_results(definition, results, manual_review_reasons):
     by_id = {result["criterion_id"]: result for result in results}
-    prepared, flags, sections = [], [], {}
-    applicable_weight = Decimal(0)
-    weighted_sum = Decimal(0)
-    incomplete = False
-    reasons = list(manual_review_reasons)
+    totals, prepared, flags, reasons = _WeightedTotals(), [], [], list(manual_review_reasons)
     for criterion in definition["criteria"]:
-        result = deepcopy(by_id[criterion["id"]])
-        result.update(original_weight=None, normalized_answer=None, effective_weight=None,
-                      weighted_points=None, contribution=None)
+        result = _prepared_result(criterion, by_id[criterion["id"]])
         prepared.append(result)
         reasons.extend(result.get("manual_review_reasons", []))
         answer = result["answer"]
@@ -59,72 +123,33 @@ def _score(definition, results, policy, manual_review_reasons):
         if criterion["answer_type"] == "flag":
             flags.append({"criterion_id": criterion["id"],
                           "value": answer["value"] if answer["status"] == "answered" else None})
-            continue
-        weight = decimal(criterion["weight"])
-        result["original_weight"] = float(weight)
-        section = sections.setdefault(criterion["section"],
-                                      {"weight": Decimal(0), "points": Decimal(0), "invalid": False})
-        if answer["status"] == "not_applicable":
-            continue
-        applicable_weight += weight
-        section["weight"] += weight
-        option = next((option for option in criterion["options"]
-                       if answer["status"] == "answered" and same_value(option["value"], answer["value"])), None)
-        if option is None:
-            incomplete = True
-            section["invalid"] = True
-            continue
-        normalized = decimal(option["normalized"])
-        points = weight * normalized
-        weighted_sum += points
-        section["points"] += points
-        result["normalized_answer"] = float(normalized)
-        result["weighted_points"] = float(points)
+        else:
+            totals.add(criterion, result)
+    return totals, prepared, flags, list(dict.fromkeys(reasons))
 
+
+def _gross_error(flags):
+    values = [flag["value"] for flag in flags]
+    if any(value is True for value in values):
+        return True
+    return None if any(value is None for value in values) else False
+
+
+def _score(definition, results, policy, manual_review_reasons):
+    totals, prepared, flags, reasons = _collect_results(definition, results, manual_review_reasons)
     for criterion, result in zip(definition["criteria"], prepared):
-        if criterion["answer_type"] == "flag" or result["answer"]["status"] == "not_applicable":
-            continue
-        if applicable_weight:
-            result["effective_weight"] = float(Decimal(100) * decimal(criterion["weight"]) / applicable_weight)
-            if not incomplete and result["weighted_points"] is not None:
-                # Recompute from the original Decimal operands, never a serialized float.
-                option = next(option for option in criterion["options"]
-                              if same_value(option["value"], result["answer"]["value"]))
-                result["contribution"] = float(Decimal(100) * decimal(criterion["weight"])
-                                               * decimal(option["normalized"]) / applicable_weight)
-
-    section_results = []
-    for name, values in sections.items():
-        weight, points = values["weight"], values["points"]
-        invalid = values["invalid"]
-        section_results.append({
-            "section": name, "applicable_weight": float(weight),
-            "weighted_points": None if invalid else float(points),
-            "completion_percent": float(Decimal(100) * points / weight) if weight and not invalid else None,
-            "contribution": float(Decimal(100) * points / applicable_weight)
-            if applicable_weight and not incomplete else None,
-        })
-    flag_values = [flag["value"] for flag in flags]
-    gross_error = True if any(value is True for value in flag_values) else (
-        None if any(value is None for value in flag_values) else False)
-    reason, total = None, None
-    if not applicable_weight:
-        reason = "Нет применимых критериев с положительным весом."
-    elif incomplete:
-        reason = "Итог недоступен: есть применимые критерии без допустимого ответа."
-    else:
-        rounding = {"half_up": ROUND_HALF_UP, "half_even": ROUND_HALF_EVEN}[policy["rounding"]]
-        quantum = Decimal(1).scaleb(-policy["decimals"])
-        total = float((Decimal(100) * weighted_sum / applicable_weight).quantize(quantum, rounding=rounding))
+        totals.contribution(criterion, result)
+    gross_error = _gross_error(flags)
+    total, reason = totals.rounded_total(policy)
     total_before_override = total
     if total is not None and gross_error is True and policy["gross_error_zeroes_total"]:
         total = 0.0
         reason = "Итог обнулён по сохранённой политике грубого нарушения."
-    reasons = list(dict.fromkeys(reasons))
-    needs_review = bool(reasons) or incomplete or any(result.get("manual_review") for result in prepared)
+    needs_review = bool(reasons) or totals.incomplete or any(result.get("manual_review") for result in prepared)
     return {
         "status": "manual_review" if needs_review else "completed", "criteria": prepared,
         "total": total, "total_before_override": total_before_override, "total_reason": reason,
-        "applicable_weight": float(applicable_weight), "sections": section_results,
+        "applicable_weight": float(totals.weight),
+        "sections": [totals.section_result(name, values) for name, values in totals.sections.items()],
         "flags": flags, "gross_error": gross_error, "manual_review_reasons": reasons,
     }

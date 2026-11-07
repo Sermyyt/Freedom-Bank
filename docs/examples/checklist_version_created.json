@@ -1,7 +1,7 @@
 {
   "data": {
-    "id": "8ae512d1-2d2e-4236-9724-57f53eebd150",
-    "checklist_id": "b741475e-e248-4656-bcc1-3f4c103523a3",
+    "id": "a5892d1e-05aa-4bcb-9f22-e84e32c631c5",
+    "checklist_id": "394ffbbc-9dde-4974-86ac-06bf1f73aaad",
     "version": 2,
     "definition": {
       "name": "Демонстрационный чек-лист редактора",
@@ -233,9 +233,9 @@
     },
     "content_hash": "a14f9e9bef7eca2864405d38a9d315afb9a71a6f7ac38bf82b02ebc7ef63163f",
     "is_active": true,
-    "created_at": "2026-11-07T12:09:42.949179Z"
+    "created_at": "2026-11-07T12:25:52.339271Z"
   },
   "meta": {
-    "request_id": "1397db3d-dba0-4089-94d0-8270e14ac0d7"
+    "request_id": "3859eeeb-1e5e-4b85-8070-f1b868c03e7c"
   }
 }

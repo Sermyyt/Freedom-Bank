@@ -3,10 +3,10 @@
     "items": [
       {
         "ref": {
-          "id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
+          "id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
           "group_id": "SYNTHETIC",
           "conversation_id": "demo-en",
-          "revision_id": "eba47c96-c351-4c42-a17b-820af11da76f",
+          "revision_id": "a24df19d-d83b-4321-9ad6-be1925acdb8f",
           "revision": 1
         },
         "channel": "agent chat",
@@ -15,15 +15,15 @@
         "has_audio": false,
         "latest_evaluation": null,
         "has_open_appeals": false,
-        "created_at": "2026-11-07T12:09:42.909071Z",
-        "updated_at": "2026-11-07T12:09:42.909071Z"
+        "created_at": "2026-11-07T12:25:52.282457Z",
+        "updated_at": "2026-11-07T12:25:52.282457Z"
       },
       {
         "ref": {
-          "id": "764a10fd-80b7-46d4-ab54-0e527a514d84",
+          "id": "56ea6ba1-ce2f-44f1-baa7-47fb1d1346a6",
           "group_id": "SYNTHETIC",
           "conversation_id": "demo-ru",
-          "revision_id": "164a895b-53a0-4285-aeec-77f2d819d72f",
+          "revision_id": "b00c483a-1a2c-4494-a567-f81d49969456",
           "revision": 1
         },
         "channel": "agent chat",
@@ -32,8 +32,8 @@
         "has_audio": false,
         "latest_evaluation": null,
         "has_open_appeals": false,
-        "created_at": "2026-11-07T12:09:42.909071Z",
-        "updated_at": "2026-11-07T12:09:42.909071Z"
+        "created_at": "2026-11-07T12:25:52.282457Z",
+        "updated_at": "2026-11-07T12:25:52.282457Z"
       }
     ],
     "total": 2,
@@ -41,6 +41,6 @@
     "offset": 0
   },
   "meta": {
-    "request_id": "e02cbbb6-a28a-443e-9908-d516f84712dd"
+    "request_id": "18f9f02e-c5f3-4b00-af34-c84f6a73a81c"
   }
 }

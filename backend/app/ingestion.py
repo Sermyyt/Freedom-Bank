@@ -1,6 +1,7 @@
 """Validate and annotate imported conversations without changing source messages."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 import hashlib
 import json
@@ -27,24 +28,26 @@ def issue(code: str, message: str, index: int | None = None,
             "path": path or []}
 
 
-def parse_dataset(payload: Any, group_id: str | None = None) -> tuple[str, list, list]:
-    """Accept a complete organizer envelope or an explicitly grouped records array."""
-    if group_id is not None and (not isinstance(group_id, str) or not group_id.strip()):
+def _nonempty_string(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _required_group(value: Any) -> str:
+    if not _nonempty_string(value):
         raise IngestionError("INVALID_DATASET", "Не задана группа набора.")
-    if isinstance(payload, list):
-        if group_id is None:
-            raise IngestionError("INVALID_DATASET", "Для массива записей требуется group_id.")
-        return group_id, payload, []
+    return value
+
+
+def _envelope_data(payload: Any) -> dict:
     if not isinstance(payload, dict) or payload.get("isSuccess") is not True:
         raise IngestionError("INVALID_DATASET", "Ожидается успешный ответ организаторов или массив записей.")
     data = payload.get("data")
     if not isinstance(data, dict) or not isinstance(data.get("records"), list):
         raise IngestionError("INVALID_DATASET", "В ответе отсутствует массив data.records.")
-    source_group = data.get("dataset_group_id")
-    if not isinstance(source_group, str) or not source_group.strip():
-        raise IngestionError("INVALID_DATASET", "В ответе отсутствует dataset_group_id.")
-    if group_id is not None and source_group != group_id:
-        raise IngestionError("GROUP_MISMATCH", "Группа файла не совпадает с запрошенной.", 409)
+    return data
+
+
+def _count_warnings(data: dict) -> list:
     declared = data.get("total_records")
     if type(declared) is not int or declared < 0:
         raise IngestionError("INVALID_DATASET", "Неверное значение total_records.")
@@ -52,35 +55,62 @@ def parse_dataset(payload: Any, group_id: str | None = None) -> tuple[str, list,
     if declared != len(data["records"]):
         warnings.append(issue("TOTAL_RECORDS_MISMATCH", "Заявленное количество отличается от числа записей.",
                               path=["data", "total_records"]))
-    return source_group, data["records"], warnings
+    return warnings
+
+
+def parse_dataset(payload: Any, group_id: str | None = None) -> tuple[str, list, list]:
+    """Accept a complete organizer envelope or an explicitly grouped records array."""
+    if group_id is not None:
+        _required_group(group_id)
+    if isinstance(payload, list):
+        return _required_group(group_id), payload, []
+    data = _envelope_data(payload)
+    source_group = _required_group(data.get("dataset_group_id"))
+    if group_id is not None and source_group != group_id:
+        raise IngestionError("GROUP_MISMATCH", "Группа файла не совпадает с запрошенной.", 409)
+    return source_group, data["records"], _count_warnings(data)
+
+
+def _record_error(record, index, code, message, path, mid=None):
+    cid = record.get("conversation_id") if isinstance(record, dict) else None
+    cid = cid if isinstance(cid, str) else None
+    return [issue(code, message, index, cid, mid, path)]
+
+
+def _header_errors(record: Any, index: int) -> list:
+    if not isinstance(record, dict):
+        return _record_error(record, index, "INVALID_RECORD", "Запись должна быть объектом.", [])
+    for key in ("conversation_id", "channel", "language"):
+        if not _nonempty_string(record.get(key)):
+            return _record_error(record, index, "INVALID_RECORD", "Обязательное поле должно быть непустой строкой.", [key])
+    if record.get("audio_url") is not None and not isinstance(record["audio_url"], str):
+        return _record_error(record, index, "INVALID_RECORD", "Неверный тип ссылки на аудио.", ["audio_url"])
+    return []
+
+
+def _message_errors(message: Any, record: dict, index: int, n: int) -> list:
+    if not isinstance(message, dict):
+        return _record_error(record, index, "INVALID_MESSAGE", "Реплика должна быть объектом.", ["transcript", n], n + 1)
+    for key in ("timestamp", "speaker", "text"):
+        if not isinstance(message.get(key), str) or (key == "speaker" and not message[key].strip()):
+            return _record_error(record, index, "INVALID_MESSAGE", "Неверное обязательное поле реплики.",
+                                 ["transcript", n, key], n + 1)
+    return []
 
 
 def _invalid(record: Any, index: int) -> list[dict]:
-    cid = record.get("conversation_id") if isinstance(record, dict) else None
-    cid = cid if isinstance(cid, str) else None
-
-    def invalid(code: str, message: str, path: list, mid: int | None = None) -> list[dict]:
-        return [issue(code, message, index, cid, mid, path)]
-
-    if not isinstance(record, dict):
-        return invalid("INVALID_RECORD", "Запись должна быть объектом.", [])
-    for key in ("conversation_id", "channel", "language"):
-        if not isinstance(record.get(key), str) or not record[key].strip():
-            return invalid("INVALID_RECORD", "Обязательное поле должно быть непустой строкой.", [key])
-    if record.get("audio_url") is not None and not isinstance(record["audio_url"], str):
-        return invalid("INVALID_RECORD", "Неверный тип ссылки на аудио.", ["audio_url"])
+    errors = _header_errors(record, index)
+    if errors:
+        return errors
     messages = record.get("transcript")
     if not isinstance(messages, list):
-        return invalid("INVALID_RECORD", "Транскрипт должен быть массивом.", ["transcript"])
+        return _record_error(record, index, "INVALID_RECORD", "Транскрипт должен быть массивом.", ["transcript"])
     if not messages:
-        return invalid("EMPTY_TRANSCRIPT", "Транскрипт пуст.", ["transcript"])
+        return _record_error(record, index, "EMPTY_TRANSCRIPT", "Транскрипт пуст.", ["transcript"])
     for n, message in enumerate(messages):
-        if not isinstance(message, dict):
-            return invalid("INVALID_MESSAGE", "Реплика должна быть объектом.", ["transcript", n], n + 1)
-        for key in ("timestamp", "speaker", "text"):
-            if not isinstance(message.get(key), str) or (key == "speaker" and not message[key].strip()):
-                return invalid("INVALID_MESSAGE", "Неверное обязательное поле реплики.",
-                               ["transcript", n, key], n + 1)
+        errors = _message_errors(message, record, index, n)
+        if errors:
+            return errors
     return []
 
 
@@ -101,6 +131,105 @@ def _offset(timestamp: str, first_timestamp: str) -> float | int | None:
     return None
 
 
+@dataclass
+class _PhaseState:
+    phase: str = "pre_operator"
+    held: bool = False
+    ended: bool = False
+
+    def advance(self, role: str, event: str | None) -> str:
+        if self.ended:
+            self.phase = "after_end"
+        elif event in {"hold_start", "hold_end"}:
+            self.held = event == "hold_start"
+            self.phase = {"hold_start": "hold", "hold_end": "client"}[event]
+        elif self.held and event in {"consult_started", "agent_left"}:
+            self.phase = {"consult_started": "internal_consult", "agent_left": "hold"}[event]
+        elif self.phase == "pre_operator" and role == "operator":
+            self.phase = "client"
+        return self.phase
+
+
+def _flags(original: dict, phase: str, event: str | None, previous: dict | None) -> list[str]:
+    flags = []
+    if previous is not None and (original["speaker"], original["text"]) == (previous["speaker"], previous["text"]):
+        flags.append("duplicate_of_prev")
+    if phase == "after_end":
+        flags.append("after_end")
+    if any(mask in original["text"] for mask in ("[Имя скрыто]", "[Персональные данные скрыты]")):
+        flags.append("pii_masked")
+    if event == "unknown":
+        flags.append("unknown_event")
+    return flags
+
+
+def _message_warnings(message: dict, previous_offset) -> list[tuple[str, str, str]]:
+    warnings = []
+    if message["system_event"] == "unknown":
+        warnings.append(("UNKNOWN_SYSTEM_EVENT", "Системная фраза не распознана.", "text"))
+    if message["speaker"] not in KNOWN["speaker"]:
+        warnings.append(("UNKNOWN_ROLE", "Неизвестная роль сохранена без изменения.", "speaker"))
+    if not message["text"].strip():
+        warnings.append(("EMPTY_TEXT", "Пустой текст сохранён без изменения.", "text"))
+    offset = message["offset_sec"]
+    if offset is None:
+        warnings.append(("UNPARSEABLE_TIMESTAMP", "Не удалось определить время от начала разговора.", "timestamp"))
+    elif previous_offset is not None and offset < previous_offset:
+        warnings.append(("NON_MONOTONIC_TIMESTAMP", "Время реплики меньше времени предыдущей реплики.", "timestamp"))
+    return warnings
+
+
+def _annotated_message(original, mid, phase, event, previous, first_timestamp):
+    flags = _flags(original, phase, event, previous)
+    return {"id": mid, "timestamp": original["timestamp"], "speaker": original["speaker"], "text": original["text"],
+            "offset_sec": _offset(original["timestamp"], first_timestamp), "audio_offset_sec": None,
+            "phase": phase, "client_facing": phase in {"pre_operator", "client"}, "system_event": event,
+            "flags": flags, "duplicate_of_message_id": mid - 1 if "duplicate_of_prev" in flags else None}
+
+
+def _annotate_transcript(record: dict, index: int, definitions: dict) -> tuple[list, list, bool]:
+    messages, state, previous, previous_offset = record["transcript"], _PhaseState(), None, None
+    annotated, warnings = [], []
+    for mid, original in enumerate(messages, 1):
+        event = event_code(original["text"], definitions) if original["speaker"] == "system" else None
+        phase = state.advance(original["speaker"], event)
+        message = _annotated_message(original, mid, phase, event, previous, messages[0]["timestamp"])
+        annotated.append(message)
+        for code, text, field in _message_warnings(message, previous_offset):
+            warnings.append(issue(code, text, index, record["conversation_id"], mid, ["transcript", mid - 1, field]))
+        if message["offset_sec"] is not None:
+            previous_offset = message["offset_sec"]
+        if event in definitions["ending_codes"]:
+            state.ended = True
+        previous = original
+    return annotated, warnings, state.held
+
+
+def _record_warnings(record, index):
+    return [issue("UNKNOWN_" + field.upper(), "Неизвестное значение сохранено без изменения.",
+                  index, record["conversation_id"], path=[field])
+            for field in ("channel", "language") if record[field] not in KNOWN[field]]
+
+
+def _review_reasons(held: bool, warning_codes: list[str]) -> list[str]:
+    reasons = []
+    if held:
+        reasons.append("Удержание не завершено событием возврата к клиенту.")
+    if {"UNPARSEABLE_TIMESTAMP", "NON_MONOTONIC_TIMESTAMP"}.intersection(warning_codes):
+        reasons.append("Временная шкала транскрипта требует проверки.")
+    if {"UNKNOWN_ROLE", "UNKNOWN_SYSTEM_EVENT"}.intersection(warning_codes):
+        reasons.append("Неизвестная роль или системное событие требует проверки контекста.")
+    return reasons
+
+
+def _content_hash(record: dict) -> str:
+    source = {key: record[key] for key in ("conversation_id", "channel", "language")}
+    source["audio_url"] = record.get("audio_url")
+    source["transcript"] = [{key: m[key] for key in ("timestamp", "speaker", "text")} for m in record["transcript"]]
+    return hashlib.sha256(json.dumps(source, ensure_ascii=False, sort_keys=True,
+                                    separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
 def prepare_record(record: Any, index: int) -> tuple[dict | None, list, list, list[str]]:
     """Return a source-preserving detail, errors, warnings, and unknown system phrases.
 
@@ -111,81 +240,11 @@ def prepare_record(record: Any, index: int) -> tuple[dict | None, list, list, li
     if errors:
         return None, errors, [], []
     definitions = json.loads((Path(__file__).parent / "data/system_events.json").read_text(encoding="utf-8"))
-    cid, messages = record["conversation_id"], record["transcript"]
-    warnings: list[dict] = []
-    unknown: list[str] = []
-    reasons: list[str] = []
-
-    def warn(code: str, text: str, mid: int | None = None, field: str | None = None):
-        path = ["transcript", mid - 1, field] if mid is not None else [field]
-        warnings.append(issue(code, text, index, cid, mid, path))
-
-    for field in ("channel", "language"):
-        if record[field] not in KNOWN[field]:
-            warn("UNKNOWN_" + field.upper(), "Неизвестное значение сохранено без изменения.", field=field)
-    annotated = []
-    phase, held, ended, previous = "pre_operator", False, False, None
-    previous_offset = None
-    for mid, original in enumerate(messages, 1):
-        role, text = original["speaker"], original["text"]
-        event = event_code(text, definitions) if role == "system" else None
-        if ended:
-            phase = "after_end"
-        elif event == "hold_start":
-            held, phase = True, "hold"
-        elif event == "hold_end":
-            held, phase = False, "client"
-        elif held and event == "consult_started":
-            phase = "internal_consult"
-        elif held and event == "agent_left":
-            phase = "hold"
-        elif phase == "pre_operator" and role == "operator":
-            phase = "client"
-
-        flags = []
-        duplicate = previous is not None and (role, text) == (previous["speaker"], previous["text"])
-        if duplicate:
-            flags.append("duplicate_of_prev")
-        if phase == "after_end":
-            flags.append("after_end")
-        if any(mask in text for mask in ("[Имя скрыто]", "[Персональные данные скрыты]")):
-            flags.append("pii_masked")
-        if event == "unknown":
-            flags.append("unknown_event")
-            unknown.append(safe_text(text))
-            warn("UNKNOWN_SYSTEM_EVENT", "Системная фраза не распознана.", mid, "text")
-        if role not in KNOWN["speaker"]:
-            warn("UNKNOWN_ROLE", "Неизвестная роль сохранена без изменения.", mid, "speaker")
-        if not text.strip():
-            warn("EMPTY_TEXT", "Пустой текст сохранён без изменения.", mid, "text")
-        offset = _offset(original["timestamp"], messages[0]["timestamp"])
-        if offset is None:
-            warn("UNPARSEABLE_TIMESTAMP", "Не удалось определить время от начала разговора.", mid, "timestamp")
-        elif previous_offset is not None and offset < previous_offset:
-            warn("NON_MONOTONIC_TIMESTAMP", "Время реплики меньше времени предыдущей реплики.", mid, "timestamp")
-        if offset is not None:
-            previous_offset = offset
-        annotated.append({"id": mid, "timestamp": original["timestamp"], "speaker": role, "text": text,
-                          "offset_sec": offset, "audio_offset_sec": None, "phase": phase,
-                          "client_facing": phase in {"pre_operator", "client"}, "system_event": event,
-                          "flags": flags, "duplicate_of_message_id": mid - 1 if duplicate else None})
-        if event in definitions["ending_codes"]:
-            ended = True
-        previous = original
-
-    if held:
-        reasons.append("Удержание не завершено событием возврата к клиенту.")
+    annotated, message_warnings, held = _annotate_transcript(record, index, definitions)
+    warnings = _record_warnings(record, index) + message_warnings
     warning_codes = list(dict.fromkeys(item["code"] for item in warnings))
-    if "UNPARSEABLE_TIMESTAMP" in warning_codes or "NON_MONOTONIC_TIMESTAMP" in warning_codes:
-        reasons.append("Временная шкала транскрипта требует проверки.")
-    if "UNKNOWN_ROLE" in warning_codes or "UNKNOWN_SYSTEM_EVENT" in warning_codes:
-        reasons.append("Неизвестная роль или системное событие требует проверки контекста.")
-    source = {key: record[key] for key in ("conversation_id", "channel", "language")}
-    source["audio_url"] = record.get("audio_url")
-    source["transcript"] = [{key: m[key] for key in ("timestamp", "speaker", "text")} for m in messages]
-    digest = hashlib.sha256(json.dumps(source, ensure_ascii=False, sort_keys=True,
-                                      separators=(",", ":")).encode("utf-8")).hexdigest()
-    detail = {"conversation_id": cid, "channel": record["channel"], "language": record["language"],
-              "transcript": annotated, "audio_url": record.get("audio_url"), "content_hash": digest,
-              "audio_offset_reliable": False, "manual_review_reasons": reasons, "warnings": warning_codes}
+    unknown = [safe_text(m["text"]) for m in annotated if m["system_event"] == "unknown"]
+    detail = {"conversation_id": record["conversation_id"], "channel": record["channel"], "language": record["language"],
+              "transcript": annotated, "audio_url": record.get("audio_url"), "content_hash": _content_hash(record),
+              "audio_offset_reliable": False, "manual_review_reasons": _review_reasons(held, warning_codes), "warnings": warning_codes}
     return detail, [], warnings, unknown

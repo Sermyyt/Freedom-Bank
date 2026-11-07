@@ -2,49 +2,49 @@
   "data": {
     "items": [
       {
-        "id": "a039b3e7-a41a-4e35-b47f-707deafe9a4a",
+        "id": "56c21fc7-630c-4b7a-a92a-a78544dd613a",
         "event_type": "appeal_resolved",
         "entity_type": "appeal",
-        "entity_id": "16cfa780-1fe5-4a3a-b01d-b595b16b2de5",
-        "conversation_id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
-        "evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
-        "appeal_id": "16cfa780-1fe5-4a3a-b01d-b595b16b2de5",
+        "entity_id": "db2cf1a8-f554-4f4f-8a6e-76930250eefd",
+        "conversation_id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
+        "evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
+        "appeal_id": "db2cf1a8-f554-4f4f-8a6e-76930250eefd",
         "checklist_version_id": null,
-        "decision_id": "ec3a794b-cb21-4fad-9c1c-7380fd95ccbf",
+        "decision_id": "534961c9-0e52-44f1-9df1-3ba066b37376",
         "final_revision": 1,
         "summary": "Решение проверяющего сохранено.",
         "actor": "demo_reviewer",
-        "created_at": "2026-11-07T12:09:43.232784Z"
+        "created_at": "2026-11-07T12:25:52.505531Z"
       },
       {
-        "id": "36b26d59-0fcf-420d-88b2-90f4ea7449af",
+        "id": "46fb00b2-f8b8-4829-a155-278e6793a7b9",
         "event_type": "appeal_created",
         "entity_type": "appeal",
-        "entity_id": "16cfa780-1fe5-4a3a-b01d-b595b16b2de5",
-        "conversation_id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
-        "evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
-        "appeal_id": "16cfa780-1fe5-4a3a-b01d-b595b16b2de5",
+        "entity_id": "db2cf1a8-f554-4f4f-8a6e-76930250eefd",
+        "conversation_id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
+        "evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
+        "appeal_id": "db2cf1a8-f554-4f4f-8a6e-76930250eefd",
         "checklist_version_id": null,
         "decision_id": null,
         "final_revision": null,
         "summary": "Подана апелляция.",
         "actor": "demo_operator",
-        "created_at": "2026-11-07T12:09:43.216695Z"
+        "created_at": "2026-11-07T12:25:52.489689Z"
       },
       {
-        "id": "f7a86822-a288-4e46-a79b-a6754f0188b7",
+        "id": "54c44c46-e165-42aa-abeb-11862ce48ae4",
         "event_type": "evaluation_created",
         "entity_type": "evaluation",
-        "entity_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
-        "conversation_id": "b9e78f47-d219-4506-8f4f-601fd9620cfc",
-        "evaluation_id": "f281a0c2-1266-4256-859d-44878eefb3bf",
+        "entity_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
+        "conversation_id": "2cfb5e48-5fd4-45b8-8c4a-820c4e10342f",
+        "evaluation_id": "c0f3a36d-25ab-4a0b-a91f-1aeb23d713d4",
         "appeal_id": null,
-        "checklist_version_id": "eb926b9d-2617-4426-b796-e34a689e23c5",
+        "checklist_version_id": "fd491c19-844f-43d6-a0f7-ae0f2605132a",
         "decision_id": null,
         "final_revision": 0,
         "summary": "Сохранена оценка разговора.",
         "actor": "system",
-        "created_at": "2026-11-07T12:09:43.038550Z"
+        "created_at": "2026-11-07T12:25:52.413053Z"
       }
     ],
     "total": 3,
@@ -52,6 +52,6 @@
     "offset": 0
   },
   "meta": {
-    "request_id": "c88d4b82-3860-46c6-be85-d579969abf09"
+    "request_id": "58d1ae5d-f98b-4d7c-b354-a810acae0519"
   }
 }

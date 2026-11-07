@@ -268,15 +268,19 @@ class EvaluationRequest(APIModel):
         if self.group_id is not None and not self.group_id.strip():
             raise ValueError("Укажите непустую группу.")
         if self.revision_ids is not None:
-            if not 1 <= len(self.revision_ids) <= 1000:
-                raise ValueError("Число ревизий должно быть от 1 до 1000.")
-            if any(not item.strip() for item in self.revision_ids):
-                raise ValueError("ID ревизии не может быть пустым.")
-            if len(set(self.revision_ids)) != len(self.revision_ids):
-                raise ValueError("ID ревизий не должны повторяться.")
+            validate_revision_ids(self.revision_ids)
         if self.checklist_version_id is not None and not self.checklist_version_id.strip():
             raise ValueError("ID версии чек-листа не может быть пустым.")
         return self
+
+
+def validate_revision_ids(identifiers):
+    if not 1 <= len(identifiers) <= 1000:
+        raise ValueError("Число ревизий должно быть от 1 до 1000.")
+    if any(not item.strip() for item in identifiers):
+        raise ValueError("ID ревизии не может быть пустым.")
+    if len(set(identifiers)) != len(identifiers):
+        raise ValueError("ID ревизий не должны повторяться.")
 
 
 class OperationError(APIModel):
@@ -438,10 +442,7 @@ class AppealDecisionRequest(APIModel):
         if not self.reason.strip():
             raise ValueError("Причина решения обязательна.")
         if self.action == "confirm":
-            if (self.new_answer is not None or self.rationale is not None
-                    or self.evidence_message_ids or self.checked_range is not None
-                    or self.expected_action is not None or self.na_reason is not None):
-                raise ValueError("Подтверждение не должно содержать новый ответ или доказательства.")
+            self.validate_confirmation()
         else:
             if self.new_answer is None or self.new_answer.status == "invalid":
                 raise ValueError("Для изменения требуется допустимый новый ответ.")
@@ -450,6 +451,11 @@ class AppealDecisionRequest(APIModel):
             elif not self.rationale.strip():
                 raise ValueError("Обоснование должно быть непустым или null.")
         return self
+
+    def validate_confirmation(self):
+        answer_fields = (self.new_answer, self.rationale, self.checked_range, self.expected_action, self.na_reason)
+        if any(field is not None for field in answer_fields) or self.evidence_message_ids:
+            raise ValueError("Подтверждение не должно содержать новый ответ или доказательства.")
 
 
 class AppealDecision(APIModel):

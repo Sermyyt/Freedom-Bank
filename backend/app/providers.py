@@ -3,10 +3,14 @@ from threading import Lock
 
 
 class ProviderError(Exception):
-    def __init__(self, code="PROVIDER_ERROR", message="Провайдер не смог выполнить оценку.", retryable=False):
+    def __init__(self, code="PROVIDER_ERROR", message="Провайдер не смог выполнить оценку.", retryable=False,
+                 usage=None, raw_response=None, retry_after=None):
         super().__init__(message)
         self.code = code
         self.retryable = retryable
+        self.usage = usage or {}
+        self.raw_response = raw_response or {"error_code": code}
+        self.retry_after = retry_after
 
 
 class FakeLLM:
@@ -45,3 +49,19 @@ class FakeLLM:
             })
         return {"criteria": answers, "usage": {"input_tokens": None, "output_tokens": None,
                                                 "cost": None, "currency": None}}
+
+
+def make_provider(settings, *, transport=None):
+    """Explicit fake mode; an unconfigured real provider never silently becomes fake."""
+    if settings.llm_provider == "fake":
+        return FakeLLM()
+    if not settings.llm_model or not settings.llm_api_key:
+        return None
+    from app.provider_http import AnthropicProvider, OpenAIProvider
+    provider_type = {"openai": OpenAIProvider, "anthropic": AnthropicProvider}.get(settings.llm_provider)
+    if provider_type is None:
+        return None
+    try:
+        return provider_type(settings, transport=transport)
+    except ValueError:
+        return None

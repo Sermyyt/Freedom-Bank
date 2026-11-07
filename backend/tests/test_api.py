@@ -199,6 +199,15 @@ def test_unknown_group_and_revision_are_not_found(client):
     error(client.post("/api/evaluations", json={"revision_ids": ["missing"]}), 404, "NOT_FOUND")
 
 
+def test_group_evaluation_includes_all_conversations_above_explicit_revision_limit(client, api, synthetic_record, monkeypatch):
+    records = [{**synthetic_record, "conversation_id": f"large-group-{index:04d}"} for index in range(1001)]
+    assert data(upload(client, records, group="LARGE"))["created"] == 1001
+    monkeypatch.setattr(api.state.runner, "submit", lambda job_id: None)
+    job = data(client.post("/api/evaluations", json={"group_id": "LARGE"}), 202, schemas.Job)
+    assert job["total"] == len(job["items"]) == 1001
+    assert len({item["revision_id"] for item in job["items"]}) == 1001
+
+
 def test_scale_normalization_defaults_are_persisted_but_explicit_values_are_kept(client):
     definition = {
         "name": "Шкала", "description": "Пользовательская проверка", "criteria": [{

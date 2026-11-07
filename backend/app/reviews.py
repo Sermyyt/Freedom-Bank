@@ -70,19 +70,21 @@ def compare(tx, left_id, right_id):
     for key in identifiers:
         a, b = definitions[0].get(key), definitions[1].get(key)
         ar, br = results[0].get(key), results[1].get(key)
-        if a is None:
-            change = "added"
-        elif b is None:
-            change = "removed"
-        elif {k: v for k, v in a.items() if k != "weight"} != {k: v for k, v in b.items() if k != "weight"}:
-            change = "definition_changed"
-        elif a["weight"] != b["weight"]:
-            change = "weight_changed"
-        else:
-            change = "unchanged"
-        comparisons.append(dict(criterion_id=key, change=change, left_definition=a, right_definition=b,
+        comparisons.append(dict(criterion_id=key, change=definition_change(a, b), left_definition=a, right_definition=b,
                                 left_result=ar, right_result=br,
                                 contribution_delta=scoring.difference(br["contribution"], ar["contribution"]) if ar and br else None))
     return dict(conversation=left["conversation"], left=evaluation_summary(tx, left), right=evaluation_summary(tx, right),
                 left_final_revision=left["final_revision"], right_final_revision=right["final_revision"],
                 total_delta=scoring.difference(right["final"]["total"], left["final"]["total"]), criteria=comparisons)
+
+
+def definition_change(left, right):
+    if left is None:
+        return "added"
+    if right is None:
+        return "removed"
+    if {k: v for k, v in left.items() if k != "weight"} != {k: v for k, v in right.items() if k != "weight"}:
+        return "definition_changed"
+    if left["weight"] != right["weight"]:
+        return "weight_changed"
+    return "unchanged"

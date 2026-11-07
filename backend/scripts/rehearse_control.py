@@ -20,24 +20,35 @@ from scripts.run_batch import BatchError, request_data, run_group  # noqa: E402
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def altered_dataset(payload: dict | list, group: str) -> list:
+def _records(payload: dict | list) -> list:
     if isinstance(payload, list):
-        source = payload
-    elif (isinstance(payload, dict) and payload.get("isSuccess") is True
-          and isinstance(payload.get("data"), dict) and isinstance(payload["data"].get("records"), list)):
-        source = payload["data"]["records"]
-    else:
+        return payload
+    if not isinstance(payload, dict) or payload.get("isSuccess") is not True:
         raise ValueError("Expected an organizer envelope or records array")
-    records = deepcopy(source)
-    valid = [r for r in records if isinstance(r, dict) and isinstance(r.get("conversation_id"), str)
-             and isinstance(r.get("transcript"), list) and r["transcript"]]
-    if not valid:
+    data = payload.get("data")
+    if not isinstance(data, dict) or not isinstance(data.get("records"), list):
+        raise ValueError("Expected an organizer records array")
+    return data["records"]
+
+
+def _has_id(record) -> bool:
+    return isinstance(record, dict) and isinstance(record.get("conversation_id"), str)
+
+
+def _usable_record(record) -> bool:
+    return _has_id(record) and isinstance(record.get("transcript"), list) and bool(record["transcript"])
+
+
+def altered_dataset(payload: dict | list, group: str) -> list:
+    records = deepcopy(_records(payload))
+    first = next((record for record in records if _usable_record(record)), None)
+    if first is None:
         raise ValueError("No usable records for rehearsal")
     for index, record in enumerate(records):
-        if isinstance(record, dict) and isinstance(record.get("conversation_id"), str):
+        if _has_id(record):
             record["conversation_id"] = f"{group}-{index + 1}"
-    valid[0].pop("audio_url", None)
-    valid[0]["transcript"].append({"timestamp": "1:02:03", "speaker": "system",
+    first.pop("audio_url", None)
+    first["transcript"].append({"timestamp": "1:02:03", "speaker": "system",
                                    "text": "Synthetic control rehearsal: a previously unknown system event."})
     records.append({"conversation_id": f"{group}-malformed", "channel": "agent chat", "language": "RU",
                     "transcript": [{"timestamp": "00:01", "text": "Synthetic malformed message without speaker."}]})

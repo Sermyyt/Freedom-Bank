@@ -1,7 +1,7 @@
 {
   "data": {
-    "id": "eb926b9d-2617-4426-b796-e34a689e23c5",
-    "checklist_id": "21df4405-396e-4d2c-88cd-88c7fc3a58eb",
+    "id": "fd491c19-844f-43d6-a0f7-ae0f2605132a",
+    "checklist_id": "dba31ad7-f8d6-465e-b104-fbd12fb424d5",
     "version": 1,
     "definition": {
       "name": "Чек-лист качества чатов Freedom Broker",
@@ -233,9 +233,9 @@
     },
     "content_hash": "084fa12aca3dd0be36431f9d13d747b9a293b5326a0bd98c581b162b2c9bb227",
     "is_active": true,
-    "created_at": "2026-11-07T12:09:42.880660Z"
+    "created_at": "2026-11-07T12:25:52.254813Z"
   },
   "meta": {
-    "request_id": "e859224a-8c64-4932-8181-c2ffbf6c3196"
+    "request_id": "3e1a2120-a83a-4014-bd22-b3c6200de0dd"
   }
 }

@@ -2,6 +2,7 @@
 from collections import Counter
 import json
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 from .errors import APIError
 from .ingestion import parse_dataset, prepare_record
@@ -17,26 +18,74 @@ def decode_json(raw):
         raise APIError(400, "INVALID_JSON", "Файл не содержит корректный UTF-8 JSON.") from None
 
 
+def _download_bytes(settings, group):
+    # Preserve the signed query while preventing group IDs from injecting parameters.
+    url = with_group(settings.dataset_url, quote(group, safe=""))
+    with urlopen(Request(url, headers={"Accept": "application/json"}), timeout=settings.dataset_timeout) as response:
+        raw = response.read(settings.max_upload_bytes + 1)
+    if len(raw) > settings.max_upload_bytes:
+        raise APIError(413, "PAYLOAD_TOO_LARGE", "Набор превышает лимит загрузки.")
+    return raw
+
+
+def _decode_upstream(raw):
+    try:
+        return decode_json(raw)
+    except APIError:
+        raise APIError(502, "DATASET_UPSTREAM_ERROR", "Источник вернул некорректный ответ.") from None
+
+
+def _transport_error(exc):
+    if isinstance(getattr(exc, "reason", exc), TimeoutError):
+        return APIError(504, "DATASET_TIMEOUT", "Источник данных не ответил вовремя.", retryable=True)
+    return APIError(502, "DATASET_UPSTREAM_ERROR", "Не удалось получить набор от источника.", retryable=True)
+
+
 def fetch_dataset(settings, group):
     if not settings.dataset_url:
         raise APIError(503, "DATASET_NOT_CONFIGURED", "Источник данных не настроен.")
     try:
-        # group is encoded so external group IDs cannot inject another query parameter.
-        from urllib.parse import quote
-        url = with_group(settings.dataset_url, quote(group, safe=""))
-        with urlopen(Request(url, headers={"Accept": "application/json"}), timeout=settings.dataset_timeout) as response:
-            raw = response.read(settings.max_upload_bytes + 1)
-        if len(raw) > settings.max_upload_bytes:
-            raise APIError(413, "PAYLOAD_TOO_LARGE", "Набор превышает лимит загрузки.")
-        return decode_json(raw)
-    except TimeoutError:
-        raise APIError(504, "DATASET_TIMEOUT", "Источник данных не ответил вовремя.", retryable=True) from None
-    except (HTTPError, URLError, OSError):
-        raise APIError(502, "DATASET_UPSTREAM_ERROR", "Не удалось получить набор от источника.", retryable=True) from None
-    except APIError as exc:
-        if exc.status == 400:
-            raise APIError(502, "DATASET_UPSTREAM_ERROR", "Источник вернул некорректный ответ.") from None
-        raise
+        return _decode_upstream(_download_bytes(settings, group))
+    except (HTTPError, URLError, OSError) as exc:
+        raise _transport_error(exc) from None
+
+
+def _prepare_unique(record, index, seen):
+    external = record.get("conversation_id") if isinstance(record, dict) else None
+    if isinstance(external, str) and external in seen:
+        error = dict(record_index=index, conversation_id=external, message_id=None,
+                     code="DUPLICATE_CONVERSATION_IN_PAYLOAD", message="Повторный ID внутри набора.",
+                     path=["records", index, "conversation_id"])
+        return None, [error], [], []
+    if isinstance(external, str):
+        seen.add(external)
+    return prepare_record(record, index)
+
+
+def _append_revision(tx, group, detail, current, old_revision):
+    timestamp, revision_id = now(), new_id()
+    external = detail["conversation_id"]
+    identifier = current["id"] if current else new_id()
+    revision_number = old_revision["ref"]["revision"] + 1 if old_revision else 1
+    detail.update(ref=dict(id=identifier, group_id=group, conversation_id=external,
+                           revision_id=revision_id, revision=revision_number), created_at=timestamp)
+    tx.put("revisions", revision_id, detail)
+    conversation = dict(id=identifier, group_id=group, conversation_id=external, revision_id=revision_id,
+                        created_at=current["created_at"] if current else timestamp, updated_at=timestamp)
+    tx.put("conversations", identifier, conversation)
+    history(tx, "conversation_revised" if current else "conversation_created", "conversation", identifier,
+            "Сохранена ревизия разговора.", conversation_id=identifier)
+    return conversation
+
+
+def _store_record(tx, group, detail, known):
+    external = detail["conversation_id"]
+    current = known.get(external)
+    old_revision = tx.get("revisions", current["revision_id"]) if current else None
+    if old_revision and old_revision["content_hash"] == detail["content_hash"]:
+        return "unchanged"
+    known[external] = _append_revision(tx, group, detail, current, old_revision)
+    return "revised" if current else "created"
 
 
 def import_payload(tx, payload, requested_group=None):
@@ -46,41 +95,14 @@ def import_payload(tx, payload, requested_group=None):
     seen, phrases = set(), Counter()
     known = {c["conversation_id"]: c for c in tx.all("conversations") if c["group_id"] == group}
     for index, record in enumerate(records):
-        external = record.get("conversation_id") if isinstance(record, dict) else None
-        if isinstance(external, str) and external in seen:
-            report["skipped"] += 1
-            report["errors"].append(dict(record_index=index, conversation_id=external, message_id=None,
-                                          code="DUPLICATE_CONVERSATION_IN_PAYLOAD", message="Повторный ID внутри набора.",
-                                          path=["records", index, "conversation_id"]))
-            continue
-        if isinstance(external, str):
-            seen.add(external)
-        detail, errors, issues, unknown = prepare_record(record, index)
+        detail, errors, issues, unknown = _prepare_unique(record, index, seen)
         report["errors"].extend(errors)
         report["warnings"].extend(issues)
         phrases.update(unknown)
         if detail is None:
             report["skipped"] += 1
             continue
-        current = known.get(external)
-        old_revision = tx.get("revisions", current["revision_id"]) if current else None
-        if old_revision and old_revision["content_hash"] == detail["content_hash"]:
-            report["unchanged"] += 1
-            continue
-        timestamp = now()
-        identifier = current["id"] if current else new_id()
-        revision_id = new_id()
-        revision_number = old_revision["ref"]["revision"] + 1 if old_revision else 1
-        detail.update(ref=dict(id=identifier, group_id=group, conversation_id=external,
-                               revision_id=revision_id, revision=revision_number), created_at=timestamp)
-        tx.put("revisions", revision_id, detail)
-        conversation = dict(id=identifier, group_id=group, conversation_id=external, revision_id=revision_id,
-                            created_at=current["created_at"] if current else timestamp, updated_at=timestamp)
-        tx.put("conversations", identifier, conversation)
-        known[external] = conversation
-        report["revised" if current else "created"] += 1
-        history(tx, "conversation_revised" if current else "conversation_created", "conversation", identifier,
-                "Сохранена ревизия разговора.", conversation_id=identifier)
+        report[_store_record(tx, group, detail, known)] += 1
     report["unknown_system_phrases"] = [dict(text=text, count=count) for text, count in sorted(phrases.items())]
     tx.put("imports", report["import_id"], report)
     history(tx, "dataset_imported", "import", report["import_id"], "Импорт набора завершён.", "demo_operator")
