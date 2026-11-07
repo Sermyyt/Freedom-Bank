@@ -6,8 +6,8 @@ from .checklist_validation import normalize_definition
 from .errors import APIError, require
 from .evaluation import PROMPT_VERSION
 from .ingestion import IngestionError
-from .service import (active_id, conversation_detail, conversation_summary, evaluation_summary, filter_evaluation_state,
-                      filtered, page, revision_summary, version)
+from .service import (active_id, conversation_detail, conversation_summaries, evaluation_summary, filter_evaluation_state,
+                      filtered, open_appeal_evaluation_ids, page, revision_summary, version)
 from .http import StrictQueryRoute, success
 
 Limit = Annotated[int, Query(ge=1, le=100)]
@@ -18,7 +18,7 @@ router = APIRouter(route_class=StrictQueryRoute)
 
 def register_document_route(path, kind, model, name):
     def endpoint(id: str, request: Request):
-        with request.app.state.store.transaction() as tx:
+        with request.app.state.store.transaction(readonly=True) as tx:
             result = require(tx.get(kind, id))
         return success(request, result)
     endpoint.__name__ = name
@@ -27,7 +27,7 @@ def register_document_route(path, kind, model, name):
 
 @router.get("/api/health", response_model=s.Success[s.Health])
 def health(request: Request):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         active = active_id(tx)
     ready = request.app.state.provider is not None and active is not None
     return success(request, dict(status="ok" if ready else "degraded", api_version="1", database_ready=True,
@@ -65,8 +65,8 @@ def conversations(request: Request, limit: Limit = 25, offset: Offset = 0, group
                   language: str | None = None, channel: str | None = None, q: str | None = None,
                   evaluation_status: Literal["not_evaluated", "completed", "manual_review", "failed"] | None = None,
                   has_gross_error: bool | None = None, has_open_appeals: bool | None = None):
-    with request.app.state.store.transaction() as tx:
-        items = [conversation_summary(tx, c) for c in filtered(tx.all("conversations"), dict(group_id=group_id))]
+    with request.app.state.store.transaction(readonly=True) as tx:
+        items = conversation_summaries(tx, filtered(tx.all("conversations"), dict(group_id=group_id)))
         items = filtered(items, dict(language=language, channel=channel, has_open_appeals=has_open_appeals))
         if q is not None:
             items = [c for c in items if q.casefold() in c["ref"]["conversation_id"].casefold()]
@@ -77,7 +77,7 @@ def conversations(request: Request, limit: Limit = 25, offset: Offset = 0, group
 
 @router.get("/api/conversations/{id}", response_model=s.Success[s.ConversationDetail])
 def conversation(id: str, request: Request, revision_id: str | None = None):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         current = require(tx.get("conversations", id))
         result = require(tx.get("revisions", revision_id or current["revision_id"]))
         if result["ref"]["id"] != id:
@@ -87,7 +87,7 @@ def conversation(id: str, request: Request, revision_id: str | None = None):
 
 @router.get("/api/conversations/{id}/revisions", response_model=s.Success[s.Page[s.ConversationRevision]])
 def revisions(id: str, request: Request, limit: Limit = 25, offset: Offset = 0):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         require(tx.get("conversations", id))
         items = [revision_summary(r) for r in tx.all("revisions") if r["ref"]["id"] == id]
     return success(request, page(items, limit, offset, key=lambda r: -r["ref"]["revision"]))
@@ -95,7 +95,7 @@ def revisions(id: str, request: Request, limit: Limit = 25, offset: Offset = 0):
 
 @router.get("/api/checklists", response_model=s.Success[s.Page[s.Checklist]])
 def checklists(request: Request, limit: Limit = 25, offset: Offset = 0):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         result = page(tx.all("checklists"), limit, offset)
     return success(request, result)
 
@@ -118,7 +118,7 @@ register_document_route("/api/checklists/{id}", "checklists", s.Checklist, "chec
 
 @router.get("/api/checklists/{id}/versions", response_model=s.Success[s.Page[s.ChecklistVersion]])
 def versions(id: str, request: Request, limit: Limit = 25, offset: Offset = 0):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         require(tx.get("checklists", id))
         items = [version(tx, v["id"]) for v in tx.all("versions") if v["checklist_id"] == id]
         result = page(items, limit, offset)
@@ -135,7 +135,7 @@ def create_version(id: str, body: s.CreateVersionRequest, request: Request):
 
 @router.get("/api/checklist-versions/{id}", response_model=s.Success[s.ChecklistVersion])
 def checklist_version(id: str, request: Request):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         result = version(tx, id)
     return success(request, result)
 
@@ -162,8 +162,9 @@ register_document_route("/api/jobs/{id}", "jobs", s.Job, "job")
 def evaluations(request: Request, limit: Limit = 25, offset: Offset = 0, conversation_id: str | None = None,
                 revision_id: str | None = None, checklist_version_id: str | None = None,
                 status: s.EvaluationStatus | None = None, is_demo: bool | None = None):
-    with request.app.state.store.transaction() as tx:
-        items = [evaluation_summary(tx, e) for e in tx.all("evaluations")
+    with request.app.state.store.transaction(readonly=True) as tx:
+        open_appeal_ids = open_appeal_evaluation_ids(tx)
+        items = [evaluation_summary(tx, e, open_appeal_ids) for e in tx.all("evaluations")
                  if (conversation_id is None or e["conversation"]["id"] == conversation_id)
                  and (revision_id is None or e["conversation"]["revision_id"] == revision_id)]
         result = page(filtered(items, dict(checklist_version_id=checklist_version_id, status=status, is_demo=is_demo)), limit, offset)
@@ -172,7 +173,7 @@ def evaluations(request: Request, limit: Limit = 25, offset: Offset = 0, convers
 
 @router.get("/api/evaluations/compare", response_model=s.Success[s.EvaluationComparison])
 def compare(request: Request, left_id: str, right_id: str):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         result = reviews.compare(tx, left_id, right_id)
     return success(request, result)
 
@@ -190,7 +191,7 @@ def create_appeal(body: s.CreateAppealRequest, request: Request):
 @router.get("/api/appeals", response_model=s.Success[s.Page[s.Appeal]])
 def appeals(request: Request, limit: Limit = 25, offset: Offset = 0,
             evaluation_id: str | None = None, status: Literal["open", "resolved"] | None = None):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         result = page(filtered(tx.all("appeals"), dict(evaluation_id=evaluation_id, status=status)), limit, offset)
     return success(request, result)
 
@@ -209,7 +210,7 @@ def decision(id: str, body: s.AppealDecisionRequest, request: Request):
 def events(request: Request, limit: Limit = 25, offset: Offset = 0, conversation_id: str | None = None,
            evaluation_id: str | None = None, appeal_id: str | None = None, checklist_version_id: str | None = None,
            event_type: str | None = None):
-    with request.app.state.store.transaction() as tx:
+    with request.app.state.store.transaction(readonly=True) as tx:
         result = page(filtered(tx.all("history"), dict(conversation_id=conversation_id, evaluation_id=evaluation_id,
                                                        appeal_id=appeal_id, checklist_version_id=checklist_version_id,
                                                        event_type=event_type)), limit, offset)

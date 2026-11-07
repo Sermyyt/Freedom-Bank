@@ -51,10 +51,12 @@ class Store:
             connection.execute("PRAGMA user_version=1")
 
     @contextmanager
-    def transaction(self):
-        connection = sqlite3.connect(self.path, timeout=30)
+    def transaction(self, *, readonly=False):
+        target = self.path.resolve().as_uri() + "?mode=ro" if readonly else self.path
+        connection = sqlite3.connect(target, timeout=30, uri=readonly)
         try:
-            connection.execute("BEGIN IMMEDIATE")
+            # WAL readers keep one snapshot without reserving the writer lock.
+            connection.execute("BEGIN" if readonly else "BEGIN IMMEDIATE")
             yield Session(connection)
             connection.commit()
         except BaseException:

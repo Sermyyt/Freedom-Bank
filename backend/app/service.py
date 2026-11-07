@@ -45,16 +45,18 @@ def filter_evaluation_state(items, status, has_gross_error):
     return items
 
 
-def open_appeals(tx, evaluation_id):
-    return any(a["status"] == "open" and a["evaluation_id"] == evaluation_id for a in tx.all("appeals"))
+def open_appeal_evaluation_ids(tx):
+    return {a["evaluation_id"] for a in tx.all("appeals") if a["status"] == "open"}
 
 
-def evaluation_summary(tx, item):
+def evaluation_summary(tx, item, open_appeal_ids=None):
+    if open_appeal_ids is None:
+        open_appeal_ids = open_appeal_evaluation_ids(tx)
     return {"id": item["id"], "conversation": item["conversation"],
             "checklist_version_id": item["checklist_version_id"], "status": item["final"]["status"],
             "is_demo": item["is_demo"], "original_total": item["original"]["total"],
             "final_total": item["final"]["total"], "gross_error": item["final"]["gross_error"],
-            "has_open_appeals": open_appeals(tx, evaluation_id=item["id"]), "created_at": item["created_at"],
+            "has_open_appeals": item["id"] in open_appeal_ids, "created_at": item["created_at"],
             "scoring_policy": item.get("scoring_policy")}
 
 
@@ -68,12 +70,30 @@ def revision_summary(revision):
             "created_at": revision["created_at"]}
 
 
-def conversation_summary(tx, conversation):
+def latest_evaluations(tx):
+    latest = {}
+    for item in tx.all("evaluations"):
+        revision_id = item["conversation"]["revision_id"]
+        previous = latest.get(revision_id)
+        if previous is None or (item["created_at"], item["id"]) > (previous["created_at"], previous["id"]):
+            latest[revision_id] = item
+    return latest
+
+
+def conversation_summaries(tx, conversations):
+    if not conversations:
+        return []
+    latest, open_appeal_ids = latest_evaluations(tx), open_appeal_evaluation_ids(tx)
+    return [conversation_summary(tx, item, latest, open_appeal_ids) for item in conversations]
+
+
+def conversation_summary(tx, conversation, latest_by_revision=None, open_appeal_ids=None):
     revision = require(tx.get("revisions", conversation["revision_id"]))
-    evaluations = [e for e in tx.all("evaluations") if e["conversation"]["revision_id"] == conversation["revision_id"]]
-    latest = sorted(evaluations, key=lambda e: (e["created_at"], e["id"]), reverse=True)
+    if latest_by_revision is None:
+        latest_by_revision = latest_evaluations(tx)
+    latest = latest_by_revision.get(conversation["revision_id"])
+    summary = evaluation_summary(tx, latest, open_appeal_ids) if latest else None
     return dict(ref=revision["ref"], channel=revision["channel"], language=revision["language"],
                 message_count=len(revision["transcript"]), has_audio=bool(revision["audio_url"]),
-                latest_evaluation=evaluation_summary(tx, latest[0]) if latest else None,
-                has_open_appeals=open_appeals(tx, evaluation_id=latest[0]["id"]) if latest else False,
+                latest_evaluation=summary, has_open_appeals=summary["has_open_appeals"] if summary else False,
                 created_at=conversation["created_at"], updated_at=conversation["updated_at"])
