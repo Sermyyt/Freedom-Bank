@@ -15,7 +15,7 @@ export function placeholder(title, phase) {
             'div',
             { class: 'cqa-card cqa-empty' },
             h('p', { class: 'cqa-empty-title', text: `Экран появится в фазе ${phase}.` }),
-            h('p', { class: 'cqa-empty-hint', text: 'Пока доступны список разговоров, импорт и карточка разговора с оценкой.' }),
+            h('p', { class: 'cqa-empty-hint', text: 'Пока доступны список разговоров, импорт, карточка разговора с оценкой, апелляции, чек-лист и сравнение оценок.' }),
             h('a', { class: 'cqa-button', href: '#/conversations', text: 'К списку разговоров' }),
           ),
         ),

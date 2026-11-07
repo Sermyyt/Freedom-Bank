@@ -5,8 +5,10 @@ import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
+import { verdict } from '../components/verdict.js';
 import { append, clear, h } from '../dom.js';
 import { answerTone, formatAnswer } from '../lib/answers.js';
+import { appealsByCriterion, describeDecision } from '../lib/appeals.js';
 import { isAbortError } from '../lib/errors.js';
 import {
   chooseEvaluation,
@@ -18,7 +20,7 @@ import {
   totalsDiffer,
   violatedFlags,
 } from '../lib/evaluation.js';
-import { DASH, displayTimestamp, formatDateTime, formatNumber, formatPercent } from '../lib/format.js';
+import { displayTimestamp, excerpt, formatDateTime, formatNumber, formatPercent } from '../lib/format.js';
 import {
   CHANNEL_LABELS,
   EVALUATION_STATUS_LABELS,
@@ -32,18 +34,12 @@ import {
 import { groupTranscript, isClientFacingPhase, isHiddenFromClientPhase, phaseLabel } from '../lib/phases.js';
 import { describeJob, pollJob } from '../lib/poll.js';
 import { buildHash } from '../lib/route.js';
-import { getChecklistVersion, setViewDemo, state, subscribe } from '../state.js';
+import { getChecklistVersion, setLastConversation, setViewDemo, state, subscribe } from '../state.js';
+import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
 
 const KNOWN_ROLES = ['client', 'operator', 'bot', 'system'];
 const KNOWN_PHASES = ['pre_operator', 'client', 'hold', 'internal_consult', 'after_end'];
-const VERDICT_MARKS = { good: '✓', bad: '✕', partial: '◐', na: '–', invalid: '?' };
 const FLAG_TONES = { duplicate_of_prev: 'neutral', after_end: 'neutral', pii_masked: 'info', unknown_event: 'partial' };
-const EXCERPT = 160;
-
-function excerpt(text) {
-  const value = String(text || '');
-  return value.length > EXCERPT ? `${value.slice(0, EXCERPT - 1)}…` : value;
-}
 
 function prefersReducedMotion() {
   return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -53,9 +49,17 @@ function healthDecimals() {
   return state.health && state.health.scoring_policy ? state.health.scoring_policy.decimals : undefined;
 }
 
+function routeParams(route) {
+  return {
+    evaluationId: route.query.evaluation || null,
+    revisionId: route.query.revision || null,
+    appealId: route.query.appeal || null,
+  };
+}
+
 export function mount(container, route) {
   const conversationId = route.params[0];
-  let params = { evaluationId: route.query.evaluation || null, revisionId: route.query.revision || null };
+  let params = routeParams(route);
   const controller = new AbortController();
   let pollController = null;
   let loadSeq = 0;
@@ -68,9 +72,31 @@ export function mount(container, route) {
   let jobEvaluationId = null;
   let audio = null;
   const messageNodes = new Map();
+  const messagesById = new Map();
+  let renderedRevisionId = null;
+
+  // Апелляции показанной оценки, открытая панель решения и выбор реплик-доказательств для неё.
+  let appeals = [];
+  let appealsError = null;
+  let appealIndex = new Map();
+  let decision = null;
+  let picking = false;
+  let picked = new Set();
+  let handledAppealParam = null;
+  let cameFromAppeals = Boolean(params.appealId);
+  let activeModal = null;
+  // Пересчёт после решения: «итог до → после» остаётся у критерия, пока показана та же оценка.
+  const decisionNotes = new Map();
 
   // ---------- Каркас ----------
   const backLink = h('a', { class: 'cqa-back', href: state.lastListHash || '#/conversations', text: 'К списку разговоров' });
+  const appealsLink = h('a', { class: 'cqa-back', href: state.lastAppealsHash || '#/appeals', text: 'К апелляциям', hidden: !cameFromAppeals });
+  const pickHint = h('p', {
+    class: 'cqa-pick-hint',
+    role: 'status',
+    hidden: true,
+    text: 'Выбор доказательств для решения: щёлкните по реплике, чтобы добавить её; повторный щелчок уберёт.',
+  });
   const title = h('h1', { class: 'cqa-conv-title', text: 'Разговор' });
   const facts = h('dl', { class: 'cqa-facts' });
   const notices = h('div', { class: 'cqa-conv-notices' });
@@ -97,7 +123,7 @@ export function mount(container, route) {
     h(
       'div',
       { class: 'cqa-page cqa-conv' },
-      h('div', { class: 'cqa-conv-head' }, backLink, title, facts),
+      h('div', { class: 'cqa-conv-head' }, h('div', { class: 'cqa-back-links' }, backLink, appealsLink), title, facts),
       notices,
       grid,
     ),
@@ -135,16 +161,28 @@ export function mount(container, route) {
         full = await fetchEvaluation(chooseEvaluation(page.items, { revisionId: params.revisionId }), signal);
       }
       const revisionId = full ? full.conversation.revision_id : params.revisionId || latest.ref.revision_id;
-      const detail = revisionId === latest.ref.revision_id
-        ? latest
-        : await api.getConversation(conversationId, revisionId, { signal });
+      const [detail, appealPage] = await Promise.all([
+        revisionId === latest.ref.revision_id ? latest : api.getConversation(conversationId, revisionId, { signal }),
+        // Апелляции второстепенны для карточки: их ошибка не мешает показать разговор и оценку.
+        full
+          ? api.listAppeals({ evaluation_id: full.id, limit: 100 }, { signal }).catch((error) => {
+            if (isAbortError(error)) throw error;
+            return { error };
+          })
+          : null,
+      ]);
       if (seq !== loadSeq) return;
+      if (decision && (!full || decision.appeal.evaluation_id !== full.id)) closeDecision({ silent: true });
       current = latest;
       shown = detail;
       evaluation = full;
       summaries = page.items;
       summariesTotal = page.total;
+      appeals = appealPage && !appealPage.error ? appealPage.items : [];
+      appealsError = appealPage && appealPage.error ? appealPage.error : null;
+      if (appealsError) showError(appealsError);
       render();
+      openAppealFromRoute();
     } catch (error) {
       if (isAbortError(error) || seq !== loadSeq) return;
       renderLoadError(error);
@@ -174,9 +212,15 @@ export function mount(container, route) {
   // ---------- Вывод ----------
   function render() {
     grid.hidden = false;
+    setLastConversation({
+      id: conversationId,
+      externalId: current.ref.conversation_id,
+      revisionId: current.ref.revision_id,
+    });
     renderHead();
     renderNotices();
-    renderTranscript();
+    // Переписку той же ревизии не перестраиваем: после решения апелляции не теряется место прокрутки.
+    if (renderedRevisionId !== shown.ref.revision_id) renderTranscript();
     renderScore();
     setViewDemo(Boolean(evaluation && evaluation.is_demo === true));
   }
@@ -186,6 +230,8 @@ export function mount(container, route) {
   }
 
   function renderHead() {
+    appealsLink.hidden = !cameFromAppeals;
+    appealsLink.setAttribute('href', state.lastAppealsHash || '#/appeals');
     title.textContent = shown.ref.conversation_id;
     const revision = shown.ref.revision === current.ref.revision
       ? String(shown.ref.revision)
@@ -317,13 +363,16 @@ export function mount(container, route) {
     }
     const item = h('li', { class: classes.join(' '), tabindex: '-1', dataset: { messageId: String(message.id) } }, gutter, body);
     messageNodes.set(message.id, item);
+    messagesById.set(message.id, message);
     return item;
   }
 
   function renderTranscript() {
     messageNodes.clear();
+    messagesById.clear();
     audio = null;
-    const head = h('div', { class: 'cqa-pane-head' }, h('h2', { id: 'cqa-transcript-title', text: 'Переписка' }), legend());
+    renderedRevisionId = shown.ref.revision_id;
+    const head = h('div', { class: 'cqa-pane-head' }, h('h2', { id: 'cqa-transcript-title', text: 'Переписка' }), legend(), pickHint);
     const top = shown.audio_url ? audioBlock(shown) : null;
     const list = h('ol', { class: 'cqa-transcript' });
     for (const segment of groupTranscript(shown.transcript)) {
@@ -339,7 +388,47 @@ export function mount(container, route) {
       }
     }
     append(clear(transcriptPane), [head, top, list]);
+    applyPicking();
   }
+
+  // ---------- Выбор реплик-доказательств для решения апелляции ----------
+  function applyPicking() {
+    transcriptPane.classList.toggle('is-picking', picking);
+    pickHint.hidden = !picking;
+    for (const [id, node] of messageNodes) {
+      node.tabIndex = picking ? 0 : -1;
+      node.classList.toggle('is-picked', picked.has(id));
+      if (picking) node.title = picked.has(id) ? 'Убрать из доказательств решения' : 'Добавить в доказательства решения';
+      else node.removeAttribute('title');
+    }
+  }
+
+  function setPicking(on) {
+    picking = on;
+    if (!on) picked = new Set();
+    applyPicking();
+  }
+
+  function pickMessage(node) {
+    if (!picking || !decision || !node) return;
+    decision.panel.toggleEvidence(Number(node.dataset.messageId));
+  }
+
+  transcriptPane.addEventListener('click', (event) => {
+    if (!picking) return;
+    if (event.target.closest('button, a, audio, input, textarea, select')) return;
+    // Выделение текста мышью — не выбор реплики.
+    const selection = window.getSelection ? window.getSelection() : null;
+    if (selection && !selection.isCollapsed) return;
+    pickMessage(event.target.closest('.cqa-msg'));
+  });
+
+  transcriptPane.addEventListener('keydown', (event) => {
+    if (!picking || (event.key !== 'Enter' && event.key !== ' ')) return;
+    if (!event.target.classList || !event.target.classList.contains('cqa-msg')) return;
+    event.preventDefault();
+    pickMessage(event.target);
+  });
 
   function clearMarks(className) {
     for (const node of transcriptPane.querySelectorAll(`.${className}`)) node.classList.remove(className);
@@ -640,23 +729,90 @@ export function mount(container, route) {
     return notes.length ? h('ul', { class: 'cqa-criterion-notes' }, notes) : null;
   }
 
+  // ---------- Апелляции у критерия ----------
+  function resolvedAppealItem(appeal, criterion) {
+    const summary = describeDecision(appeal.decision, criterion);
+    const outcome = summary
+      ? `${summary.actionLabel}: ${summary.answerChanged ? `${summary.before} → ${summary.after}` : summary.after}`
+      : 'решение не загружено';
+    return h(
+      'li',
+      {},
+      h(
+        'details',
+        { class: 'cqa-appeal-record' },
+        h('summary', {}, h('span', { class: 'cqa-appeal-record-title', text: `Апелляция решена ${formatDateTime(appeal.resolved_at)}` }), h('span', { text: outcome })),
+        h(
+          'dl',
+          { class: 'cqa-appeal-record-body' },
+          h('div', {}, h('dt', { text: 'Оператор' }), h('dd', { text: appeal.comment })),
+          appeal.decision ? h('div', {}, h('dt', { text: 'Проверяющий' }), h('dd', { text: appeal.decision.reason })) : null,
+          h('div', {}, h('dt', { text: 'Подана' }), h('dd', { text: formatDateTime(appeal.created_at) })),
+        ),
+      ),
+    );
+  }
+
+  function decisionNoteView(note, criterion, decimals) {
+    const summary = describeDecision(note.decision, criterion);
+    return h(
+      'div',
+      { class: 'cqa-alert cqa-decision-note', role: 'status' },
+      h('p', { class: 'cqa-alert-title', text: 'Решение сохранено, итог пересчитан' }),
+      summary
+        ? h('p', {}, `${summary.actionLabel}: `, h('strong', { text: summary.answerChanged ? `${summary.before} → ${summary.after}` : summary.after }), '.')
+        : null,
+      h('p', {}, 'Итог оценки: ', h('strong', { text: formatNumber(note.beforeTotal, decimals) }), ' → ', h('strong', { text: formatNumber(note.afterTotal, decimals) }), '.'),
+    );
+  }
+
+  function appealBlock(row, decimals) {
+    const { criterion } = row;
+    const entry = appealIndex.get(criterion.id) || { open: null, resolved: [] };
+    const parts = [];
+    const note = decisionNotes.get(criterion.id);
+    if (note && note.evaluationId === evaluation.id) parts.push(decisionNoteView(note, criterion, decimals));
+    if (entry.open) {
+      const reviewing = Boolean(decision && decision.appeal.id === entry.open.id);
+      parts.push(h(
+        'div',
+        { class: 'cqa-appeal-open' },
+        badge('Апелляция открыта', 'warn'),
+        h('span', { class: 'cqa-appeal-comment', title: entry.open.comment, text: `«${excerpt(entry.open.comment, 140)}»` }),
+        reviewing
+          ? null
+          : h('button', { type: 'button', class: 'cqa-button cqa-button--small', text: 'Рассмотреть', on: { click: () => openDecision(entry.open) } }),
+      ));
+      if (reviewing) parts.push(decision.panel.el);
+    } else if (!appealsError) {
+      parts.push(h(
+        'div',
+        { class: 'cqa-criterion-actions' },
+        h('button', { type: 'button', class: 'cqa-button cqa-button--quiet cqa-button--small', text: 'Оспорить', on: { click: () => openAppeal(row) } }),
+      ));
+    }
+    if (entry.resolved.length) {
+      parts.push(h('ul', { class: 'cqa-appeal-history', 'aria-label': 'Решённые апелляции по критерию' }, entry.resolved.map((appeal) => resolvedAppealItem(appeal, criterion))));
+    }
+    return parts.length ? h('div', { class: 'cqa-appeal-block' }, parts) : null;
+  }
+
   function criterionItem(row, decimals) {
     const { criterion, final, original, changedByAppeal } = row;
     if (!final) {
-      return h('li', { class: 'cqa-criterion' },
+      return h('li', { class: 'cqa-criterion', dataset: { criterionId: criterion.id } },
         h('div', { class: 'cqa-criterion-head' },
           h('span', { class: 'cqa-criterion-name', text: criterion.name }),
           h('span', { class: 'cqa-muted', text: 'Нет результата' })));
     }
     const tone = answerTone(final.answer, criterion);
+    const reviewing = Boolean(decision && decision.criterionId === criterion.id);
     return h(
       'li',
-      { class: `cqa-criterion cqa-criterion--${tone}` },
+      { class: `cqa-criterion cqa-criterion--${tone}${reviewing ? ' is-reviewing' : ''}`, dataset: { criterionId: criterion.id } },
       h('div', { class: 'cqa-criterion-head' },
         h('span', { class: 'cqa-criterion-name', text: criterion.name }),
-        h('span', { class: `cqa-verdict cqa-verdict--${tone}` },
-          h('span', { class: 'cqa-verdict-mark', 'aria-hidden': 'true', text: VERDICT_MARKS[tone] }),
-          h('span', { class: 'cqa-verdict-text', text: formatAnswer(final.answer, criterion) }))),
+        verdict(final.answer, criterion)),
       scoreLine(criterion, final, decimals),
       changedByAppeal
         ? h('p', { class: 'cqa-criterion-change' },
@@ -668,6 +824,7 @@ export function mount(container, route) {
       evidenceLine(final),
       rangeLine(final),
       notesList(final),
+      appealBlock(row, decimals),
     );
   }
 
@@ -760,17 +917,188 @@ export function mount(container, route) {
       );
       return;
     }
-    const decimals = evaluation.scoring_policy ? evaluation.scoring_policy.decimals : healthDecimals();
+    const decimals = evaluationDecimals();
     const rows = criterionRows(evaluation);
+    appealIndex = appealsByCriterion(appeals);
+    // Панель решения переносится в новую разметку тем же элементом: введённый текст и фокус сохраняются.
+    const focused = decision && decision.panel.el.contains(document.activeElement) ? document.activeElement : null;
     append(scoreBody, [
       evaluationMeta(),
       totalBlock(decimals),
       banners(),
+      appealsError ? appealsErrorAlert() : null,
       sectionsTable(decimals),
       criteriaBlock(rows.filter((row) => !row.isFlag), decimals),
       flagsBlock(rows.filter((row) => row.isFlag), decimals),
       pastEvaluations(),
     ]);
+    if (focused && document.activeElement !== focused) focused.focus({ preventScroll: true });
+  }
+
+  function evaluationDecimals() {
+    return evaluation && evaluation.scoring_policy ? evaluation.scoring_policy.decimals : healthDecimals();
+  }
+
+  function appealsErrorAlert() {
+    return h(
+      'div',
+      { class: 'cqa-alert cqa-alert--bad', role: 'alert' },
+      h('p', { text: `Апелляции этой оценки не загружены: ${appealsError.message}` }),
+      h('div', { class: 'cqa-actions' }, h('button', { type: 'button', class: 'cqa-button', text: 'Повторить', on: { click: refreshAppeals } })),
+    );
+  }
+
+  function criterionNode(criterionId) {
+    return [...scoreBody.querySelectorAll('.cqa-criterion')].find((node) => node.dataset.criterionId === criterionId) || null;
+  }
+
+  function scrollToCriterion(criterionId) {
+    const node = criterionNode(criterionId);
+    if (node) node.scrollIntoView({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+  }
+
+  // ---------- Апелляции: подача ----------
+  async function refreshAppeals() {
+    if (!evaluation) return;
+    const target = evaluation.id;
+    try {
+      const page = await api.listAppeals({ evaluation_id: target, limit: 100 }, { signal: controller.signal });
+      if (!evaluation || evaluation.id !== target) return;
+      appeals = page.items;
+      appealsError = null;
+    } catch (error) {
+      if (isAbortError(error)) return;
+      appealsError = error;
+      showError(error);
+    }
+    renderScore();
+  }
+
+  function openAppeal(row) {
+    if (activeModal) activeModal.close();
+    activeModal = openAppealModal({
+      evaluation,
+      criterion: row.criterion,
+      result: row.final,
+      onCreated: () => {
+        showToast('Апелляция подана. Решение принимает проверяющий: кнопка «Рассмотреть» у критерия.', { tone: 'success' });
+        refreshAppeals();
+      },
+      onDuplicate: refreshAppeals,
+      onClose: () => {
+        activeModal = null;
+      },
+    });
+  }
+
+  // ---------- Апелляции: решение ----------
+  function openDecision(appeal) {
+    if (!evaluation || appeal.evaluation_id !== evaluation.id) return;
+    if (decision && decision.appeal.id === appeal.id) {
+      scrollToCriterion(decision.criterionId);
+      return;
+    }
+    closeDecision({ silent: true });
+    const criterion = (evaluation.checklist_snapshot.criteria || []).find((item) => item.id === appeal.criterion_id);
+    if (!criterion) {
+      showToast('Критерия апелляции нет в снимке чек-листа этой оценки.', { tone: 'error' });
+      return;
+    }
+    const panel = createDecisionPanel({
+      appeal,
+      criterion,
+      getMessage: (id) => messagesById.get(id) || null,
+      onShowMessage: focusMessage,
+      onEvidenceChange: (ids) => {
+        picked = new Set(ids);
+        applyPicking();
+      },
+      onPickingChange: setPicking,
+      onDecided: (result) => finishDecision(criterion, result),
+      onConflict: () => {
+        showToast('Оценка изменилась, данные обновлены.', { tone: 'error' });
+        refreshForDecision();
+      },
+      onAlreadyResolved: () => {
+        showToast('Решение по этой апелляции уже принято. Данные обновлены.', { tone: 'error' });
+        closeDecision({ silent: true });
+        load();
+      },
+      onCancel: () => closeDecision(),
+    });
+    decision = { appeal, criterionId: criterion.id, panel };
+    renderScore();
+    scrollToCriterion(criterion.id);
+    panel.focus();
+    refreshForDecision();
+  }
+
+  // Перед решением — свежая оценка: из неё expected_final_revision и текущий ответ критерия.
+  async function refreshForDecision() {
+    const target = decision;
+    if (!target || !evaluation) return;
+    try {
+      const fresh = await api.getEvaluation(evaluation.id, { signal: controller.signal });
+      if (decision !== target) return;
+      if (fresh.final_revision !== evaluation.final_revision) {
+        evaluation = fresh;
+        renderScore();
+      }
+      target.panel.setEvaluation(fresh);
+    } catch (error) {
+      if (isAbortError(error) || decision !== target) return;
+      target.panel.setLoadError(error.message);
+      showError(error);
+    }
+  }
+
+  function finishDecision(criterion, result) {
+    const beforeTotal = evaluation.final.total;
+    const after = result.evaluation;
+    const decimals = after.scoring_policy ? after.scoring_policy.decimals : evaluationDecimals();
+    decisionNotes.set(criterion.id, {
+      evaluationId: after.id,
+      decision: result.appeal.decision,
+      beforeTotal,
+      afterTotal: after.final.total,
+    });
+    closeDecision({ silent: true });
+    evaluation = after;
+    appeals = appeals.map((item) => (item.id === result.appeal.id ? result.appeal : item));
+    renderScore();
+    showToast(`Решение сохранено. Итог: ${formatNumber(beforeTotal, decimals)} → ${formatNumber(after.final.total, decimals)}.`, { tone: 'success' });
+    // Обновить карточку целиком: список оценок, апелляции; ссылка без ?appeal= не откроет решение повторно.
+    if (params.appealId) location.replace(buildHash('conversation', [conversationId], { evaluation: after.id }));
+    else load();
+  }
+
+  function closeDecision({ silent = false } = {}) {
+    if (!decision) return;
+    const { panel } = decision;
+    decision = null;
+    panel.destroy();
+    panel.el.remove();
+    if (!silent) renderScore();
+  }
+
+  // ?appeal=<id> из списка апелляций: открыть решение у нужного критерия.
+  function openAppealFromRoute() {
+    const appealId = params.appealId;
+    if (!appealId || handledAppealParam === appealId) return;
+    handledAppealParam = appealId;
+    cameFromAppeals = true;
+    appealsLink.hidden = false;
+    const appeal = appeals.find((item) => item.id === appealId);
+    if (!appeal) {
+      if (!appealsError) showToast('Апелляции из адреса нет у этой оценки.', { tone: 'error' });
+      return;
+    }
+    if (appeal.status !== 'open') {
+      showToast('Решение по этой апелляции уже принято: оно показано у критерия.', { tone: 'info' });
+      scrollToCriterion(appeal.criterion_id);
+      return;
+    }
+    openDecision(appeal);
   }
 
   const unsubscribe = subscribe(() => updateEvaluateControls());
@@ -780,13 +1108,16 @@ export function mount(container, route) {
   return {
     update(nextRoute) {
       if (nextRoute.params[0] !== conversationId) return false;
-      params = { evaluationId: nextRoute.query.evaluation || null, revisionId: nextRoute.query.revision || null };
+      params = routeParams(nextRoute);
+      if (!params.appealId) handledAppealParam = null;
       load();
       return true;
     },
     destroy() {
       controller.abort();
       if (pollController) pollController.abort();
+      if (activeModal) activeModal.close();
+      closeDecision({ silent: true });
       unsubscribe();
     },
   };

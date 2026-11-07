@@ -618,6 +618,48 @@
   align-items: flex-end;
 }
 
+/* «Оценить всю группу» — главный сценарий 23-го часа: отдельная полоса между фильтрами и таблицей. */
+.cqa-app .cqa-group-eval {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--cqa-rule);
+  border-left: 4px solid var(--cqa-petrol);
+  border-radius: 4px;
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-group-eval-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.cqa-app .cqa-group-eval-text {
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cqa-app .cqa-group-eval-title {
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-group-eval .cqa-job { background: var(--cqa-sheet); }
+
+.cqa-app .cqa-group-eval .cqa-job-errors {
+  max-height: 180px;
+  overflow: auto;
+}
+
 .cqa-app .cqa-list-status {
   min-height: 20px;
   color: var(--cqa-ink-2);
@@ -1323,15 +1365,918 @@
   gap: 4px 12px;
 }
 
+/* ---------- Апелляции ---------- */
+
+.cqa-app .cqa-button--small {
+  min-height: 26px;
+  padding: 2px 10px;
+  font-size: 13px;
+}
+
+/* «Оспорить» — тихое действие у каждого критерия, не спорит с ответом за внимание. */
+.cqa-app .cqa-button--quiet {
+  border-color: var(--cqa-rule);
+  background: transparent;
+  color: var(--cqa-petrol);
+}
+
+.cqa-app .cqa-button--quiet:hover:not(:disabled) {
+  border-color: var(--cqa-petrol);
+  background: var(--cqa-petrol-wash);
+  color: var(--cqa-petrol-dark);
+}
+
+.cqa-app .cqa-back-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+.cqa-app .cqa-appeal-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.cqa-app .cqa-criterion-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cqa-app .cqa-appeal-open {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 13px;
+}
+
+.cqa-app .cqa-appeal-comment {
+  flex: 1 1 16ch;
+  min-width: 0;
+  color: var(--cqa-ink);
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-appeal-history {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.cqa-app .cqa-appeal-record summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--cqa-ink-2);
+  cursor: pointer;
+}
+
+.cqa-app .cqa-appeal-record-title { font-weight: 600; }
+
+.cqa-app .cqa-appeal-record-body {
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 2px;
+  padding-left: 12px;
+  border-left: 2px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-appeal-record-body div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.cqa-app .cqa-appeal-record-body dt { color: var(--cqa-ink-2); }
+.cqa-app .cqa-appeal-record-body dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Пересчёт после решения: что изменилось и итог до → после. */
+.cqa-app .cqa-decision-note {
+  border-color: #b8dcc2;
+  border-left-color: var(--cqa-yes);
+  background: var(--cqa-yes-wash);
+  color: var(--cqa-ink);
+  font-size: 13.5px;
+}
+
+.cqa-app .cqa-decision-note .cqa-alert-title { color: var(--cqa-yes); font-size: 14px; }
+.cqa-app .cqa-decision-note strong { font-family: var(--cqa-font-num); font-weight: 600; }
+
+/* Решение проверяющего — лист проверки, подшитый к критерию. */
+.cqa-app .cqa-criterion { scroll-margin-top: 64px; }
+.cqa-app .cqa-criterion.is-reviewing { background: linear-gradient(90deg, var(--cqa-petrol-wash), transparent 40%); }
+
+.cqa-app .cqa-decision {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--cqa-rule);
+  border-left: 4px solid var(--cqa-petrol);
+  border-radius: 4px;
+  background: var(--cqa-sheet);
+}
+
+.cqa-app .cqa-decision-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.cqa-app .cqa-decision-head h4 { font-size: 15px; }
+
+.cqa-app .cqa-decision-label {
+  color: var(--cqa-ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-appeal-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--cqa-rule-strong);
+}
+
+.cqa-app .cqa-appeal-quote-text {
+  max-width: 76ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-decision-current,
+.cqa-app .cqa-appeal-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.cqa-app .cqa-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cqa-app .cqa-fieldset legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--cqa-petrol);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cqa-app .cqa-segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 14px;
+  border-right: 1px solid var(--cqa-petrol);
+  color: var(--cqa-petrol);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-segment:last-child { border-right: 0; }
+
+.cqa-app .cqa-segment input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cqa-app .cqa-segment:hover { background: var(--cqa-petrol-wash); }
+.cqa-app .cqa-segment:has(input:checked) { background: var(--cqa-petrol); color: #ffffff; }
+.cqa-app .cqa-segment:has(input:focus-visible) { outline: 2px solid var(--cqa-petrol); outline-offset: 2px; }
+
+/* Варианты ответа — разлинованный список, как критерии: подпись ответа цифровым шрифтом, под ней описание. */
+.cqa-app .cqa-choices {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-choice {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  column-gap: 8px;
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--cqa-rule);
+  cursor: pointer;
+}
+
+.cqa-app .cqa-choice input {
+  grid-row: span 2;
+  align-self: start;
+  margin: 4px 0 0;
+  accent-color: var(--cqa-petrol);
+}
+
+.cqa-app .cqa-choice:hover { background: var(--cqa-sheet-2); }
+.cqa-app .cqa-choice.is-checked { background: var(--cqa-petrol-wash); box-shadow: inset 3px 0 0 var(--cqa-petrol); }
+
+.cqa-app .cqa-choice-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.cqa-app .cqa-choice-label {
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-choice-desc {
+  color: var(--cqa-ink-2);
+  font-size: 12.5px;
+}
+
+.cqa-app .cqa-decision-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cqa-app .cqa-chip--picked {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--cqa-marker);
+  cursor: default;
+}
+
+.cqa-app .cqa-chip-show,
+.cqa-app .cqa-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  border: 0;
+  background: transparent;
+  color: var(--cqa-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-chip-show { padding: 1px 6px 1px 9px; }
+.cqa-app .cqa-chip-remove { padding: 1px 8px; border-left: 1px solid #e0c35a; font-size: 15px; line-height: 1; }
+.cqa-app .cqa-chip-show:hover,
+.cqa-app .cqa-chip-remove:hover { background: #ffd84d; }
+
+.cqa-app .cqa-decision textarea,
+.cqa-app .cqa-appeal-form textarea { resize: vertical; }
+
+/* Выбор реплик-доказательств: переписка становится «щёлкаемой», выбранные реплики отмечены маркером. */
+.cqa-app .cqa-pick-hint {
+  flex-basis: 100%;
+  padding: 4px 8px;
+  border: 1px solid #e8c440;
+  border-radius: 3px;
+  background: #fff6c8;
+  font-size: 12.5px;
+}
+
+.cqa-app .cqa-transcript-pane.is-picking .cqa-msg { cursor: pointer; }
+.cqa-app .cqa-transcript-pane.is-picking .cqa-msg:hover { background: #fffbe8; box-shadow: inset 0 0 0 1px #e8c440; }
+
+.cqa-app .cqa-msg.is-picked { background: #fff6c8; }
+.cqa-app .cqa-transcript-pane.is-picking .cqa-msg.is-picked:hover { background: #fff0b0; }
+
+.cqa-app .cqa-msg.is-picked .cqa-msg-num {
+  padding: 0 4px;
+  border-radius: 2px;
+  background: var(--cqa-marker);
+}
+
+.cqa-app .cqa-msg.is-picked .cqa-msg-num::before { content: "✓ "; }
+
+/* ---------- Модальное окно ---------- */
+
+.cqa-app .cqa-modal {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: 1px solid var(--cqa-rule-strong);
+  border-radius: 6px;
+  background: var(--cqa-sheet);
+  color: var(--cqa-ink);
+  box-shadow: 0 18px 48px rgba(26, 35, 50, 0.28);
+}
+
+.cqa-app .cqa-modal::backdrop { background: rgba(26, 35, 50, 0.45); }
+
+.cqa-app .cqa-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-modal-close {
+  border: 0;
+  background: transparent;
+  color: var(--cqa-ink-2);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-modal-body { padding: 14px 18px 18px; }
+
+.cqa-app .cqa-appeal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cqa-app .cqa-appeal-subject {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--cqa-rule-strong);
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-appeal-criterion {
+  font-family: var(--cqa-font-num);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-appeal-rationale {
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Список апелляций ---------- */
+
+.cqa-app .cqa-page-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cqa-app .cqa-page-lead {
+  max-width: 80ch;
+  color: var(--cqa-ink-2);
+}
+
+.cqa-app .cqa-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.cqa-app .cqa-filter-tabs {
+  display: inline-flex;
+  border: 1px solid var(--cqa-rule-strong);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cqa-app .cqa-filter-tab {
+  padding: 4px 14px;
+  border-right: 1px solid var(--cqa-rule-strong);
+  color: var(--cqa-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cqa-app .cqa-filter-tab:last-child { border-right: 0; }
+.cqa-app .cqa-filter-tab:hover { background: var(--cqa-sheet-2); color: var(--cqa-ink); }
+.cqa-app .cqa-filter-tab.is-active { background: var(--cqa-petrol); color: #ffffff; }
+
+.cqa-app .cqa-appeals-table td { vertical-align: top; }
+.cqa-app .cqa-appeal-comment-cell { min-width: 22ch; max-width: 48ch; }
+.cqa-app .cqa-appeal-criterion-cell { min-width: 16ch; }
+.cqa-app .cqa-appeal-decision-cell { min-width: 24ch; }
+
+.cqa-app .cqa-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-appeal-outcome { font-family: var(--cqa-font-num); font-weight: 500; }
+.cqa-app .cqa-nowrap { white-space: nowrap; }
+
+/* ---------- Редактор чек-листа ---------- */
+
+.cqa-app .cqa-ed-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+  transition: opacity 0.15s;
+}
+
+.cqa-app .cqa-ed-grid.is-loading { opacity: 0.55; }
+
+.cqa-app .cqa-ed-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.cqa-app .cqa-ed-aside {
+  position: sticky;
+  top: calc(var(--cqa-top-offset) + 12px);
+}
+
+.cqa-app .cqa-card-head h2 .cqa-muted { font-weight: 500; }
+
+.cqa-app .cqa-ed-list {
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--cqa-ink);
+  list-style: none;
+}
+
+.cqa-app .cqa-ed-item { border-bottom: 1px solid var(--cqa-rule); }
+.cqa-app .cqa-ed-item.is-open { background: var(--cqa-sheet-2); }
+.cqa-app .cqa-ed-item.is-replacement { box-shadow: inset 4px 0 0 var(--cqa-part); }
+.cqa-app .cqa-ed-item.is-new { box-shadow: inset 4px 0 0 var(--cqa-petrol); }
+
+.cqa-app .cqa-ed-head {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 6px 8px 10px;
+}
+
+.cqa-app .cqa-ed-num {
+  color: var(--cqa-ink-2);
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.cqa-app .cqa-ed-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--cqa-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-ed-toggle:hover .cqa-ed-name { color: var(--cqa-petrol); }
+
+.cqa-app .cqa-ed-caret::before {
+  content: "▸";
+  display: inline-block;
+  color: var(--cqa-ink-2);
+  transition: transform 0.15s;
+}
+
+.cqa-app .cqa-ed-item.is-open .cqa-ed-caret::before { transform: rotate(90deg); }
+
+.cqa-app .cqa-ed-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cqa-app .cqa-ed-name {
+  font-weight: 600;
+  font-size: 14.5px;
+  overflow-wrap: anywhere;
+}
+
+.cqa-app .cqa-ed-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  color: var(--cqa-ink-2);
+  font-size: 12.5px;
+}
+
+.cqa-app .cqa-ed-id { color: var(--cqa-ink); }
+
+.cqa-app .cqa-ed-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cqa-app .cqa-ed-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.cqa-app .cqa-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--cqa-rule);
+  border-radius: 4px;
+  background: var(--cqa-sheet);
+  color: var(--cqa-ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-icon-button:hover:not(:disabled) { border-color: var(--cqa-ink-2); background: var(--cqa-sheet-2); }
+.cqa-app .cqa-icon-button:disabled { cursor: not-allowed; opacity: 0.35; }
+
+/* «Заменить» — главное действие сценария 4:00–5:00: заметнее остальных, но не спорит с «Сохранить». */
+.cqa-app .cqa-button--replace {
+  border-color: var(--cqa-petrol);
+  color: var(--cqa-petrol);
+}
+
+.cqa-app .cqa-button--replace:hover:not(:disabled) {
+  border-color: var(--cqa-petrol);
+  background: var(--cqa-petrol-wash);
+  color: var(--cqa-petrol-dark);
+}
+
+.cqa-app .cqa-button--quiet-danger {
+  border-color: transparent;
+  background: transparent;
+  color: var(--cqa-no);
+}
+
+.cqa-app .cqa-button--quiet-danger:hover:not(:disabled) {
+  border-color: #efb4ae;
+  background: var(--cqa-no-wash);
+  color: var(--cqa-no);
+}
+
+.cqa-app .cqa-ed-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 14px 16px 48px;
+}
+
+.cqa-app .cqa-ed-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px 12px;
+  align-items: start;
+}
+
+.cqa-app .cqa-field input[readonly] {
+  border-style: dashed;
+  background: var(--cqa-sheet-2);
+  color: var(--cqa-ink-2);
+}
+
+.cqa-app .cqa-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cqa-app .cqa-check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--cqa-petrol);
+}
+
+.cqa-app .cqa-ed-na {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cqa-app .cqa-ed-options { gap: 8px; }
+
+.cqa-app .cqa-ed-option-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--cqa-rule);
+  list-style: none;
+}
+
+.cqa-app .cqa-ed-option {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) minmax(0, 2fr);
+  gap: 8px 10px;
+  align-items: end;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-ed-option--scale {
+  grid-template-columns: 96px minmax(0, 1fr) minmax(0, 2fr) 104px 28px;
+}
+
+.cqa-app .cqa-ed-option-value {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+
+.cqa-app .cqa-ed-option-answer {
+  font-family: var(--cqa-font-num);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-ed-option-value code { color: var(--cqa-ink-2); }
+.cqa-app .cqa-ed-option-remove { margin-bottom: 2px; }
+
+.cqa-app .cqa-ed-removed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--cqa-rule-strong);
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-ed-general {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.cqa-app .cqa-ed-warnings {
+  margin: 0;
+  padding: 8px 12px 8px 28px;
+  border-left: 3px solid var(--cqa-part);
+  background: var(--cqa-part-wash);
+  color: var(--cqa-part);
+}
+
+/* Панель сохранения закреплена внизу экрана, пока виден редактор. */
+.cqa-app .cqa-savebar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--cqa-rule-strong);
+  border-top: 3px solid var(--cqa-petrol);
+  border-radius: 6px 6px 0 0;
+  background: var(--cqa-sheet);
+  box-shadow: 0 -6px 18px rgba(26, 35, 50, 0.1);
+}
+
+.cqa-app .cqa-savebar-info {
+  display: flex;
+  flex: 1 1 260px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cqa-app .cqa-savebar-status { font-weight: 600; }
+.cqa-app .cqa-savebar-status[data-tone="good"] { color: var(--cqa-yes); }
+.cqa-app .cqa-savebar-status[data-tone="bad"] { color: var(--cqa-no); }
+.cqa-app .cqa-savebar-status[data-tone="warn"] { color: var(--cqa-part); }
+.cqa-app .cqa-savebar-changes { color: var(--cqa-ink-2); font-size: 13px; }
+
+.cqa-app .cqa-saved {
+  /* Не уходить под закреплённую панель сохранения при прокрутке к блоку. */
+  scroll-margin-bottom: 140px;
+  border-color: #b8dcc2;
+  border-left-color: var(--cqa-yes);
+  background: var(--cqa-yes-wash);
+  color: var(--cqa-ink);
+  gap: 8px;
+}
+
+.cqa-app .cqa-saved .cqa-alert-title { color: var(--cqa-yes); }
+.cqa-app .cqa-saved:not(.cqa-saved--applied) { border-left-color: var(--cqa-part); background: var(--cqa-part-wash); }
+.cqa-app .cqa-saved:not(.cqa-saved--applied) .cqa-alert-title { color: var(--cqa-part); }
+.cqa-app .cqa-saved:focus { outline: none; }
+
+.cqa-app .cqa-saved-next {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #b8dcc2;
+}
+
+.cqa-app .cqa-saved-next .cqa-job { background: var(--cqa-sheet); }
+
+.cqa-app .cqa-versions {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--cqa-rule);
+  list-style: none;
+}
+
+.cqa-app .cqa-version {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 2px 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--cqa-rule);
+}
+
+.cqa-app .cqa-version.is-current { background: var(--cqa-petrol-wash); }
+
+.cqa-app .cqa-version-number {
+  grid-row: span 2;
+  font-family: var(--cqa-font-num);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-version-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  font-size: 13px;
+}
+
+.cqa-app .cqa-version-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ---------- Сравнение оценок ---------- */
+
+.cqa-app .cqa-compare-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: opacity 0.15s;
+}
+
+.cqa-app .cqa-compare-body.is-loading { opacity: 0.55; }
+
+.cqa-app .cqa-compare-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.6fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.cqa-app .cqa-compare-side,
+.cqa-app .cqa-compare-delta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--cqa-rule);
+  border-radius: 6px;
+  background: var(--cqa-sheet);
+}
+
+.cqa-app .cqa-compare-side-label {
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-compare-version {
+  font-family: var(--cqa-font-num);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cqa-app .cqa-compare-total {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.cqa-app .cqa-compare-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--cqa-ink-2);
+  font-size: 13px;
+}
+
+.cqa-app .cqa-compare-delta {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: var(--cqa-sheet-2);
+}
+
+.cqa-app .cqa-compare-delta-value {
+  font-family: var(--cqa-font-num);
+  font-size: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* Разница: знак и цвет вместе — смысл не держится на одном цвете. */
+.cqa-app .cqa-delta--up,
+.cqa-app .cqa-delta--up .cqa-compare-delta-value { color: var(--cqa-yes); }
+.cqa-app .cqa-delta--down,
+.cqa-app .cqa-delta--down .cqa-compare-delta-value { color: var(--cqa-no); }
+.cqa-app .cqa-delta--zero,
+.cqa-app .cqa-delta--none { color: var(--cqa-ink-2); }
+
+.cqa-app .cqa-compare-note { color: var(--cqa-ink-2); }
+
+.cqa-app .cqa-compare-table td,
+.cqa-app .cqa-compare-table tbody th { vertical-align: top; }
+.cqa-app .cqa-compare-table tbody th { font-weight: 500; }
+
+.cqa-app .cqa-compare-name { display: block; font-weight: 600; }
+.cqa-app .cqa-compare-id { color: var(--cqa-ink-2); }
+.cqa-app .cqa-compare-answer { font-family: var(--cqa-font-num); font-weight: 500; }
+.cqa-app .cqa-compare-answer.is-changed { background: var(--cqa-part-wash); font-weight: 600; }
+
+.cqa-app .cqa-compare-row--added { box-shadow: inset 4px 0 0 var(--cqa-yes); }
+.cqa-app .cqa-compare-row--removed { box-shadow: inset 4px 0 0 var(--cqa-no); }
+.cqa-app .cqa-compare-row--removed .cqa-compare-name { text-decoration: line-through; text-decoration-color: var(--cqa-rule-strong); }
+.cqa-app .cqa-compare-row--definition_changed { box-shadow: inset 4px 0 0 var(--cqa-part); }
+.cqa-app .cqa-compare-row--weight_changed { box-shadow: inset 4px 0 0 var(--cqa-petrol); }
+
 /* ---------- Узкие экраны и уменьшенное движение ---------- */
 
 @media (max-width: 1100px) {
+  .cqa-app .cqa-ed-grid { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app .cqa-ed-aside { position: static; }
+  .cqa-app .cqa-ed-option--scale { grid-template-columns: 80px minmax(0, 1fr) minmax(0, 1.5fr) 96px 28px; }
   .cqa-app .cqa-conv-grid { grid-template-columns: minmax(0, 1fr); }
   .cqa-app .cqa-pane { position: static; max-height: none; overflow: visible; }
   .cqa-app .cqa-transcript-pane { max-height: 70vh; overflow: auto; }
 }
 
+@media (max-width: 760px) {
+  .cqa-app .cqa-compare-summary { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app .cqa-ed-head { grid-template-columns: 24px minmax(0, 1fr); }
+  .cqa-app .cqa-ed-tags,
+  .cqa-app .cqa-ed-actions { grid-column: 2; justify-content: flex-start; }
+  .cqa-app .cqa-ed-body { padding-left: 14px; }
+  .cqa-app .cqa-ed-option,
+  .cqa-app .cqa-ed-option--scale { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (max-width: 640px) {
+  /* На телефоне закреплённая панель закрывала бы четверть экрана. */
+  .cqa-app .cqa-savebar { position: static; border-radius: 6px; }
   .cqa-app .cqa-header { padding: 0 12px; }
   .cqa-app .cqa-main { padding: 14px 12px 40px; }
   .cqa-app .cqa-msg { grid-template-columns: 52px minmax(0, 1fr); gap: 8px; }
