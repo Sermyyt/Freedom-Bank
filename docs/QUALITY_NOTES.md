@@ -206,7 +206,7 @@
 
 ### Человеческая разметка
 
-На момент проверки `data/gold/*.json` отсутствует. `scripts/eval_gold.py` возвращает `NO_GOLD_FILES`: files_read=0, cases_compared=0, criteria_compared=0, accuracy=null, total_mae=null. Нулевые счётчики N/A и грубых ошибок без сравниваемых меток не являются измерением качества. Таблицы ассистентов не записывались в gold; после появления настоящей разметки нужен повтор CLI по формату README.
+На момент проверки `data/gold/*.json` отсутствует. `scripts/eval_gold.py` возвращает `NO_GOLD_FILES`: files_read=0, cases_compared=0, criteria_compared=0, accuracy=null, total_mae=null. Нулевые счётчики N/A и грубых ошибок без сравниваемых меток не являются измерением качества. Таблицы ассистентов не записывались в gold; после появления настоящей разметки нужен повтор CLI по [формату DEVELOPMENT](DEVELOPMENT.md#проверка-качества-по-человеческой-разметке).
 
 ### Все восемь разговоров: v5 → v6 → v7
 
