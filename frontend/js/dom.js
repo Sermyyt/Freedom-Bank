@@ -32,6 +32,20 @@ export function clear(element) {
   return element;
 }
 
+// Встроенные иллюстрации: дерево [тег, атрибуты, ...дети] → SVG-элементы. Только статичная разметка из кода.
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+export function svgTree(node) {
+  if (typeof node === 'string') return document.createTextNode(node);
+  const [tag, attrs = {}, ...children] = node;
+  const element = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (value !== null && value !== undefined && value !== false) element.setAttribute(key, String(value));
+  }
+  for (const child of children) if (child) element.append(svgTree(child));
+  return element;
+}
+
 export function debounce(fn, ms) {
   let timer = null;
   const wrapped = (...args) => {

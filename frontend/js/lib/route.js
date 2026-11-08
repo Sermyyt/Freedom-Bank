@@ -1,7 +1,7 @@
 // Разбор и сборка hash-адресов вида #/conversation/<id>?revision=...&evaluation=...
 import { buildQuery } from './query.js';
 
-export const DEFAULT_ROUTE = 'conversations';
+export const DEFAULT_ROUTE = 'home';
 
 function decode(segment) {
   try {

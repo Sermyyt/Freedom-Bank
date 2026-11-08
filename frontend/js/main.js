@@ -1,4 +1,4 @@
-// Точка входа: шапка, всплывающие сообщения, health, маршруты.
+// Точка входа: шапка, всплывающие сообщения, health, маршруты. Главная — маршрут по умолчанию.
 import { createHeader } from './components/header.js';
 import { initToasts } from './components/toast.js';
 import { h } from './dom.js';
@@ -11,6 +11,7 @@ import * as compare from './views/compare.js';
 import * as conversation from './views/conversation.js';
 import * as conversations from './views/conversations.js';
 import * as history from './views/history.js';
+import * as home from './views/home.js';
 import { notFound } from './views/placeholder.js';
 
 const root = document.getElementById('cqa-root');
@@ -27,12 +28,14 @@ const skip = h('button', {
 root.replaceChildren(skip, header.el, main);
 bindDetailsMotion(main);
 header.trackHeight(root);
+header.trackScroll();
 initToasts(root);
 startHealthPolling();
 
 startRouter(
   main,
   {
+    home,
     conversations,
     conversation,
     checklist,

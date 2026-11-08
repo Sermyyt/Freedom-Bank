@@ -36,6 +36,7 @@ export const state = {
   lastConversation: null,
   // Задание «Оценить всю группу» живёт в памяти вкладки: вернувшись к списку, человек видит его ход.
   groupJob: null,
+  focusImport: false,
   pageSize: normalizePageSize(readPref('pageSize', DEFAULT_PAGE_SIZE)),
   // null — человек ещё не сворачивал и не разворачивал блок импорта.
   importOpen: (() => {
@@ -117,6 +118,18 @@ export function setPageSize(size) {
 export function setImportOpen(open) {
   writePref('importOpen', Boolean(open));
   state.importOpen = Boolean(open);
+}
+
+// Кнопка «Импортировать набор» на главной: список откроется с развёрнутой панелью импорта и фокусом в ней.
+export function requestImport() {
+  setImportOpen(true);
+  state.focusImport = true;
+}
+
+export function takeImportFocus() {
+  const requested = state.focusImport === true;
+  state.focusImport = false;
+  return requested;
 }
 
 export function rememberGroup(groupId) {

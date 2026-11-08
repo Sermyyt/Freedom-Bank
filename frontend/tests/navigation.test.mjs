@@ -11,7 +11,7 @@ test('parseHash: маршрут, параметры и query', () => {
     params: ['abc-1'],
     query: { revision: 'r1', evaluation: 'e1' },
   });
-  assert.deepEqual(parseHash(''), { name: 'conversations', params: [], query: {} });
+  assert.deepEqual(parseHash(''), { name: 'home', params: [], query: {} });
   assert.deepEqual(parseHash('#/conversations?q=a%20b&q=second'), { name: 'conversations', params: [], query: { q: 'a b' } });
   assert.deepEqual(parseHash('#/conversation/%E0%A4%A').params, ['%E0%A4%A']);
 });
