@@ -7,6 +7,7 @@ import { loadingState } from '../components/loading-state.js';
 import { cardTable, labelRow } from '../components/table.js';
 import { showError } from '../components/toast.js';
 import { clear, h } from '../dom.js';
+import { staggerIn } from '../lib/motion.js';
 import { comparisonRows, deltaTone } from '../lib/compare.js';
 import { isAbortError } from '../lib/errors.js';
 import { DASH, formatDateTime, formatDelta, formatNumber } from '../lib/format.js';
@@ -182,6 +183,7 @@ export function mount(container, route) {
       }),
       rows.length ? table(rows, decimals, leftHead, rightHead) : emptyState({ title: 'В оценках нет критериев.' }),
     );
+    staggerIn(body.querySelector('.cqa-compare-summary').children, { step: 70, max: 3 });
   }
 
   async function load() {

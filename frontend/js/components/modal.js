@@ -1,7 +1,7 @@
 // Модальное окно на <dialog>: native-модальность, Esc и замкнутый Tab-порядок.
 // Окно добавляется внутрь #cqa-root, чтобы на него действовали стили .cqa-app и при встраивании в чужую страницу.
 import { h } from '../dom.js';
-import { dismiss, reveal } from '../lib/motion.js';
+import { dismiss, popIn } from '../lib/motion.js';
 
 let sequence = 0;
 
@@ -75,6 +75,6 @@ export function openModal({ title, body, footer, onClose } = {}) {
 
   root.append(dialog);
   dialog.showModal();
-  reveal(dialog);
+  popIn(dialog);
   return { dialog, close };
 }

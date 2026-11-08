@@ -35,7 +35,7 @@ import {
 } from '../lib/labels.js';
 import { groupTranscript, isClientFacingPhase, isHiddenFromClientPhase, phaseLabel } from '../lib/phases.js';
 import { describeJob, pollJob } from '../lib/poll.js';
-import { prefersReducedMotion } from '../lib/motion.js';
+import { prefersReducedMotion, staggerIn } from '../lib/motion.js';
 import { animateScore } from '../lib/score-motion.js';
 import { buildHash } from '../lib/route.js';
 import { getChecklistVersion, setLastConversation, setViewDemo, state, subscribe } from '../state.js';
@@ -73,6 +73,8 @@ export function mount(container, route) {
   let currentJob = null;
   let jobEvaluationId = null;
   let pendingScoreAnimationId = null;
+  // Блоки оценки появляются по очереди один раз для каждой показанной оценки, не при каждом перерисовывании.
+  let staggeredEvaluationId = null;
   let cancelScoreAnimation = () => {};
   let audio = null;
   const messageNodes = new Map();
@@ -956,6 +958,10 @@ export function mount(container, route) {
       flagsBlock(rows.filter((row) => row.isFlag), decimals),
       pastEvaluations(),
     ]);
+    if (staggeredEvaluationId !== evaluation.id) {
+      staggeredEvaluationId = evaluation.id;
+      staggerIn(scoreBody.children, { step: 45, max: 6 });
+    }
     if (pendingScoreAnimationId === evaluation.id) {
       pendingScoreAnimationId = null;
       cancelScoreAnimation = animateScore(scoreBody.querySelector('.cqa-total-digits'), evaluation.final.total, value => formatNumber(value, decimals));

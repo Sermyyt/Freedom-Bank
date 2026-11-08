@@ -79,13 +79,6 @@ export const EVALUATION_STATUS_TONES = {
   failed: 'bad',
 };
 
-export const JOB_STATUS_LABELS = {
-  queued: 'В очереди',
-  running: 'Выполняется',
-  completed: 'Готово',
-  failed: 'Ошибка',
-};
-
 // «Запись №3, demo-ru, реплика №5»: record_index с нуля, message_id с единицы.
 export function describeIssueLocation(issue) {
   const parts = [];

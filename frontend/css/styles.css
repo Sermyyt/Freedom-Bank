@@ -778,6 +778,7 @@
   overflow-x: auto;
   border: 1px solid var(--cqa-rule);
   border-radius: var(--cqa-radius-md);
+  background: var(--cqa-sheet);
   transition: opacity var(--cqa-duration-fast) var(--cqa-ease-out);
 }
 
@@ -815,12 +816,13 @@
 .cqa-app .cqa-table--compact td { padding: var(--cqa-space-2) var(--cqa-space-3); }
 .cqa-app .cqa-table--compact tbody tr.is-current { background: var(--cqa-primary-50); }
 
-.cqa-app .cqa-table-caption { padding-bottom: var(--cqa-space-2); caption-side: top; font-family: var(--cqa-font-display); font-size: var(--cqa-text-md); font-weight: 650; text-align: left; }
+.cqa-app .cqa-table-caption { padding: var(--cqa-space-3) var(--cqa-space-4); caption-side: top; font-family: var(--cqa-font-display); font-size: var(--cqa-text-md); font-weight: 650; text-align: left; }
 
 /* Строка-ссылка: подсветка и полоса слева при наведении. */
 .cqa-app .cqa-row-link { cursor: pointer; }
 .cqa-app .cqa-row-link > td:first-child { box-shadow: inset 0 0 0 var(--cqa-primary-600); transition: box-shadow var(--cqa-duration-base) var(--cqa-ease-out); }
-.cqa-app .cqa-row-link:hover { background: var(--cqa-primary-50); }
+.cqa-app .cqa-row-link { transition: background-color var(--cqa-duration-fast), transform var(--cqa-duration-base) var(--cqa-ease-out); }
+.cqa-app .cqa-row-link:hover { background: var(--cqa-primary-50); transform: translateY(-1px); }
 .cqa-app .cqa-row-link:hover > td:first-child,
 .cqa-app .cqa-row-link:focus-within > td:first-child { box-shadow: inset 3px 0 0 var(--cqa-primary-600); }
 .cqa-app .cqa-row-link:focus-within { background: var(--cqa-primary-50); }
@@ -968,10 +970,10 @@
   border-radius: var(--cqa-radius-lg);
   color: var(--cqa-ink);
   text-decoration: none;
-  transition: background-color var(--cqa-duration-fast);
+  transition: background-color var(--cqa-duration-fast), transform var(--cqa-duration-base) var(--cqa-ease-out);
 }
 
-.cqa-app a.cqa-kpi-link:hover { background: var(--cqa-primary-50); color: var(--cqa-ink); }
+.cqa-app a.cqa-kpi-link:hover { background: var(--cqa-primary-50); color: var(--cqa-ink); transform: translateY(-2px); }
 .cqa-app a.cqa-kpi-link:hover .cqa-kpi-value { color: var(--cqa-primary-700); }
 .cqa-app .cqa-kpi-label { color: var(--cqa-ink-2); font-size: var(--cqa-text-sm); font-weight: 600; }
 
@@ -2011,7 +2013,10 @@
   .cqa-app .cqa-kpi-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cqa-app .cqa-kpi:nth-child(4) { border-left: 0; }
   .cqa-app .cqa-kpi:nth-child(n + 4) { border-top: 1px solid var(--cqa-rule); }
-  .cqa-app .cqa-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* Пять шагов на планшете: 3 + 2 во всю ширину, без пустой ячейки. */
+  .cqa-app .cqa-steps { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .cqa-app .cqa-step { grid-column: span 2; }
+  .cqa-app .cqa-step:nth-child(n + 4) { grid-column: span 3; min-height: 0; }
   .cqa-app .cqa-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); padding: var(--cqa-space-12) var(--cqa-space-10) 168px; }
   .cqa-app .cqa-kpis { margin-top: calc(-1 * var(--cqa-space-14) - 120px); }
   .cqa-app .cqa-hero-title { font-size: 46px; }
@@ -2049,6 +2054,9 @@
 
 @media (max-width: 760px) {
   .cqa-app .cqa-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cqa-app .cqa-step,
+  .cqa-app .cqa-step:nth-child(n + 4) { grid-column: auto; }
+  .cqa-app .cqa-step:last-child { grid-column: 1 / -1; }
   .cqa-app .cqa-ed-head { grid-template-columns: 24px minmax(0, 1fr); }
   .cqa-app .cqa-ed-tags,
   .cqa-app .cqa-ed-actions { grid-column: 2; justify-content: flex-start; }
@@ -2093,6 +2101,7 @@
   .cqa-app .cqa-carousel-controls { flex-wrap: wrap; }
   .cqa-app .cqa-carousel-dot { width: 34px; }
   .cqa-app .cqa-steps { grid-template-columns: minmax(0, 1fr); }
+  .cqa-app .cqa-step:last-child { grid-column: auto; }
   .cqa-app .cqa-step { min-height: 0; }
 
   .cqa-app .cqa-page-head .cqa-button { width: 100%; }
@@ -2131,7 +2140,8 @@
   .cqa-app .cqa-table--cards,
   .cqa-app .cqa-table--cards tbody { display: block; }
   .cqa-app .cqa-table--cards thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .cqa-app .cqa-table-wrap:has(> .cqa-table--cards) { overflow: visible; border: 0; border-radius: 0; }
+  .cqa-app .cqa-table-wrap:has(> .cqa-table--cards) { overflow: visible; border: 0; border-radius: 0; background: transparent; }
+  .cqa-app .cqa-table--cards .cqa-table-caption { display: block; padding: 0 0 var(--cqa-space-2); }
   .cqa-app .cqa-list-scroll:has(> .cqa-table--cards) { max-height: none; }
 
   .cqa-app .cqa-table--cards tr {
@@ -2192,6 +2202,8 @@
   .cqa-app .cqa-compare-side:hover,
   .cqa-app .cqa-carousel-button:active,
   .cqa-app .cqa-table--cards tr:hover,
+  .cqa-app .cqa-row-link:hover,
+  .cqa-app a.cqa-kpi-link:hover,
   .cqa-app .cqa-button:hover .cqa-icon--arrow,
   .cqa-app .cqa-back:hover::before,
   .cqa-app .cqa-top.is-condensed .cqa-header-inner,

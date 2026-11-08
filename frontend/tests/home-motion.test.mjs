@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { AUTOPLAY_MS, createAutoplayClock, keyToIndex, slideLabel, swipeIntent, wrapIndex } from '../js/lib/carousel.js';
 import { countAt, countFrames, easeOutCubic } from '../js/lib/count-up.js';
+import { enterPage, popIn, staggerIn } from '../js/lib/motion.js';
 import { pickRevealed, revealOnScroll, staggerDelay } from '../js/lib/reveal.js';
 
 function replaceGlobal(t, name, value) {
@@ -69,6 +70,28 @@ test('carousel: скрытая вкладка и кнопка «Пауза» —
   assert.equal(clock.progress(5000), 0.1);
   clock.resume('user', 6000);
   assert.equal(clock.progress(6450), 0.55);
+});
+
+// ---------- Смена экрана, модальное окно, поочерёдное появление ----------
+
+test('motion: страница, модальное окно и строки анимируют только opacity и transform', (t) => {
+  replaceGlobal(t, 'matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const calls = [];
+  const node = () => ({
+    isConnected: true,
+    animate(frames, options) {
+      calls.push({ frames, options });
+      return { finished: new Promise(() => {}), cancel() {} };
+    },
+  });
+  enterPage(node());
+  popIn(node());
+  staggerIn([node(), node(), node(), node()], { step: 30, max: 3 });
+  assert.equal(calls.length, 5, 'страница + окно + три строки из четырёх');
+  for (const { frames } of calls) {
+    for (const frame of frames) assert.deepEqual(Object.keys(frame).sort(), ['opacity', 'transform']);
+  }
+  assert.deepEqual(calls.slice(2).map((call) => call.options.delay), [0, 30, 60]);
 });
 
 // ---------- Счётчики ----------

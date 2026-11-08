@@ -63,6 +63,14 @@ export function dismiss(element) {
   ], { kind: 'exit' });
 }
 
+// Модальное окно: появляется чуть снизу и с лёгким увеличением до своего размера.
+export function popIn(element) {
+  return playMotion(element, [
+    { opacity: 0, transform: 'translateY(12px) scale(0.98)' },
+    { opacity: 1, transform: 'translateY(0) scale(1)' },
+  ]);
+}
+
 // Смена экрана: новый экран мягко поднимается на место.
 export function enterPage(element) {
   return playMotion(element, [
