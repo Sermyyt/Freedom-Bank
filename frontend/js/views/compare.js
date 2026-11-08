@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { loadingState } from '../components/loading-state.js';
+import { cardTable, labelRow } from '../components/table.js';
 import { showError } from '../components/toast.js';
 import { clear, h } from '../dom.js';
 import { comparisonRows, deltaTone } from '../lib/compare.js';
@@ -12,6 +13,8 @@ import { DASH, formatDateTime, formatDelta, formatNumber } from '../lib/format.j
 import { EVALUATION_STATUS_LABELS, EVALUATION_STATUS_TONES, labelFor } from '../lib/labels.js';
 import { buildHash } from '../lib/route.js';
 import { getChecklistVersion, setViewDemo, state } from '../state.js';
+
+const COMPARE_COLUMNS = ['Критерий', 'Правило', 'Слева', 'Справа', 'Разница вклада'];
 
 // Минус как знак, а не дефис: «−0,15».
 function signed(value, decimals) {
@@ -53,15 +56,14 @@ export function mount(container, route) {
     clear(facts);
     clear(body).append(emptyState({
       title: 'Выберите две оценки одного разговора.',
-      hint: 'В карточке разговора в списке «Оценки этого разговора» нажмите «Сравнить с текущей». После новой версии чек-листа то же предлагает экран «Чек-лист».',
-      action: h('a', { class: 'cqa-button', href: state.lastListHash || '#/conversations', text: 'К списку разговоров' }),
+      hint: 'Кнопка «Сравнить с текущей» — в истории оценок разговора.',
     }));
   }
 
   function renderError(error) {
     clear(facts);
     const hint = error.code === 'INCOMPARABLE_EVALUATIONS'
-      ? 'Сравнивать можно только оценки одной ревизии разговора. Откройте карточку и выберите оценку той же ревизии.'
+      ? 'Сравнивать можно только оценки одной ревизии разговора.'
       : 'Проверьте ссылку или вернитесь к разговору.';
     clear(body).append(h(
       'div',
@@ -69,8 +71,7 @@ export function mount(container, route) {
       h('p', { class: 'cqa-alert-title', text: error.message }),
       h('p', { text: hint }),
       h('div', { class: 'cqa-actions' },
-        h('button', { type: 'button', class: 'cqa-button', text: 'Повторить', on: { click: load } }),
-        h('a', { class: 'cqa-button', href: state.lastListHash || '#/conversations', text: 'К списку разговоров' })),
+        h('button', { type: 'button', class: 'cqa-button', text: 'Повторить', on: { click: load } })),
     ));
   }
 
@@ -115,19 +116,19 @@ export function mount(container, route) {
     return h(
       'div',
       { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'Сравнение критериев, прокручиваемая таблица' },
-      h(
+      cardTable(h(
         'table',
         { class: 'cqa-table cqa-compare-table' },
-        h('caption', { class: 'cqa-table-caption', text: 'Критерии: сначала в порядке правой версии, затем удалённые' }),
+        h('caption', { class: 'cqa-table-caption', title: 'Сначала в порядке правой версии, затем удалённые', text: 'Критерии' }),
         h('thead', {}, h('tr', {},
           h('th', { scope: 'col', text: 'Критерий' }),
           h('th', { scope: 'col', text: 'Правило' }),
           h('th', { scope: 'col' }, leftLabel),
           h('th', { scope: 'col' }, rightLabel),
-          h('th', { scope: 'col', class: 'cqa-num', text: 'Вклад в итог, разница' }))),
+          h('th', { scope: 'col', class: 'cqa-num', text: 'Разница вклада' }))),
         h('tbody', {}, rows.map((row) => {
           const tone = deltaTone(row.delta, decimals);
-          return h(
+          return labelRow(h(
             'tr',
             { class: `cqa-compare-row cqa-compare-row--${row.change}` },
             h('th', { scope: 'row' }, h('span', { class: 'cqa-compare-name', text: row.name }), h('code', { class: 'cqa-compare-id', text: row.id })),
@@ -141,9 +142,9 @@ export function mount(container, route) {
               title: row.isFlag ? 'У флага нет вклада в итог' : (row.delta === null ? 'Нет второго результата для сравнения' : ''),
               text: signed(row.delta, decimals),
             }),
-          );
+          ), COMPARE_COLUMNS);
         })),
-      ),
+      )),
     );
   }
 
@@ -174,7 +175,11 @@ export function mount(container, route) {
         side(comparison.left, 'Слева', comparison.left_final_revision, decimals, ref),
         deltaBlock(comparison.total_delta, decimals),
         side(comparison.right, 'Справа', comparison.right_final_revision, decimals, ref)),
-      h('p', { class: 'cqa-compare-note', text: `Правил изменено: ${changedRules}, ответов изменилось: ${changedAnswers}. Сравнивается текущий итог каждой оценки с учётом решений по апелляциям.` }),
+      h('p', {
+        class: 'cqa-compare-note',
+        title: 'Сравнивается текущий итог каждой оценки с учётом решений по апелляциям.',
+        text: `Правил изменено: ${changedRules}, ответов изменилось: ${changedAnswers}.`,
+      }),
       rows.length ? table(rows, decimals, leftHead, rightHead) : emptyState({ title: 'В оценках нет критериев.' }),
     );
   }

@@ -61,7 +61,8 @@ export function mount(container) {
   setViewDemo(false);
 
   // ---------- Каркас ----------
-  const lead = h('p', { class: 'cqa-page-lead' });
+  const lead = h('p', { class: 'cqa-page-lead', title: 'Сохранение создаёт новую версию; «Сразу применить» делает её активной для новых оценок.' });
+  const expandAllButton = h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Развернуть все', on: { click: () => setAllOpen(!allExpanded()) } });
   const loading = loadingState('Загрузка чек-листа…');
   const loadAlert = h('div', { class: 'cqa-alert cqa-alert--bad', role: 'alert', hidden: true });
   const nameField = field({ id: 'cqa-cl-name', label: 'Название чек-листа', control: h('input', { type: 'text', autocomplete: 'off' }) });
@@ -96,7 +97,7 @@ export function mount(container) {
       'div',
       { class: 'cqa-ed-main' },
       h('section', { class: 'cqa-card', 'aria-labelledby': 'cqa-ed-meta-title' },
-        h('h2', { id: 'cqa-ed-meta-title', text: 'Чек-лист' }),
+        h('h2', { id: 'cqa-ed-meta-title', text: 'Название и описание' }),
         nameField.el,
         descriptionField.el),
       h(
@@ -105,10 +106,11 @@ export function mount(container) {
         h('div', { class: 'cqa-card-head' },
           h('h2', { id: 'cqa-ed-criteria-title' }, 'Критерии ', criteriaCount),
           h('div', { class: 'cqa-actions' },
-            h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Развернуть все', on: { click: () => setAllOpen(true) } }),
-            h('button', { type: 'button', class: 'cqa-button cqa-button--ghost', text: 'Свернуть все', on: { click: () => setAllOpen(false) } }),
+            expandAllButton,
             h('button', { type: 'button', class: 'cqa-button', text: 'Добавить критерий', on: { click: addCriterion } }))),
-        h('p', { class: 'cqa-field-hint', text: '«Заменить» ставит на место критерия новое правило с новым ID: старые оценки остаются по старому правилу, а сравнение покажет «удалён» и «добавлен».' }),
+        h('details', { class: 'cqa-more' },
+          h('summary', { text: 'Как работает «Заменить»' }),
+          h('p', { text: 'На место критерия встаёт новое правило с новым ID. Старые оценки остаются по старому правилу, а сравнение покажет «удалён» и «добавлен».' })),
         removedNotice,
         generalErrors,
         list,
@@ -120,15 +122,14 @@ export function mount(container) {
     ),
     h('aside', { class: 'cqa-ed-aside' },
       h('section', { class: 'cqa-card', 'aria-labelledby': 'cqa-versions-title' },
-        h('h2', { id: 'cqa-versions-title', text: 'Версии' }),
-        h('p', { class: 'cqa-field-hint', text: 'Версии неизменяемы: сохранение создаёт новую. Оценки помнят свою версию.' }),
+        h('h2', { id: 'cqa-versions-title', title: 'Версии неизменяемы: сохранение создаёт новую. Оценки помнят свою версию.', text: 'Версии' }),
         versionsList)),
   );
 
   container.append(h(
     'section',
     { class: 'cqa-page cqa-editor' },
-    h('div', { class: 'cqa-page-intro' }, h('h1', { text: 'Чек-лист' }), lead),
+    h('div', { class: 'cqa-page-intro' }, h('div', { class: 'cqa-page-title' }, h('h1', { text: 'Чек-лист' }), lead)),
     loadAlert,
     loading,
     editor,
@@ -205,7 +206,7 @@ export function mount(container) {
     lead.textContent = '';
     clear(loadAlert).append(emptyState({
       title: 'Чек-листов на сервере нет.',
-      hint: 'Сервер создаёт исходный чек-лист при первом запуске. Проверьте, что бэкенд запущен с исходными данными.',
+      hint: 'Исходный чек-лист создаётся при первом запуске сервера.',
     }));
     loadAlert.className = '';
     loadAlert.hidden = false;
@@ -225,7 +226,7 @@ export function mount(container) {
 
   function renderLead() {
     const active = base.is_active ? 'активна' : 'не активна';
-    lead.textContent = `В редакторе версия v${base.version} от ${formatDateTime(base.created_at)}, ${active}. Сохранение создаёт новую версию; галочка «Сразу применить» делает её активной для новых оценок.`;
+    lead.textContent = `Версия v${base.version} от ${formatDateTime(base.created_at)}, ${active}.`;
   }
 
   function renderVersions() {
@@ -258,6 +259,7 @@ export function mount(container) {
     criteriaCount.textContent = `(${draft.criteria.length})`;
     updateSections();
     list.replaceChildren(...draft.criteria.map((criterion, index) => criterionItem(criterion, index)));
+    syncExpandAll();
     renderRemovedNotice();
     if (focusAfterRender) {
       const target = document.getElementById(focusAfterRender);
@@ -400,7 +402,7 @@ export function mount(container) {
       id: `${prefix}-weight`,
       label: 'Вес',
       control: h('input', { type: 'number', value: criterion.weight, min: '0', step: 'any', inputmode: 'decimal' }),
-      hint: 'Положительное число; итог считает сервер.',
+      hint: 'Положительное число.',
     });
     weightField.el.hidden = criterion.answer_type === 'flag';
     weightField.control.addEventListener('input', () => {
@@ -420,7 +422,7 @@ export function mount(container) {
       id: `${prefix}-na`,
       label: 'Условие N/A',
       control: h('textarea', { rows: 2 }),
-      hint: 'Когда критерий неприменим к разговору. Без условия N/A не разрешён.',
+      hint: 'Когда критерий неприменим к разговору.',
     });
     naCondition.control.value = criterion.na_condition;
     naCondition.el.hidden = !criterion.na_allowed;
@@ -532,7 +534,7 @@ export function mount(container) {
       'fieldset',
       { class: 'cqa-fieldset cqa-ed-options' },
       h('legend', { text: isScale ? 'Ступени шкалы' : 'Варианты ответа' }),
-      isScale ? h('p', { class: 'cqa-field-hint', text: 'Доля балла от 0 до 1; пусто — сервер подставит «значение / максимум».' }) : null,
+      isScale ? h('p', { class: 'cqa-field-hint', text: 'Доля балла от 0 до 1; пусто — «значение / максимум».' }) : null,
       h('ol', { class: 'cqa-ed-option-list' }, rows),
       isScale
         ? h('button', {
@@ -562,10 +564,20 @@ export function mount(container) {
     item.classList.toggle('is-open', open);
     item.querySelector('.cqa-ed-toggle').setAttribute('aria-expanded', String(open));
     setExpanded(item.querySelector('.cqa-ed-body'), open);
+    syncExpandAll();
+  }
+
+  function allExpanded() {
+    return Boolean(draft && draft.criteria.length) && draft.criteria.every((criterion) => expanded.has(criterion.key));
+  }
+
+  function syncExpandAll() {
+    expandAllButton.textContent = allExpanded() ? 'Свернуть все' : 'Развернуть все';
   }
 
   function setAllOpen(open) {
     for (const criterion of draft.criteria) setOpen(criterion.key, open);
+    syncExpandAll();
   }
 
   function move(index, delta) {
@@ -757,10 +769,10 @@ export function mount(container) {
     let tone = 'neutral';
     if (validation === 'pending') text = 'Проверка правил на сервере…';
     else if (validation === 'valid') {
-      text = 'Сервер проверил правила: ошибок нет.';
+      text = 'Правила проверены, ошибок нет.';
       tone = 'good';
     } else if (validation === 'invalid') {
-      text = `Ошибок: ${count}. Исправьте их — они отмечены у полей.`;
+      text = `Ошибок: ${count} — отмечены у полей.`;
       tone = 'bad';
     } else if (validation === 'failed') {
       text = `Проверка недоступна: ${validationFailure}`;
@@ -852,8 +864,8 @@ export function mount(container) {
     savedBox.append(
       h('p', { class: 'cqa-alert-title', text: activated ? `Версия v${created.version} сохранена и применена` : `Версия v${created.version} сохранена, но не применена` }),
       h('p', { text: activated
-        ? 'Новые оценки пойдут по этой версии. Прошлые оценки не меняются: чтобы увидеть влияние правки, переоцените разговор и сравните с прошлой оценкой.'
-        : 'Новые оценки по-прежнему идут по активной версии. Чтобы применить эту, сохраните её с галочкой «Сразу применить».' }),
+        ? 'Прошлые оценки не меняются — переоцените разговор и сравните.'
+        : 'Новые оценки по-прежнему идут по активной версии.' }),
     );
     const conversation = state.lastConversation;
     if (activated && conversation) {
@@ -862,9 +874,8 @@ export function mount(container) {
       savedBox.append(h(
         'p',
         {},
-        'Разговор ещё не открывали. ',
-        h('a', { href: state.lastListHash || '#/conversations', text: 'Откройте разговор из списка' }),
-        ' и нажмите «Оценить», затем «Сравнить с текущей» у прошлой оценки.',
+        h('a', { href: state.lastListHash || '#/conversations', text: 'Откройте разговор' }),
+        ' и нажмите «Оценить», затем «Сравнить с текущей».',
       ));
     }
     savedBox.hidden = false;

@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { loadingState } from '../components/loading-state.js';
+import { cardTable, labelRow } from '../components/table.js';
 import { showError } from '../components/toast.js';
 import { append, clear, h } from '../dom.js';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../lib/appeals.js';
 import { isAbortError } from '../lib/errors.js';
 import { pageRange } from '../lib/filters.js';
+import { staggerIn } from '../lib/motion.js';
 import { DASH, excerpt, formatDateTime } from '../lib/format.js';
 import { buildHash } from '../lib/route.js';
 import { setLastAppealsHash, setViewDemo, state } from '../state.js';
@@ -31,15 +33,15 @@ const COLUMNS = ['Разговор', 'Критерий', 'Комментарий
 const EMPTY = {
   open: {
     title: 'Открытых апелляций нет.',
-    hint: 'Апелляцию подают из карточки разговора: кнопка «Оспорить» у критерия оценки. Решённые апелляции — во вкладке «Решённые».',
+    hint: 'Апелляцию подают кнопкой «Оспорить» у критерия в карточке разговора.',
   },
   resolved: {
     title: 'Решённых апелляций пока нет.',
-    hint: 'Решение принимается в карточке разговора: кнопка «Рассмотреть» у открытой апелляции.',
+    hint: 'Решение принимают кнопкой «Рассмотреть» в карточке разговора.',
   },
   all: {
     title: 'Апелляций пока нет.',
-    hint: 'Апелляцию подают из карточки разговора: кнопка «Оспорить» у критерия оценки.',
+    hint: 'Апелляцию подают кнопкой «Оспорить» у критерия в карточке разговора.',
   },
 };
 
@@ -59,7 +61,7 @@ export function mount(container, route) {
   const tableWrap = h(
     'div',
     { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'Апелляции, прокручиваемая таблица' },
-    h('table', { class: 'cqa-table cqa-appeals-table' }, h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', text: title })))), tableBody),
+    cardTable(h('table', { class: 'cqa-table cqa-appeals-table' }, h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', text: title })))), tableBody)),
   );
   const listEmpty = h('div', { hidden: true });
   const pager = h('nav', { class: 'cqa-pager', 'aria-label': 'Страницы списка' });
@@ -70,11 +72,16 @@ export function mount(container, route) {
     h(
       'div',
       { class: 'cqa-page-intro' },
-      h('h1', { text: 'Апелляции' }),
-      h('p', { class: 'cqa-page-lead', text: 'Оператор оспаривает критерий в карточке разговора, проверяющий принимает решение там же, рядом с перепиской. Итог оценки сервер пересчитывает сразу, история решений сохраняется.' }),
+      h('div', { class: 'cqa-page-title' },
+        h('h1', { text: 'Апелляции' }),
+        h('p', {
+          class: 'cqa-page-lead',
+          title: 'Итог оценки сервер пересчитывает сразу, история решений сохраняется.',
+          text: 'Оператор оспаривает, проверяющий решает рядом с перепиской.',
+        })),
     ),
     h('section', { class: 'cqa-card', 'aria-labelledby': 'cqa-appeals-title' },
-      h('div', { class: 'cqa-card-head' }, h('h2', { id: 'cqa-appeals-title', text: 'Список апелляций' }), filterNav),
+      h('div', { class: 'cqa-card-head' }, h('h2', { id: 'cqa-appeals-title', class: 'cqa-sr-only', text: 'Список апелляций' }), filterNav),
       listStatus,
       listError,
       loading,
@@ -129,17 +136,19 @@ export function mount(container, route) {
     const criterionCell = h('td', { class: 'cqa-appeal-criterion-cell' }, placeholder());
     const decisionTd = h('td', { class: 'cqa-appeal-decision-cell' }, appeal.status === 'open' ? h('span', { class: 'cqa-muted', text: DASH }) : placeholder());
     const actionCell = h('td', { class: 'cqa-nowrap' }, placeholder());
-    const tr = h(
+    decisionTd.classList.add('cqa-wide');
+    actionCell.classList.add('cqa-wide');
+    const tr = labelRow(h(
       'tr',
       {},
       conversationCell,
       criterionCell,
-      h('td', { class: 'cqa-appeal-comment-cell' }, h('span', { class: 'cqa-clamp', title: appeal.comment, text: appeal.comment })),
+      h('td', { class: 'cqa-appeal-comment-cell cqa-wide' }, h('span', { class: 'cqa-clamp', title: appeal.comment, text: appeal.comment })),
       h('td', { class: 'cqa-nowrap', text: formatDateTime(appeal.created_at) }),
       h('td', {}, badge(APPEAL_STATUS_LABELS[appeal.status] || appeal.status, APPEAL_STATUS_TONES[appeal.status] || 'neutral')),
       decisionTd,
       actionCell,
-    );
+    ), COLUMNS);
 
     loadEvaluation(appeal.evaluation_id).then((evaluation) => {
       // Строка уже заменена новой загрузкой списка.
@@ -214,6 +223,7 @@ export function mount(container, route) {
       tableWrap.hidden = false;
       listEmpty.hidden = true;
       tableBody.replaceChildren(...page.items.map(row));
+      staggerIn(tableBody.children);
       listStatus.textContent = `Показаны ${range.from}–${range.to} из ${range.total}`;
     }
     renderPager(page);

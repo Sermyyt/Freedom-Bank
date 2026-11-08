@@ -4,10 +4,12 @@ import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { loadingState } from '../components/loading-state.js';
 import { field } from '../components/field.js';
+import { cardTable, labelRow } from '../components/table.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { clear, debounce, h } from '../dom.js';
 import { setExpanded } from '../lib/disclosure.js';
+import { prefersReducedMotion, staggerIn } from '../lib/motion.js';
 import { fieldErrors, isAbortError } from '../lib/errors.js';
 import { buildGroupEvaluationRequest, groupJobSummary } from '../lib/group-evaluation.js';
 import { isTerminalJob, pollJob } from '../lib/poll.js';
@@ -37,12 +39,13 @@ import {
   setViewDemo,
   state,
   subscribe,
+  takeImportFocus,
 } from '../state.js';
 
 // Значения из данных организаторов; встреченные в ответах новые значения добавляются к выбору.
 const KNOWN_LANGUAGES = ['RU', 'KZ', 'EN'];
 const KNOWN_CHANNELS = ['agent chat', 'voice call'];
-const COLUMNS = ['Внешний ID', 'Группа', 'Канал', 'Язык', 'Сообщений', 'Итог', 'Статус оценки', 'Грубое нарушение', 'Апелляции', 'Демо'];
+const COLUMNS = ['Разговор', 'Группа', 'Канал', 'Язык', 'Сообщений', 'Итог', 'Статус оценки', 'Грубое нарушение', 'Апелляции', 'Демо'];
 const NUMERIC_COLUMNS = new Set(['Сообщений', 'Итог']);
 
 function fillSelect(select, options, value) {
@@ -86,13 +89,16 @@ export function mount(container, route) {
     id: 'cqa-import-file',
     label: 'Файл JSON',
     control: h('input', { type: 'file', accept: '.json,application/json' }),
-    hint: 'Полный ответ организаторов или массив записей в UTF-8.',
+    hint: 'Ответ организаторов или массив записей.',
   });
   const fileGroup = field({
     id: 'cqa-import-file-group',
     label: 'ID группы',
-    control: h('input', { type: 'text', autocomplete: 'off', spellcheck: 'false', placeholder: 'необязательно для полного ответа' }),
-    hint: 'Обязателен для массива записей. Для полного ответа организаторов можно не указывать: если указан, должен совпасть с группой в файле.',
+    control: h('input', {
+      type: 'text', autocomplete: 'off', spellcheck: 'false', placeholder: 'необязательно',
+      title: 'Для ответа организаторов группа берётся из файла; если указать, должна совпасть.',
+    }),
+    hint: 'Нужен для массива записей.',
   });
   const fileError = h('div', { class: 'cqa-form-error', role: 'alert', hidden: true });
   const fileButton = h('button', { type: 'submit', class: 'cqa-button cqa-button--primary', text: 'Загрузить файл' });
@@ -152,7 +158,7 @@ export function mount(container, route) {
   const appealsFilter = field({ id: 'cqa-filter-appeals', label: 'Открытые апелляции', control: h('select') });
   const searchFilter = field({
     id: 'cqa-filter-q',
-    label: 'Поиск по внешнему ID',
+    label: 'Поиск по ID',
     control: h('input', { type: 'search', autocomplete: 'off', spellcheck: 'false', placeholder: 'часть ID' }),
   });
   const pageSizeFilter = field({ id: 'cqa-filter-limit', label: 'На странице', control: h('select') });
@@ -205,10 +211,11 @@ export function mount(container, route) {
   const tableBody = h('tbody');
   const table = h(
     'table',
-    { class: 'cqa-table cqa-conversations-table', role: 'table', 'aria-label': 'Разговоры' },
+    { class: 'cqa-table cqa-conversations-table', 'aria-label': 'Разговоры' },
     h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', class: NUMERIC_COLUMNS.has(title) ? 'cqa-num' : null, text: title })))),
     tableBody,
   );
+  cardTable(table);
   const tableWrap = h('div', { class: 'cqa-table-wrap cqa-list-scroll', role: 'region', tabindex: '0', 'aria-label': 'Разговоры, прокручиваемый список' }, table);
   const loading = loadingState();
   const listEmpty = h('div', { hidden: true });
@@ -218,7 +225,9 @@ export function mount(container, route) {
     h(
       'section',
       { class: 'cqa-page cqa-conversations-page' },
-      h('div', { class: 'cqa-page-head' }, h('h1', { text: 'Разговоры' }), importToggle),
+      h('div', { class: 'cqa-page-head' },
+        h('div', { class: 'cqa-page-title' }, h('h1', { text: 'Разговоры' }), h('p', { class: 'cqa-page-lead', text: 'Импорт, поиск и оценка групп.' })),
+        importToggle),
       importBox,
       h(
         'section',
@@ -241,9 +250,8 @@ export function mount(container, route) {
     const unavailable = Boolean(state.health && state.health.dataset_ready === false);
     datasetButton.disabled = unavailable || datasetBusy;
     datasetGroup.control.disabled = unavailable;
-    datasetHint.textContent = unavailable
-      ? 'На сервере не настроен DATASET_URL; используйте загрузку файла.'
-      : 'Сервер сам скачает набор по этой группе: ссылка источника хранится только на сервере.';
+    datasetHint.textContent = unavailable ? 'Импорт по ID не настроен на сервере — загрузите файл.' : '';
+    datasetHint.hidden = !unavailable;
   }
 
   function hideFormError(node) {
@@ -325,12 +333,10 @@ export function mount(container, route) {
         list.map((issue) =>
           h(
             'li',
-            {},
+            { title: issue.code },
             h('span', { class: 'cqa-issue-where', text: describeIssueLocation(issue) || 'Набор целиком' }),
             ' — ',
             issue.message,
-            ' ',
-            h('code', { class: 'cqa-issue-code', text: issue.code }),
           ),
         ),
       ),
@@ -470,13 +476,13 @@ export function mount(container, route) {
     else if (groupId) groupTitle.append('Группа ', h('strong', { text: groupId }));
     else groupTitle.append('Оценка всей группы');
     if (running) {
-      groupHint.textContent = 'Можно открывать разговоры: ход задания сохранится, таблица обновится по окончании.';
+      groupHint.textContent = 'Можно открывать разговоры — ход сохранится.';
     } else if (!groupId) {
-      groupHint.textContent = 'Выберите группу в фильтре «Группа» или импортируйте группу: кнопка оценит все её разговоры.';
+      groupHint.textContent = 'Выберите группу в фильтре или импортируйте её.';
     } else if (state.health && state.health.evaluation_ready === false) {
-      groupHint.textContent = 'Сервер сообщает, что оценка сейчас недоступна. Нажмите «Оценить всю группу», чтобы увидеть причину.';
+      groupHint.textContent = 'Оценка сейчас недоступна на сервере.';
     } else {
-      groupHint.textContent = 'Все текущие разговоры группы, по активному чек-листу. Фильтры ниже не влияют на оценку.';
+      groupHint.textContent = 'Все разговоры группы по активному чек-листу.';
     }
     groupButton.disabled = running || groupStarting || !groupId;
     groupButton.textContent = running || groupStarting ? 'Оценка группы…' : 'Оценить всю группу';
@@ -587,7 +593,7 @@ export function mount(container, route) {
     const tr = h(
       'tr',
       {
-        class: 'cqa-row-link', role: 'row',
+        class: 'cqa-row-link',
         on: {
           click: (event) => {
             if (event.target.closest('a')) return;
@@ -611,11 +617,7 @@ export function mount(container, route) {
       h('td', {}, item.has_open_appeals ? badge('Есть открытая', 'warn') : h('span', { class: 'cqa-muted', text: 'нет' })),
       h('td', {}, evaluation && evaluation.is_demo ? badge('Демо', 'demo') : h('span', { class: 'cqa-muted', text: DASH })),
     );
-    [...tr.children].forEach((cell, index) => {
-      cell.setAttribute('role', 'cell');
-      cell.prepend(h('span', { class: 'cqa-mobile-label', 'aria-hidden': 'true', text: COLUMNS[index] }));
-    });
-    return tr;
+    return labelRow(tr, COLUMNS);
   }
 
   function renderPager(page) {
@@ -682,13 +684,20 @@ export function mount(container, route) {
       } else {
         listEmpty.replaceChildren(emptyState({
           title: 'Разговоров пока нет.',
-          hint: 'Импортируйте набор: укажите ID группы или загрузите JSON-файл в панели «Импорт разговоров» выше.',
+          hint: 'Импортируйте набор по ID группы или файлом.',
+          action: importOpen ? null : h('button', { type: 'button', class: 'cqa-button cqa-button--primary', text: 'Импортировать', on: { click: () => {
+            autoCollapseChecked = true;
+            setImportOpen(true);
+            setImportBoxOpen(true);
+            focusImport();
+          } } }),
         }));
       }
     } else {
       tableWrap.hidden = false;
       listEmpty.hidden = true;
       tableBody.replaceChildren(...page.items.map(row));
+      staggerIn(tableBody.children);
       listStatus.textContent = `Показаны ${range.from}–${range.to} из ${range.total}`;
     }
     renderPager(page);
@@ -730,8 +739,23 @@ export function mount(container, route) {
     syncGroupEval();
   });
 
+  // Пришли с главной по «Импортировать набор»: панель открыта, фокус в первом поле.
+  function focusImport() {
+    requestAnimationFrame(() => {
+      if (controller.signal.aborted) return;
+      importBox.scrollIntoView({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+      const target = datasetGroup.control.disabled ? fileInput.control : datasetGroup.control;
+      target.focus({ preventScroll: true });
+    });
+  }
+
   syncDatasetAvailability();
   syncInputs();
+  if (takeImportFocus()) {
+    autoCollapseChecked = true;
+    setImportBoxOpen(true);
+    focusImport();
+  }
   load();
   // Вернулись к списку во время оценки группы — продолжаем показывать её ход (или итог).
   if (state.groupJob) trackGroupJob();

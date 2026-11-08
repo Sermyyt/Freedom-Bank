@@ -34,7 +34,7 @@ export function openAppealModal({ evaluation, criterion, result, onCreated, onDu
     id: 'cqa-appeal-comment',
     label: 'Комментарий оператора',
     control: h('textarea', { rows: 4 }),
-    hint: 'Что, по мнению оператора, оценено неверно. Решение примет проверяющий отдельным действием.',
+    hint: 'Что, по мнению оператора, оценено неверно.',
   });
   const duplicate = h('div', { class: 'cqa-alert cqa-alert--warn', role: 'status', hidden: true });
   const formError = h('div', { class: 'cqa-form-error', role: 'alert', hidden: true });
@@ -128,8 +128,8 @@ export function openAppealModal({ evaluation, criterion, result, onCreated, onDu
 const ACTION_TEXT = { confirm: 'Подтвердить ответ', change: 'Изменить ответ' };
 const SUBMIT_TEXT = { confirm: 'Подтвердить ответ', change: 'Сохранить новый ответ' };
 const REASON_HINT = {
-  confirm: 'Почему ответ остаётся прежним. Сохранится в истории решения.',
-  change: 'Сохранится как обоснование нового ответа и в истории решения.',
+  confirm: 'Сохранится в истории решения.',
+  change: 'Станет обоснованием нового ответа.',
 };
 
 // Панель решения. Карточка передаёт свежую оценку через setEvaluation: из неё берётся
@@ -210,7 +210,6 @@ export function createDecisionPanel({
     'div',
     { class: 'cqa-decision-evidence', hidden: true },
     h('p', { class: 'cqa-decision-label', text: 'Доказательства, необязательно' }),
-    h('p', { class: 'cqa-field-hint', text: 'Щёлкните по реплике в переписке слева, чтобы добавить её в решение; повторный щелчок уберёт её.' }),
     evidenceList,
   );
 
@@ -277,13 +276,13 @@ export function createDecisionPanel({
   function syncActionHint() {
     const invalid = !currentAnswer || currentAnswer.status === 'invalid';
     actionHint.hidden = !(action === 'confirm' && invalid);
-    actionHint.textContent = 'Валидного ответа нет: подтверждение оставит критерий без ответа и на ручной проверке. Чтобы засчитать критерий, выберите «Изменить ответ».';
+    actionHint.textContent = 'Валидного ответа нет — подтверждение оставит критерий на ручной проверке.';
   }
 
   function renderEvidence() {
     clear(evidenceList);
     if (!evidence.length) {
-      evidenceList.append(h('span', { class: 'cqa-muted', text: 'Реплики не выбраны: решение сохранится с предупреждением «без доказательств».' }));
+      evidenceList.append(h('span', { class: 'cqa-muted', text: 'Отметьте реплики в переписке — иначе решение сохранится с пометкой «без доказательств».' }));
       return;
     }
     for (const id of evidence) {
@@ -374,7 +373,7 @@ export function createDecisionPanel({
     } catch (error) {
       setBusy(false);
       if (error.code === 'VERSION_CONFLICT') {
-        notice.textContent = 'Оценка изменилась, данные обновлены. Проверьте текущий ответ и отправьте решение ещё раз.';
+        notice.textContent = 'Оценка изменилась, данные обновлены. Проверьте ответ и отправьте ещё раз.';
         notice.hidden = false;
         expectedRevision = null;
         submit.disabled = true;

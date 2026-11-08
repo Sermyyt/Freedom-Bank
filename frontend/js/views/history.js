@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { loadingState } from '../components/loading-state.js';
+import { cardTable, labelRow } from '../components/table.js';
 import { field } from '../components/field.js';
 import { showError } from '../components/toast.js';
 import { append, clear, h } from '../dom.js';
@@ -21,7 +22,7 @@ import {
   normalizeHistoryQuery,
 } from '../lib/history.js';
 import { labelFor } from '../lib/labels.js';
-import { reveal } from '../lib/motion.js';
+import { staggerIn } from '../lib/motion.js';
 import { buildHash } from '../lib/route.js';
 import { getChecklistVersion, setViewDemo, state } from '../state.js';
 
@@ -44,12 +45,14 @@ export function mount(container, route) {
     HISTORY_EVENT_TYPES.map((type) => h('option', { value: type, text: eventLabel(type) })),
   );
   const typeField = field({ id: 'cqa-history-type', label: 'Тип события', control: typeSelect });
-  const searchInput = h('input', { type: 'search', autocomplete: 'off', spellcheck: 'false', placeholder: 'внешний ID, например syn-ru-call-1' });
+  const searchInput = h('input', {
+    type: 'search', autocomplete: 'off', spellcheck: 'false', placeholder: 'ID разговора',
+    title: 'Останутся только события найденного разговора.',
+  });
   const searchField = field({
     id: 'cqa-history-conversation',
     label: 'Разговор',
     control: searchInput,
-    hint: 'Найдите разговор по внешнему ID — останутся только его события.',
   });
   const searchButton = h('button', { type: 'submit', class: 'cqa-button', text: 'Найти' });
   const sizeSelect = h('select', {}, PAGE_SIZES.map((size) => h('option', { value: String(size), text: String(size) })));
@@ -74,7 +77,7 @@ export function mount(container, route) {
   const tableWrap = h(
     'div',
     { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'История событий, прокручиваемая таблица' },
-    h('table', { class: 'cqa-table cqa-history-table' }, h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', text: title })))), tableBody),
+    cardTable(h('table', { class: 'cqa-table cqa-history-table' }, h('thead', {}, h('tr', {}, COLUMNS.map((title) => h('th', { scope: 'col', text: title })))), tableBody)),
   );
   const listEmpty = h('div', { hidden: true });
   const pager = h('nav', { class: 'cqa-pager', 'aria-label': 'Страницы истории' });
@@ -85,11 +88,12 @@ export function mount(container, route) {
     h(
       'div',
       { class: 'cqa-page-intro' },
-      h('h1', { text: 'История' }),
-      h('p', { class: 'cqa-page-lead', text: 'Всё, что происходило с данными: импорт, новые ревизии разговоров, оценки, апелляции и версии чек-листа. Записи не меняются и не удаляются.' }),
+      h('div', { class: 'cqa-page-title' },
+        h('h1', { text: 'История' }),
+        h('p', { class: 'cqa-page-lead', text: 'Импорт, оценки, апелляции и версии чек-листа. Записи не меняются.' })),
     ),
     h('section', { class: 'cqa-card', 'aria-labelledby': 'cqa-history-title' },
-      h('h2', { id: 'cqa-history-title', text: 'События' }),
+      h('h2', { id: 'cqa-history-title', class: 'cqa-sr-only', text: 'События' }),
       filters,
       activeConversation,
       matches,
@@ -252,15 +256,15 @@ export function mount(container, route) {
 
   function row(event) {
     const links = linkNodes(event);
-    return h(
+    return labelRow(h(
       'tr',
       {},
       h('td', { class: 'cqa-nowrap', text: formatDateTime(event.created_at) }),
       h('td', {}, badge(eventLabel(event.event_type), HISTORY_EVENT_TONES[event.event_type] || 'neutral')),
-      h('td', { class: 'cqa-history-summary', text: event.summary }),
+      h('td', { class: 'cqa-history-summary cqa-wide', text: event.summary }),
       h('td', {}, links.length ? h('span', { class: 'cqa-row-actions' }, links) : h('span', { class: 'cqa-muted', text: DASH })),
       h('td', { class: 'cqa-nowrap', text: labelFor(HISTORY_ACTOR_LABELS, event.actor) }),
-    );
+    ), COLUMNS);
   }
 
   function pageLink(text, offset, disabled) {
@@ -308,7 +312,7 @@ export function mount(container, route) {
       } else {
         empty = emptyState({
           title: 'Событий пока нет.',
-          hint: 'История пополняется сама: импортируйте разговоры, оцените их, подайте апелляцию или сохраните версию чек-листа.',
+          hint: 'События появятся после импорта и оценки.',
           action: h('a', { class: 'cqa-button', href: state.lastListHash || '#/conversations', text: 'К списку разговоров' }),
         });
       }
@@ -317,7 +321,7 @@ export function mount(container, route) {
       tableWrap.hidden = false;
       listEmpty.hidden = true;
       tableBody.replaceChildren(...page.items.map(row));
-      [...tableBody.children].slice(0, 6).forEach((item, index) => reveal(item, index * 24));
+      staggerIn(tableBody.children);
       listStatus.textContent = `Показаны ${range.from}–${range.to} из ${range.total}, сначала новые`;
     }
     renderPager(page);

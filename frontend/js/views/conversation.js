@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { badge } from '../components/badge.js';
 import { emptyState } from '../components/empty-state.js';
 import { loadingState } from '../components/loading-state.js';
+import { cardTable, labelRow } from '../components/table.js';
 import { createJobProgress } from '../components/job-progress.js';
 import { showError, showToast } from '../components/toast.js';
 import { verdict } from '../components/verdict.js';
@@ -43,6 +44,7 @@ import { createDecisionPanel, openAppealModal } from './appeal-forms.js';
 const KNOWN_ROLES = ['client', 'operator', 'bot', 'system'];
 const KNOWN_PHASES = ['pre_operator', 'client', 'hold', 'internal_consult', 'after_end'];
 const FLAG_TONES = { duplicate_of_prev: 'neutral', after_end: 'neutral', pii_masked: 'info', unknown_event: 'partial' };
+const PAST_COLUMNS = ['Дата', 'Чек-лист', 'Итог', 'Статус', 'Действия'];
 
 function healthDecimals() {
   return state.health && state.health.scoring_policy ? state.health.scoring_policy.decimals : undefined;
@@ -97,7 +99,7 @@ export function mount(container, route) {
     class: 'cqa-pick-hint',
     role: 'status',
     hidden: true,
-    text: 'Выбор доказательств для решения: щёлкните по реплике, чтобы добавить её; повторный щелчок уберёт.',
+    text: 'Щёлкните реплику, чтобы добавить её в доказательства решения.',
   });
   const title = h('h1', { class: 'cqa-conv-title', text: 'Разговор' });
   const facts = h('dl', { class: 'cqa-facts' });
@@ -253,7 +255,7 @@ export function mount(container, route) {
       notices.append(h(
         'div',
         { class: 'cqa-alert cqa-alert--info' },
-        h('p', { text: `Показана ревизия ${shown.ref.revision}: к ней относится выбранная оценка. Текущая ревизия разговора — ${current.ref.revision}.` }),
+        h('p', { text: `Показана ревизия ${shown.ref.revision} из ${current.ref.revision} — к ней относится эта оценка.` }),
         h('a', { href: buildHash('conversation', [conversationId], { revision: current.ref.revision_id }), text: 'Открыть текущую ревизию' }),
       ));
     }
@@ -481,9 +483,7 @@ export function mount(container, route) {
     evaluateButton.disabled = jobRunning || !current;
     const notReady = Boolean(state.health && state.health.evaluation_ready === false);
     evaluateHint.hidden = !notReady;
-    evaluateHint.textContent = notReady
-      ? 'Сервер сообщает, что оценка сейчас недоступна. Нажмите «Оценить», чтобы увидеть причину.'
-      : '';
+    evaluateHint.textContent = notReady ? 'Оценка сейчас недоступна на сервере.' : '';
   }
 
   async function startEvaluation() {
@@ -903,24 +903,19 @@ export function mount(container, route) {
         }
         action = h('span', { class: 'cqa-row-actions' }, open, compare || null);
       }
-      return h('tr', { class: isShown ? 'is-current' : null },
+      return labelRow(h('tr', { class: isShown ? 'is-current' : null },
         h('td', { text: formatDateTime(summary.created_at) }),
         h('td', {}, versionLabel(summary.checklist_version_id, h('span', { text: '…' }))),
         h('td', { class: 'cqa-num' }, h('strong', { text: formatSummaryScore(summary.final_total, summary.scoring_policy) })),
         h('td', {}, badge(labelFor(EVALUATION_STATUS_LABELS, summary.status), EVALUATION_STATUS_TONES[summary.status] || 'neutral')),
-        h('td', {}, action));
+        h('td', { class: 'cqa-wide' }, action)), PAST_COLUMNS);
     });
-    block.append(h('div', { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'История оценок, прокручиваемая таблица' }, h(
+    block.append(h('div', { class: 'cqa-table-wrap', role: 'region', tabindex: '0', 'aria-label': 'История оценок, прокручиваемая таблица' }, cardTable(h(
       'table',
       { class: 'cqa-table cqa-table--compact' },
-      h('thead', {}, h('tr', {},
-        h('th', { scope: 'col', text: 'Дата' }),
-        h('th', { scope: 'col', text: 'Чек-лист' }),
-        h('th', { scope: 'col', class: 'cqa-num', text: 'Итог' }),
-        h('th', { scope: 'col', text: 'Статус' }),
-        h('th', { scope: 'col', text: 'Действия' }))),
+      h('thead', {}, h('tr', {}, PAST_COLUMNS.map((title, index) => h('th', { scope: 'col', class: index === 2 ? 'cqa-num' : null, text: title })))),
       h('tbody', {}, rows),
-    )));
+    ))));
     if (summariesTotal > summaries.length) {
       block.append(h('p', { class: 'cqa-muted cqa-small', text: `Показаны последние ${summaries.length} из ${summariesTotal}.` }));
     }
@@ -940,7 +935,7 @@ export function mount(container, route) {
       scoreBody.append(
         emptyState({
           title: 'Разговор ещё не оценён.',
-          hint: 'Нажмите «Оценить»: баллы по критериям появятся здесь, а доказательства будут вести к репликам слева.',
+          hint: 'Нажмите «Оценить» — баллы и доказательства появятся здесь.',
         }),
         pastEvaluations(),
       );
@@ -1014,7 +1009,7 @@ export function mount(container, route) {
       criterion: row.criterion,
       result: row.final,
       onCreated: () => {
-        showToast('Апелляция подана. Решение принимает проверяющий: кнопка «Рассмотреть» у критерия.', { tone: 'success' });
+        showToast('Апелляция подана. Решение — кнопкой «Рассмотреть» у критерия.', { tone: 'success' });
         refreshAppeals();
       },
       onDuplicate: refreshAppeals,
